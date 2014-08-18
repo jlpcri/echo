@@ -1,0 +1,6 @@
+syntax: glob
+*.pyc
+*.sqlite3
+
+syntax: regexp
+^.idea/
