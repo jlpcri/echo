@@ -12,6 +12,7 @@ def signin(request):
         return redirect('core:form')
     elif request.method == 'POST':
         user = authenticate(username=request.POST['username'], password=request.POST['password'])
+        print user.email
         if user:
             if user.is_active:
                 login(request, user)
