@@ -6,7 +6,11 @@ from django.shortcuts import redirect, render
 
 
 def signin(request):
-    if request.method == 'POST':
+    if request.method == 'GET':
+        if request.user.is_authenticated():
+            return redirect('core:home')
+        return redirect('core:form')
+    elif request.method == 'POST':
         user = authenticate(username=request.POST['username'], password=request.POST['password'])
         if user:
             if user.is_active:
