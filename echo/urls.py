@@ -6,5 +6,5 @@ import echo.apps.core.urls as coreUrls
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    url(r'^echo/$', include(coreUrls, namespace="core")),
+    url(r'^echo/', include(coreUrls, namespace="core")),
 )

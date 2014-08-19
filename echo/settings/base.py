@@ -10,6 +10,10 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
+
+import ldap
+from django_auth_ldap.config import LDAPSearch
+
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 
@@ -26,9 +30,33 @@ TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# AUTHENTICATION
+LOGIN_URL = '/echo/'
+
+AUTHENTICATION_BACKENDS = (
+    'django.contrib.auth.backends.ModelBackend',
+    'django_auth_ldap.backend.LDAPBackend',
+)
+
+AUTH_LDAP_SERVER_URI = "ldap://10.27.116.51"
+AUTH_LDAP_BIND_DN = "cn=LDAP Query\\, Domino Server, OU=Service Accounts,DC=corp,DC=westworlds,DC=com"
+AUTH_LDAP_BIND_PASSWORD = "Qu3ryLd@p"
+AUTH_LDAP_USER_SEARCH = LDAPSearch('DC=corp,DC=westworlds,DC=com',
+    ldap.SCOPE_SUBTREE, "(samaccountname=%(user)s)")
+
+AUTH_LDAP_CACHE_GROUPS = True
+AUTH_LDAP_GROUP_CACHE_TIMEOUT = 3600
+AUTH_LDAP_CONNECTION_OPTIONS = {
+    ldap.OPT_REFERRALS: 0
+}
+
+AUTH_LDAP_USER_ATTR_MAP = {
+    'first_name': 'givenname',
+    'last_name': 'sn',
+    'email': 'mail'
+}
 
 # Application definition
-
 INSTALLED_APPS = (
     'django.contrib.admin',
     'django.contrib.auth',
@@ -36,7 +64,6 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.admin',
     'echo.apps.core',
 )
 
@@ -56,12 +83,16 @@ WSGI_APPLICATION = 'echo.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/1.6/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
+}
+
+from django.contrib.messages import constants as messages
+MESSAGE_TAGS = {
+   messages.ERROR: 'danger',
 }
 
 # Internationalization

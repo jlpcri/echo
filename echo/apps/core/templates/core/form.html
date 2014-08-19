@@ -1,0 +1,63 @@
+{% extends "core/base.html" %}
+{% block title %}Sign In{% endblock %}
+{% load staticfiles %}
+{% block headscript %}
+    <link rel="stylesheet" type="text/css" href="{% static 'core/core.css' %}"/>
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <div class="col-md-3"></div>
+        <div class="col-md-6">
+            <div class="well" id="landing-well" style="margin-top: 25px;">
+                <h3 class="text-center text-muted">
+                <span class="fa-stack fa-lg">
+                    <i class="fa fa-circle fa-stack-2x text-primary"></i>
+                    <i class="fa fa-sign-in fa-stack-1x fa-inverse"></i>
+                </span>
+                    <br><br>
+                    Sign in to&nbsp;<span class="text-primary">Echo</span>
+                </h3>
+                <hr>
+                <div>
+                    <form class="form" role="form" method="POST"
+                          action="{% url 'core:signin' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}">
+                        {% csrf_token %}
+                        <div class="input-group" style="margin-bottom: 10px;">
+                            <span class="input-group-addon"><i class="fa fa-user fa-fw"></i></span>
+                            <input type="text" class="form-control" name="username" id="username" placeholder="Username"
+                                   tabindex="1">
+                        </div>
+                        <div class="input-group">
+                            <span class="input-group-addon"><i class="fa fa-key fa-fw"></i></span>
+                            <input type="password" class="form-control" name="password" id="password"
+                                   placeholder="Password" tabindex="2">
+                        </div>
+                        <p class="help-block text-center">Please use your Active Directory credentials.</p>
+                        <hr>
+                        <div class="row">
+                        <div class="form-group col-xs-6">
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" tabindex="3" checked>&nbsp;Remember me
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group col-xs-6">
+                            <button type="submit" class="btn btn-primary btn-block" tabindex="4">Sign In</button>
+                        </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3"></div>
+    </div>
+{% endblock %}
+{% block endscript %}
+    <script type="text/javascript" src="{% static 'core/core.js' %}"></script>
+    <script type="text/javascript">
+        $(function () {
+            setHeader("{{ message }}");
+        });
+    </script>
+{% endblock %}
