@@ -1,0 +1,19 @@
+{% extends "core/base.html" %}
+{% block title %}Projects - New{% endblock %}
+{% load staticfiles %}
+{% block headscript %}
+<link rel="stylesheet" type="text/css" href="{% static 'core/core.css' %}"/>
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <h1></h1>
+    </div>
+{% endblock %}
+{% block endscript %}
+    <script type="text/javascript" src="{% static 'core/core.js' %}"></script>
+    <script type="text/javascript">
+        $(function () {
+            setHeader("{{ message }}");
+        });
+    </script>
+{% endblock %}

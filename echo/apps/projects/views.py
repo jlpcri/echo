@@ -4,7 +4,21 @@ from django.shortcuts import render
 
 
 @login_required
-def allprojects(request):
+def new(request):
     if request.method == 'GET':
-        return render(request, "projects/allprojects.html", {'message': 'Projects'})
+        return render(request, "projects/new.html", {'message': 'New Project'})
+    return HttpResponseNotFound()
+
+
+@login_required
+def project(request, pid):
+    if request.method == 'GET':
+        return render(request, "projects/project.html", {'message': 'Project ' + str(pid)})
+    return HttpResponseNotFound()
+
+
+@login_required
+def projects(request):
+    if request.method == 'GET':
+        return render(request, "projects/projects.html", {'message': 'Projects'})
     return HttpResponseNotFound()

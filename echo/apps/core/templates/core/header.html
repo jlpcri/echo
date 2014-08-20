@@ -6,8 +6,8 @@
         {% if user.is_authenticated %}
             <div class="collapse navbar-collapse">
                 <ul class="nav navbar-nav">
-                    <li><a href="{% url "projects:allprojects" %}"><i class="fa fa-list"></i>&nbsp;Projects</a></li>
-                    <li><a href="{% url "reports:allreports" %}"><i class="fa fa-bar-chart-o"></i>&nbsp;Reports</a></li>
+                    <li><a href="{% url "projects:projects" %}"><i class="fa fa-list"></i>&nbsp;Projects</a></li>
+                    <li><a href="{% url "reports:reports" %}"><i class="fa fa-bar-chart-o"></i>&nbsp;Reports</a></li>
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     <li class="dropdown">

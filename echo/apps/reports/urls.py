@@ -5,5 +5,6 @@ from echo.apps.reports import views
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    url(r'^$', views.allreports, name='allreports'),
+    url(r'^(?P<rid>\d+)$', views.report, name='report'),
+    url(r'^$', views.reports, name='reports'),
 )
