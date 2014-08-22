@@ -67,6 +67,7 @@ INSTALLED_APPS = (
     'echo.apps.core',
     'echo.apps.projects',
     'echo.apps.reports',
+    'echo.apps.settings',
 )
 
 MIDDLEWARE_CLASSES = (
@@ -94,7 +95,9 @@ DATABASES = {
 
 from django.contrib.messages import constants as messages
 MESSAGE_TAGS = {
-   messages.ERROR: 'danger',
+   0: 'default',
+   15: 'primary',
+   35: 'danger',
 }
 
 # Internationalization

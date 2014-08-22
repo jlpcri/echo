@@ -1,0 +1,91 @@
+{% extends "core/base.html" %}
+{% block title %}Settings - Servers{% endblock %}
+{% load staticfiles %}
+{% block headscript %}
+    <link rel="stylesheet" type="text/css" href="{% static 'core/core.css' %}"/>
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <h1>Settings</h1>
+            <hr>
+        </div>
+        <div class="row">
+            <ul class="nav nav-tabs" style="margin-bottom: 15px;">
+                <li class="active"><a href="{% url "settings:servers" %}">Servers</a></li>
+                <li><a href="{% url "settings:users" %}">Users</a></li>
+            </ul>
+        </div>
+        <div class="row">
+            <div id="tab_content" class="tab-content">
+                <div class="tab-pane active">
+                    <table class="table">
+                        <tr>
+                            <form method="POST" action="{% url "settings:servers" %}">
+                                {% csrf_token %}
+                                <td class="col-xs-3" style="border: none;">
+                                    {{ server_form.name }}
+                                    {% if server_form.name.errors %}
+                                        <span class="text-danger">{{ server_form.name.errors|first }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="col-xs-4" style="border: none;">
+                                    {{ server_form.address }}
+                                    {% if server_form.address.errors %}
+                                        <span class="text-danger">{{ server_form.address.errors|first }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="col-xs-4" style="border: none;">
+                                    {{ server_form.account }}
+                                    {% if server_form.account.errors %}
+                                        <span class="text-danger">{{ server_form.account.errors|first }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="col-xs-1" style="border: none;">
+                                    <button type="submit" id="add_server" name="add_server"
+                                            class="btn btn-success btn-sm">
+                                        <i class="fa fa-plus"></i>
+                                    </button>
+                                </td>
+                            </form>
+                        </tr>
+                    </table>
+                    <table class="table table-striped table-hover">
+                        <thead>
+                        <tr>
+                            <th class="col-xs-3">Server Name</th>
+                            <th class="col-xs-4">Server Address</th>
+                            <th class="col-xs-4">Service Account</th>
+                            <th class="col-xs-1"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for server in servers %}
+                            <tr>
+                                <form method="POST" action="{% url "settings:servers" %}">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="sid" value="{{ server.pk }}">
+                                    <td>{{ server.name }}</td>
+                                    <td>{{ server.address }}</td>
+                                    <td>{{ server.account }}</td>
+                                    <td>
+                                        <button type="submit" name="delete_server" class="btn btn-danger btn-xs">
+                                            <i class="fa fa-trash-o"></i>
+                                        </button>
+                                    </td>
+                                </form>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block endscript %}
+    <script type="text/javascript" src="{% static 'core/core.js' %}"></script>
+    <script type="text/javascript">
+
+    </script>
+{% endblock %}
