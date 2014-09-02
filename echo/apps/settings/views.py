@@ -40,8 +40,8 @@ def servers(request):
                 except ValidationError as e:
                     if 'name' in e.message_dict:
                         messages.danger(request, e.message_dict.get('name')[0])
-                        return render(request, "settings/servers.html",
-                                      {'servers': Server.objects.all().order_by("name"), 'server_form': form})
+                    return render(request, "settings/servers.html",
+                                  {'servers': Server.objects.all().order_by("name"), 'server_form': form})
             messages.danger(request, "Unable to add server to list")
             return render(request, "settings/servers.html",
                           {'servers': Server.objects.all().order_by("name"), 'server_form': form})

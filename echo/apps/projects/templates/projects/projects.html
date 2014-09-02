@@ -2,18 +2,32 @@
 {% block title %}Projects{% endblock %}
 {% load staticfiles %}
 {% block headscript %}
-<link rel="stylesheet" type="text/css" href="{% static 'core/core.css' %}"/>
+
 {% endblock %}
 {% block content %}
     <div class="container">
-        <h1></h1>
+        <div class="row">
+            <div class="col-xs-9">
+                <h3>Projects</h3>
+            </div>
+            <div class="col-xs-3">
+                <a href="{% url "projects:new" %}" class="btn btn-success btn-sm pull-right" style="width: 100%;">
+                    <i class="fa fa-plus"></i>&nbsp;Project
+                </a>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col-xs-12">
+                {% for project in projects %}
+                    <p><a href="{% url "projects:project" project.pk %}">{{ project.name }}</a></p>
+                {% endfor %}
+            </div>
+        </div>
     </div>
 {% endblock %}
 {% block endscript %}
-    <script type="text/javascript" src="{% static 'core/core.js' %}"></script>
     <script type="text/javascript">
-        $(function () {
-            setHeader("{{ message }}");
-        });
+
     </script>
 {% endblock %}

@@ -2,18 +2,36 @@
 {% block title %}Project{% endblock %}
 {% load staticfiles %}
 {% block headscript %}
-<link rel="stylesheet" type="text/css" href="{% static 'core/core.css' %}"/>
+
 {% endblock %}
 {% block content %}
     <div class="container">
-        <h1></h1>
+        {% if project %}
+            <div class="row">
+                <div class="col-xs-12">
+                    <h3>Project:&nbsp;{{ project.name }}</h3>
+                    <h4>Users:&nbsp;{% for user in project.users.all %}{{ project.users }},&nbsp;{% endfor %}</h4>
+                    <h4>Tests Run:&nbsp;{{ project.tests_run }}</h4>
+                    <h4>Failure Count:&nbsp;{{ project.failure_count }}</h4>
+                    <h4>Bravo Server:&nbsp;{{ project.bravo_server }}</h4>
+                    <h4>Status:&nbsp;{{ project.status }}</h4>
+                </div>
+            </div>
+        {% endif %}
+            <hr>
+        {% if vuids %}
+            <div class="row">
+                <div class="col-xs-12">
+                    {% for vuid in vuids %}
+                        <p><a href="{% url "projects:vuid" vuid.pk %}">{{ vuid.filename }} -- {{ vuid.upload_date }} -- {{ vuid.upload_by }}</a></p>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
     </div>
 {% endblock %}
 {% block endscript %}
-    <script type="text/javascript" src="{% static 'core/core.js' %}"></script>
     <script type="text/javascript">
-        $(function () {
-            setHeader("{{ message }}");
-        });
+
     </script>
 {% endblock %}

@@ -1,0 +1,28 @@
+{% extends "core/base.html" %}
+{% block title %}Projects&nbsp;-&nbsp;VUID{% endblock %}
+{% load staticfiles %}
+{% block headscript %}
+    
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <h3>{{ vuid.filename }} -- {{ vuid.upload_date }} -- {{ vuid.upload_by }}</h3>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col-xs-12">
+{#                {% for project in projects %}#}
+{#                    <p><a href="{% url "projects:project" project.pk %}">{{ project.name }}</a></p>#}
+{#                {% endfor %}#}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block endscript %}
+    <script type="text/javascript">
+
+    </script>
+{% endblock %}
