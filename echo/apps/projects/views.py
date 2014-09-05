@@ -1,6 +1,4 @@
-import json
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import redirect, render
@@ -52,12 +50,9 @@ def project(request, pid):
                       {'project': p, 'vuids': VUID.objects.filter(project=p), 'upload_form': UploadForm()})
     elif request.method == 'POST':
         if "upload_file" in request.POST:
-            print "check 1"
             form = UploadForm(request.POST, request.FILES)
-            print "check 2"
             p = Project.objects.get(pk=pid)
             if form.is_valid():
-                print "check 3"
                 if 'file' in request.FILES and request.FILES['file'].name.endswith('.xlsx'):
                     result = helpers.upload_vuid(form.cleaned_data['file'], request.user, p)
                     if result['valid']:
