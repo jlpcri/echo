@@ -43,8 +43,8 @@
                                 </td>
                                 <td class="col-xs-1" style="border: none;">
                                     <button type="submit" id="add_server" name="add_server"
-                                            class="btn btn-success btn-sm">
-                                        <i class="fa fa-plus"></i>
+                                            class="btn btn-success btn-sm" style="width: 100%;">
+                                        <i class="fa fa-plus"></i>&nbsp;Server
                                     </button>
                                 </td>
                             </form>
@@ -69,9 +69,11 @@
                                     <td>{{ server.address }}</td>
                                     <td>{{ server.account }}</td>
                                     <td>
-                                        <button type="submit" name="delete_server" class="btn btn-danger btn-xs">
-                                            <i class="fa fa-trash-o"></i>
-                                        </button>
+                                        <div class="pull-right">
+                                            <button type="submit" name="delete_server" class="btn btn-danger btn-xs">
+                                                <i class="fa fa-trash-o"></i>
+                                            </button>
+                                        </div>
                                     </td>
                                 </form>
                             </tr>

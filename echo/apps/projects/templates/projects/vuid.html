@@ -2,7 +2,7 @@
 {% block title %}Projects&nbsp;-&nbsp;VUID{% endblock %}
 {% load staticfiles %}
 {% block headscript %}
-    
+
 {% endblock %}
 {% block content %}
     <div class="container">
@@ -14,9 +14,25 @@
         <hr>
         <div class="row">
             <div class="col-xs-12">
-{#                {% for project in projects %}#}
-{#                    <p><a href="{% url "projects:project" project.pk %}">{{ project.name }}</a></p>#}
-{#                {% endfor %}#}
+                <p>{{ path }}</p>
+                <table class="table table-striped table-hover">
+                    <thead>
+                    <tr>
+                        {% for header in headers %}
+                            <th class="col-xs-2">{{ header }}</th>
+                        {% endfor %}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for record in records %}
+                        <tr>
+                            {% for i in record %}
+                                <td>{{ i.value }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>

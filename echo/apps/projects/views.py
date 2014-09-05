@@ -23,11 +23,17 @@ def new(request):
                 try:
                     p.full_clean()
                     p.save()
+                    p.users.add(request.user)
+                    p.save()
                     messages.success(request, "Created project")
                     if 'file' in request.FILES and request.FILES['file'].name.endswith('.xlsx'):
-                        helpers.upload_VUID(form.cleaned_data['file'], request.user, p)
+                        result = helpers.upload_vuid(form.cleaned_data['file'], request.user, p)
+                        if result['valid']:
+                            messages.success(request, result["message"])
+                        else:
+                            messages.danger(request, result['message'])
                     elif 'file' in request.FILES:
-                        messages.danger(request, "Invalid file type, must be .xlsx")
+                        messages.danger(request, "Invalid file type, unable to upload (must be .xlsx)")
                     return redirect("projects:project", pid=p.pk)
                 except ValidationError as e:
                     if 'name' in e.message_dict:
@@ -56,5 +62,5 @@ def projects(request):
 @login_required
 def vuid(request, vid):
     if request.method == 'GET':
-        return render(request, "projects/vuid.html", {'vuid': VUID.objects.get(pk=vid)})
+        return render(request, "projects/vuid.html", helpers.get_vuid_context(VUID.objects.get(pk=vid)))
     return HttpResponseNotFound()
