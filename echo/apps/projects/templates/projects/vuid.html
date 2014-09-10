@@ -1,0 +1,44 @@
+{% extends "core/base.html" %}
+{% block title %}Projects&nbsp;-&nbsp;VUID{% endblock %}
+{% load staticfiles %}
+{% block headscript %}
+
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <h3>{{ vuid.filename }} -- {{ vuid.upload_date }} -- {{ vuid.upload_by }}</h3>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col-xs-12">
+                <p>{{ path }}</p>
+                <table class="table table-striped table-hover">
+                    <thead>
+                    <tr>
+                        {% for header in headers %}
+                            <th class="col-xs-2">{{ header }}</th>
+                        {% endfor %}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for record in records %}
+                        <tr>
+                            {% for i in record %}
+                                <td>{{ i.value }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block endscript %}
+    <script type="text/javascript">
+
+    </script>
+{% endblock %}

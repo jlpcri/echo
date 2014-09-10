@@ -1,8 +1,13 @@
+import time
 from django.db import models
 from django.contrib.auth import get_user_model
 
 
 User = get_user_model()
+
+
+def change_filename(instance, filename):
+    return '/'.join(['voiceslots', "{0}_{1}".format(str(time.time()), filename)])
 
 
 class Project(models.Model):
@@ -48,7 +53,7 @@ class VUID(models.Model):
     project = models.ForeignKey('Project')
     filename = models.TextField()
     upload_date = models.DateTimeField(auto_now_add=True)
-    file = models.FileField(upload_to='/voiceslots')
+    file = models.FileField(upload_to=change_filename)
     upload_by = models.ForeignKey(User)
 
 

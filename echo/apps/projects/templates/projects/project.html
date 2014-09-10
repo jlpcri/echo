@@ -2,18 +2,60 @@
 {% block title %}Project{% endblock %}
 {% load staticfiles %}
 {% block headscript %}
-<link rel="stylesheet" type="text/css" href="{% static 'core/core.css' %}"/>
+
 {% endblock %}
 {% block content %}
     <div class="container">
-        <h1></h1>
+        {% if project %}
+            <div class="row">
+                <div class="col-xs-6">
+                    <h3>Project:&nbsp;{{ project.name }}</h3>
+                    <h4>Users:&nbsp;{% for user in project.users.all %}{{ user }},&nbsp;{% endfor %}</h4>
+                    <h4>Tests Run:&nbsp;{{ project.tests_run }}</h4>
+                    <h4>Failure Count:&nbsp;{{ project.failure_count }}</h4>
+                    <h4>Bravo Server:&nbsp;{{ project.bravo_server }}</h4>
+                    <h4>Status:&nbsp;{{ project.status }}</h4>
+                </div>
+                <div class="col-xs-6">
+                    <form action="{% url 'projects:project' project.pk %}" method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label class="control-label">Upload .xlsx File</label>
+
+                            <div class="input-group">
+                            <span class="input-group-btn">
+                                <span class="btn btn-default btn-file">
+                                    Browse&hellip;{{ upload_form.file }}
+                                </span>
+                            </span>
+                                <input type="text" id="filenames" class="form-control" readonly>
+                            <span class="input-group-btn">
+                                <button type="submit" name="upload_file" class="btn btn-primary">
+                                    <i class="fa fa-upload"></i>&nbsp;Upload
+                                </button>
+                            </span>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+        <hr>
+        <div class="row">
+            <div class="col-xs-6">
+
+            </div>
+            <div class="col-xs-6">
+                {% for vuid in vuids %}
+                    <p><a href="{% url "projects:vuid" vuid.pk %}">{{ vuid.filename }} -- {{ vuid.upload_date }}
+                        -- {{ vuid.upload_by }}</a></p>
+                {% endfor %}
+            </div>
+        </div>
     </div>
 {% endblock %}
 {% block endscript %}
-    <script type="text/javascript" src="{% static 'core/core.js' %}"></script>
     <script type="text/javascript">
-        $(function () {
-            setHeader("{{ message }}");
-        });
+
     </script>
 {% endblock %}

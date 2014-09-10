@@ -29,7 +29,7 @@
 </head>
 <body>
 {% include 'core/header.html' %}
-<div id="content">
+<div id="wrapper">
     {% if messages %}
         <div class="container">
             {% for message in messages %}
@@ -40,7 +40,9 @@
             {% endfor %}
         </div>
     {% endif %}
+    <div id="content">
     {% block content %}{% endblock %}
+    </div>
     <div class="push"></div>
 </div>
 {% include 'core/footer.html' %}
