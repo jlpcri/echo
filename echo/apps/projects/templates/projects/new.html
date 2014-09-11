@@ -22,15 +22,13 @@
                     <div class="form-group">
                         <label for="name">Project Name (required)</label>
                         {{ project_form.name }}
-{#                        <input id="name" class="form-control" name="name" placeholder="New Project">#}
                     </div>
                     <div class="form-group">
                         <label class="control-label">Upload .xlsx File (optional, can upload later)</label>
                         <div class="input-group">
                             <span class="input-group-btn">
                                 <span class="btn btn-default btn-file">
-                                    Browse&hellip;{{ project_form.file }}
-{#                                    Browse&hellip;<input type="file" id="fileupload" name="upload" multiple>#}
+                                    <i class="fa fa-upload fa-fw"></i>{{ project_form.file }}
                                 </span>
                             </span>
                             <input type="text" id="filenames" class="form-control" readonly>

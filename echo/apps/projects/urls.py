@@ -8,5 +8,7 @@ urlpatterns = patterns('',
     url(r'^new/$', views.new, name='new'),
     url(r'^(?P<pid>\d+)$', views.project, name='project'),
     url(r'^$', views.projects, name='projects'),
-    url(r'^vuid/(?P<vid>\d+)$', views.vuid, name='vuid'),
+    url(r'^(?P<pid>\d+)/vuid/(?P<vid>\d+)$', views.vuid, name='vuid'),
+    url(r'^(?P<pid>\d+)/voiceslots/master$', views.master, name='master'),
+    url(r'^(?P<pid>\d+)/voiceslots/language/(?P<lid>\d+)$', views.language, name='language'),
 )

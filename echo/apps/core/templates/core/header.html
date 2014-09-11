@@ -16,9 +16,9 @@
                     <li class="dropdown">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                             {% if user.first_name %}
-                                <i class="fa fa-user fa-fw"></i>&nbsp;Welcome,&nbsp;{{ user.first_name }}&nbsp;<i class="fa fa-caret-down"></i>
+                                <i class="fa fa-user fa-fw"></i>&nbsp;Welcome,&nbsp;{{ user.first_name }}&nbsp;<i class="fa fa-caret-down fa-fw"></i>
                             {% else %}
-                                <i class="fa fa-user fa-fw"></i>&nbsp;Welcome,&nbsp;{{ user.username }}&nbsp;<i class="fa fa-caret-down"></i>
+                                <i class="fa fa-user fa-fw"></i>&nbsp;Welcome,&nbsp;{{ user.username }}&nbsp;<i class="fa fa-caret-down fa-fw"></i>
                             {% endif %}
                         </a>
                         <ul class="dropdown-menu navbar-dropdown-menu">

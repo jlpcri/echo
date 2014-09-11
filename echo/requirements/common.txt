@@ -1,5 +1,9 @@
 Django==1.6.5
 django-auth-ldap==1.2.0
+ecdsa==0.11
 jdcal==1.0
 openpyxl==2.0.5
+paramiko==1.14.1
+pycrypto==2.6.1
+pysftp==0.2.8
 python-ldap==2.4.15
