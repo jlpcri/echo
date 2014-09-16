@@ -7,6 +7,8 @@ from echo.apps.core import messages
 from forms import ServerForm
 from models import Server
 
+import pysftp
+
 
 def user_is_superuser(user):
     return user.is_superuser
@@ -55,6 +57,13 @@ def servers(request):
             messages.danger(request, "Unable to delete server")
             return render(request, "settings/servers.html",
                           {'servers': Server.objects.all().order_by("name"), 'server_form': ServerForm()})
+        elif "test_connection" in request.POST:
+            sid = request.POST.get('sid', "")
+            if sid:
+                server = get_object_or_404(Server, pk=sid)
+                # try connection
+                messages.success(request, "Connecting to server \"{0}\" is online".format(server.name))
+                return redirect("settings:servers")
     return HttpResponseNotFound()
 
 
