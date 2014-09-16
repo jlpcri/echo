@@ -17,13 +17,33 @@
             </div>
         </div>
         <hr>
-        <div class="row">
-            <div class="col-xs-12">
-                {% for project in projects %}
-                    <p><a href="{% url "projects:project" project.pk %}">{{ project.name }}</a></p>
-                {% endfor %}
+        {% for project in projects %}
+            <div class="row">
+                <div class="col-xs-9">
+                    <h4><a href="{% url "projects:project" project.pk %}">{{ project.name }}</a></h4>
+                </div>
+                <div class="col-xs-3">
+                    <div class="pull-right">
+                        <i class="fa fa-file-text fa-fw"></i>&nbsp;Reports
+                        <i class="fa fa-users fa-fw"></i>&nbsp;{{ project.users_total }}
+                    </div>
+                </div>
             </div>
-        </div>
+            <div class="row">
+                <div class="col-xs-12">
+                    <div style="display: inline-block; width:3%;vertical-align:top;text-align: right;">{{ project.slots_tested }}</div>
+                    <div class="progress" style="display: inline-block; width:92%;vertical-align:top;">
+                        <div class="progress-bar progress-bar-success"
+                             style="width: 35%">{{ project.slots_passed }}</div>
+                        <div class="progress-bar progress-bar-warning"
+                             style="width: 20%">{{ project.slots_failed }}</div>
+                        <div class="progress-bar progress-bar-danger"
+                             style="width: 10%">{{ project.slots_missing }}</div>
+                    </div>
+                    <div style="display: inline-block; width:3%;vertical-align:top;text-align: left;">{{ project.slots_total }}</div>
+                </div>
+            </div>
+        {% endfor %}
     </div>
 {% endblock %}
 {% block endscript %}

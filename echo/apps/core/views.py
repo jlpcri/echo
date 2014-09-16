@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseNotFound
 from django.shortcuts import redirect, render
+from echo.apps.projects import helpers
 
 
 def signin(request):
@@ -37,7 +38,7 @@ def signout(request):
 @login_required
 def home(request):
     if request.method == 'GET':
-        return render(request, "core/home.html", {'message': 'Home'})
+        return render(request, "core/home.html", helpers.get_home_context(request.user))
     return HttpResponseNotFound()
 
 

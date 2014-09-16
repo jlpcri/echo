@@ -1,4 +1,4 @@
-from models import Language, VoiceSlot, VUID
+from models import Language, Project, VoiceSlot, VUID
 from openpyxl import load_workbook
 
 
@@ -18,6 +18,12 @@ VUID_HEADER_NAME_SET = {
     STATE_NAME,
     DATE_CHANGED
 }
+
+
+def get_home_context(user):
+    return {
+        'projects': Project.objects.filter(users__pk=user.pk)
+    }
 
 
 def get_language_context(language):

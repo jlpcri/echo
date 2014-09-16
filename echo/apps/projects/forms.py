@@ -1,4 +1,5 @@
 from django import forms
+from echo.apps.settings.models import Server
 
 
 class ProjectForm(forms.Form):
@@ -9,3 +10,8 @@ class ProjectForm(forms.Form):
 
 class UploadForm(forms.Form):
     file = forms.FileField(max_length=100, required=True)
+
+
+class ServerForm(forms.Form):
+    server = forms.ModelChoiceField(required=True, queryset=Server.objects.all(), to_field_name='name',
+                               widget=forms.Select(attrs={'class': 'form-control'}))

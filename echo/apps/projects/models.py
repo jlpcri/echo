@@ -2,6 +2,7 @@ import datetime
 import time
 from django.db import models
 from django.contrib.auth import get_user_model
+from echo.apps.settings.models import Server
 
 
 User = get_user_model()
@@ -26,18 +27,32 @@ class Project(models.Model):
     bravo_server = models.TextField(choices=BRAVO_SERVER_CHOICES, default=BRAVO1137)
     status = models.TextField(choices=PROJECT_STATUS_CHOICES, default=TESTING)
 
-    def voiceslots(self):
-        slots = []
-        for l in Language.objects.filter(project=self):
-            slots.extend(l.voiceslots())
-        return slots
+    def slots_failed(self):
+        return self.voiceslots().filter(status=VoiceSlot.FAIL).count()
+
+    def slots_missing(self):
+        return self.voiceslots().filter(status=VoiceSlot.MISSING).count()
+
+    def slots_passed(self):
+        return self.voiceslots().filter(status=VoiceSlot.PASS).count()
+
+    def slots_tested(self):
+        return self.voiceslots().filter(status__in=(VoiceSlot.PASS, VoiceSlot.FAIL)).count()
+
+    def slots_total(self):
+        return self.voiceslots().count()
+
+    def usernames(self):
+        return [u.username for u in self.users.all()]
+
+    def users_total(self):
+        return self.users.count()
 
     def voiceslot_count(self):
-        languages = Language.objects.filter(project=self)
-        count = 0
-        for language in languages:
-            count += language.voiceslot_count()
-        return count
+        return VoiceSlot.objects.filter(language__project=self).count()
+
+    def voiceslots(self):
+        return VoiceSlot.objects.filter(language__project=self)
 
 
 class VoiceSlot(models.Model):
@@ -105,8 +120,8 @@ class Language(models.Model):
     project = models.ForeignKey('Project')
     name = models.TextField()
 
+    def voiceslot_count(self):
+        return VoiceSlot.objects.filter(language=self).count()
+
     def voiceslots(self):
         return VoiceSlot.objects.filter(language=self)
-
-    def voiceslot_count(self):
-        return len(VoiceSlot.objects.filter(language=self))

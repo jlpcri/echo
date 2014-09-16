@@ -4,9 +4,33 @@ from django.core.exceptions import ValidationError
 from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
 from echo.apps.core import messages
-from forms import ProjectForm, UploadForm
+from forms import ProjectForm, ServerForm, UploadForm
 import helpers
 from models import Language, Project, VoiceSlot, VUID
+
+
+@login_required
+def join_project(request, pid):
+    if request.method == 'GET':
+        if pid:
+            project = get_object_or_404(Project, pk=pid)
+        project.users.add(request.user)
+        project.save()
+        messages.info(request, "You joined the project!")
+        return redirect("projects:project", pid=pid)
+    return HttpResponseNotFound()
+
+
+@login_required
+def leave_project(request, pid):
+    if request.method == 'GET':
+        if pid:
+            project = get_object_or_404(Project, pk=pid)
+        project.users.remove(request.user)
+        project.save()
+        messages.info(request, "You left the project")
+        return redirect("projects:project", pid=pid)
+    return HttpResponseNotFound()
 
 
 @login_required
@@ -112,8 +136,10 @@ def project(request, pid):
         languages = Language.objects.filter(project=p)
         vuids = VUID.objects.filter(project=p)
         return render(request, "projects/project.html",
-                      {'project': p, 'languages': languages, 'vuids': vuids, 'upload_form': UploadForm()})
+                      {'project': p, 'languages': languages, 'vuids': vuids, 'upload_form': UploadForm(), 'server_form': ServerForm()})
     elif request.method == 'POST':
+        if "update_server" in request.POST:
+            pass
         if "upload_file" in request.POST:
             form = UploadForm(request.POST, request.FILES)
             p = Project.objects.get(pk=pid)
