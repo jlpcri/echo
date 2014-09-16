@@ -7,8 +7,8 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
-def change_filename(instance, filename):
-    return '/'.join(['voiceslots', "{0}_{1}".format(str(time.time()), filename)])
+def vuid_location(instance, filename):
+    return '/'.join(["vuids", "{0}_{1}".format(str(time.time()), filename)])
 
 
 class Project(models.Model):
@@ -62,20 +62,26 @@ class VoiceSlot(models.Model):
     vuid_time = models.DateField(blank=True, null=True)
     check_in_time = models.DateTimeField(blank=True, null=True)
 
-    def check_in(self, user):
+    def check_in(self, user, forced=False):
         if self.checked_out is True:
             self.checked_out = False
             self.check_in_time = datetime.datetime.now()
             self.user = user
-            self.history = "Checked in by {0} at {1}\n".format(self.user, self.check_in_time.strftime("%b %d %Y, %H:%M")) + self.history
+            if forced:
+                self.history = u"Forced check in by {0} at {1}\n".format(self.user, self.check_in_time.strftime("%b %d %Y, %H:%M")) + self.history
+            else:
+                self.history = u"Checked in by {0} at {1}\n".format(self.user, self.check_in_time.strftime("%b %d %Y, %H:%M")) + self.history
             self.save()
 
-    def check_out(self, user):
+    def check_out(self, user, forced=False):
         if self.checked_out is False:
             self.checked_out = True
             self.checked_out_time = datetime.datetime.now()
             self.user = user
-            self.history = "Checked out by {0} at {1}\n".format(self.user, self.checked_out_time.strftime("%b %d %Y, %H:%M")) + self.history
+            if forced:
+                self.history = u"Forced check out by {0} at {1}\n".format(self.user, self.checked_out_time.strftime("%b %d %Y, %H:%M")) + self.history
+            else:
+                self.history = u"Checked out by {0} at {1}\n".format(self.user, self.checked_out_time.strftime("%b %d %Y, %H:%M")) + self.history
             self.save()
 
     def filepath(self):
@@ -90,7 +96,7 @@ class VUID(models.Model):
     project = models.ForeignKey('Project')
     filename = models.TextField()
     upload_date = models.DateTimeField(auto_now_add=True)
-    file = models.FileField(upload_to=change_filename)
+    file = models.FileField(upload_to=vuid_location)
     upload_by = models.ForeignKey(User)
 
 

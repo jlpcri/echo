@@ -1,0 +1,81 @@
+{% extends "core/base.html" %}
+{% block title %}Projects&nbsp;-&nbsp;{{ project.name }}&nbsp;-&nbsp;Test Voice Slot{% endblock %}
+{% load staticfiles %}
+{% block headscript %}
+
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <h3>{{ project.name }}&nbsp;-&nbsp;<i>({{ slot.language.name }})</i></h3>
+            </div>
+        </div>
+        <hr>
+        <form action="{% url "projects:submitslot" project.pk slot.pk %}" method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-xs-6">
+                    <h3>{{ slot.name }}</h3>
+                </div>
+                <div class="col-xs-4">
+                    {#                    {% for file in files %}#}
+                    <div class="audio-holder">
+                        <!--[if gte IE 10]> -->
+                        <audio controls src="voiceslots/back_in_business.wav" type="audio/wav"
+                               style="width:100%;">
+                            IE support pending. Please use Firefox or Chrome.
+                        </audio>
+                        <![endif]-->
+                        <!--[if IE]>
+                    <embed src="/voiceslots/back_in_business.wav"
+                    <!--<![endif]-->
+                        {#                    {% endfor %}#}
+                    </div>
+                </div>
+                <div class="col-xs-2">
+                    <div class="form-group pull-right">
+                        <input type="checkbox" name="test_result" data-animate="false" data-size="large"
+                               data-on-color="success" data-off-color="danger" data-on-text="Pass" data-off-text="Fail"
+                               checked>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-6">
+                    <label for="verbiage">Verbiage</label>
+
+                    <p id="verbiage" style="text-align: justify; font-size: larger;">{{ slot.verbiage }}</p>
+                </div>
+                <div class="col-xs-6">
+                    <div class="form-group">
+                        <label class="control-label" for="notes">Notes</label>
+                        <textarea class="form-control" rows="5" name="notes"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-6">
+                    <label for="history">History</label>
+
+                    <div id="history">
+                        {% for history in slot.history_list %}
+                            <p>{{ history }}</p>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="col-xs-3">
+                    <button type="submit" name="submit_test" class="btn btn-primary" style="width: 100%;">Submit</button>
+                </div>
+                <div class="col-xs-3">
+                    <button type="submit" name="cancel_test" class="btn btn-default" style="width: 100%;">Cancel</button>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}
+{% block endscript %}
+    <script type="text/javascript">
+        $("[name='test_result']").bootstrapSwitch();
+    </script>
+{% endblock %}

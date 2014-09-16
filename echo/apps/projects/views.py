@@ -1,3 +1,4 @@
+import datetime
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.http import HttpResponseNotFound
@@ -17,17 +18,25 @@ def language(request, pid, lid):
             vsid = request.POST.get('vsid', "")
             if vsid:
                 slot = get_object_or_404(VoiceSlot, pk=vsid)
+                is_checkedout = request.POST.get('is_checkedout', False)
+                if is_checkedout == slot.checked_out:
+                    messages.info(request, "Nothing to update for slot \"{0}\"".format(slot.name))
+                    return redirect("projects:language", pid=pid, lid=lid)
                 if request.POST.get('is_checkedout', False):
-                    slot.check_out(request.user)
+                    slot.check_out(request.user, forced=True)
                 else:
-                    slot.check_in(request.user)
+                    slot.check_in(request.user, forced=True)
                 messages.success(request, "Updated voice slot \"{0}\"".format(slot.name))
                 return redirect("projects:language", pid=pid, lid=lid)
             messages.danger(request, "Unable to update voice slot")
             return render(request, "projects/language.html",  helpers.get_language_context(Language.objects.get(pk=lid)))
         elif "retest_slot" in request.POST:
-            messages.success(request, "Retest slot")
-            return redirect("projects:language", pid=pid, lid=lid)
+            vsid = request.POST.get('vsid', "")
+            if vsid:
+                slot = get_object_or_404(VoiceSlot, pk=vsid)
+                return redirect("projects:testslot", pid, vsid)
+            messages.danger(request, "Unable to find voice slot")
+            return redirect("projects:master", pid=pid)
     return HttpResponseNotFound()
 
 
@@ -40,16 +49,24 @@ def master(request, pid):
             vsid = request.POST.get('vsid', "")
             if vsid:
                 slot = get_object_or_404(VoiceSlot, pk=vsid)
+                is_checkedout = request.POST.get('is_checkedout', False)
+                if is_checkedout == slot.checked_out:
+                    messages.info(request, "Nothing to update for slot \"{0}\"".format(slot.name))
+                    return redirect("projects:master", pid=pid)
                 if request.POST.get('is_checkedout', False):
-                    slot.check_out(request.user)
+                    slot.check_out(request.user, forced=True)
                 else:
-                    slot.check_in(request.user)
+                    slot.check_in(request.user, forced=True)
                 messages.success(request, "Updated voice slot \"{0}\"".format(slot.name))
                 return redirect("projects:master", pid=pid)
             messages.danger(request, "Unable to update voice slot")
             return render(request, "projects/master.html",  helpers.get_master_context(Language.objects.get(pk=pid)))
         elif "retest_slot" in request.POST:
-            messages.success(request, "Retest slot")
+            vsid = request.POST.get('vsid', "")
+            if vsid:
+                slot = get_object_or_404(VoiceSlot, pk=vsid)
+                return redirect("projects:testslot", pid, vsid)
+            messages.danger(request, "Unable to find voice slot")
             return redirect("projects:master", pid=pid)
     return HttpResponseNotFound()
 
@@ -121,6 +138,51 @@ def project(request, pid):
 def projects(request):
     if request.method == 'GET':
         return render(request, "projects/projects.html", {'projects': Project.objects.all()})
+    return HttpResponseNotFound()
+
+
+@login_required
+def submitslot(request, pid, vsid):
+    if request.method == 'POST':
+        if "submit_test" in request.POST:
+            if pid:
+                project = get_object_or_404(Project, pk=pid)
+            if vsid:
+                slot = get_object_or_404(VoiceSlot, pk=vsid)
+            test_result = request.POST.get('test_result', False)
+            if test_result:
+                slot.status = VoiceSlot.PASS
+                slot.history = u"{0}: Test passed at {1}.\n{2}\n".format(request.user.username, datetime.datetime.now(), request.POST['notes']) + slot.history
+            else:
+                if not request.POST.get('notes', False):
+                    messages.danger(request, "Please provide notes on test failure")
+                    return redirect("projects:testslot", pid=pid, vsid=vsid)
+                slot.status = VoiceSlot.FAIL
+                slot.history = u"{0}: Test failed at {1}.\n{2}\n".format(request.user.username, datetime.datetime.now(), request.POST['notes']) + slot.history
+                project.failure_count += 1
+            slot.check_in(request.user)
+            slot.save()
+            project.tests_run += 1
+            project.save()
+            messages.success(request, "Tested voice slot \"{0}\"".format(slot.name))
+            return redirect("projects:project", pid=pid)
+        elif "cancel_test" in request.POST:
+            if vsid:
+                slot = get_object_or_404(VoiceSlot, pk=vsid)
+            slot.check_in(request.user)
+            return redirect("projects:project", pid=pid)
+    return HttpResponseNotFound()
+
+
+@login_required
+def testslot(request, pid, vsid):
+    if request.method == 'GET':
+        if pid:
+            project = get_object_or_404(Project, pk=pid)
+        if vsid:
+            slot = get_object_or_404(VoiceSlot, pk=vsid)
+        slot.check_out(request.user)
+        return render(request, "projects/testslot.html", helpers.get_testslot_context(project, slot))
     return HttpResponseNotFound()
 
 

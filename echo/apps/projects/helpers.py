@@ -34,6 +34,13 @@ def get_master_context(project):
     }
 
 
+def get_testslot_context(project, slot):
+    return {
+        'project': project,
+        'slot': slot
+    }
+
+
 def get_vuid_context(vuid):
     wb = load_workbook(vuid.file.url)
     ws = wb.active
