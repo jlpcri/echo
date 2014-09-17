@@ -1,4 +1,4 @@
-from models import Language, VoiceSlot, VUID
+from models import Language, Project, VoiceSlot, VUID
 from openpyxl import load_workbook
 
 
@@ -20,6 +20,12 @@ VUID_HEADER_NAME_SET = {
 }
 
 
+def get_home_context(user):
+    return {
+        'projects': Project.objects.filter(users__pk=user.pk)
+    }
+
+
 def get_language_context(language):
     return {
         'language': language,
@@ -31,6 +37,13 @@ def get_master_context(project):
     return {
         'project': project,
         'slots': project.voiceslots()
+    }
+
+
+def get_testslot_context(project, slot):
+    return {
+        'project': project,
+        'slot': slot
     }
 
 
