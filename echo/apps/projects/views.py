@@ -153,6 +153,7 @@ def project(request, pid):
         if "update_server" in request.POST:
             form = ServerForm(request.POST)
             p = get_object_or_404(Project, pk=pid)
+            languages = Language.objects.filter(project=p)
             if form.is_valid():
                 sid = int(form.cleaned_data['server'])
                 if sid == 0:
@@ -172,6 +173,7 @@ def project(request, pid):
             return render(request, "projects/project.html",
                           {
                               'project': p,
+                              'languages': languages,
                               'vuids': VUID.objects.filter(project=p),
                               'upload_form': UploadForm(),
                               'server_form': form
@@ -179,6 +181,7 @@ def project(request, pid):
         if "upload_file" in request.POST:
             form = UploadForm(request.POST, request.FILES)
             p = get_object_or_404(Project, pk=pid)
+            languages = Language.objects.filter(project=p)
             if p.bravo_server:
                 server_form = ServerForm(initial={'server': p.bravo_server.pk})
             else:
@@ -197,6 +200,7 @@ def project(request, pid):
             return render(request, "projects/project.html",
                           {
                               'project': p,
+                              'languages': languages,
                               'vuids': VUID.objects.filter(project=p),
                               'upload_form': form,
                               'server_form': server_form

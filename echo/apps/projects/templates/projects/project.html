@@ -9,7 +9,7 @@
         {% if project %}
             <div class="row">
                 <div class="col-xs-9">
-                    <h3>{{ project.name }}</h3>
+                    <h3>{{ project.name }}&nbsp;<i><small>{{ project.status }}</small></i></h3>
                 </div>
                 <div class="col-xs-3">
                     {% if user.username not in project.usernames %}
@@ -40,18 +40,6 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-xs-3">
-                <h4>Total Tests:&nbsp;{{ project.tests_run }}</h4>
-            </div>
-            <div class="col-xs-3">
-                <h4>Total Failures:&nbsp;{{ project.failure_count }}</h4>
-            </div>
-            <div class="col-xs-6">
-                <div class="pull-right"><h4>Status:&nbsp;{{ project.status }}</h4></div>
-            </div>
-        </div>
-        <br>
-        <div class="row">
             <div class="col-xs-5">
                 {% if languages %}
                     <label class="control-label" for="language_list">Prompts by Language</label>
@@ -67,8 +55,8 @@
                             </li>
                         {% endfor %}
                     </ul>
-                {% endif %}
                 <br>
+                {% endif %}
                 {% if project.users %}
                 <label class="control-label" for="tester_list">Testers</label>
                 <ul id="tester_list" class="list-group">
@@ -103,7 +91,7 @@
                         <div class="input-group">
                             <span class="input-group-btn">
                                 <span class="btn btn-default btn-file">
-                                    <i class="fa fa-upload fa-fw"></i>{{ upload_form.file }}
+                                    <i class="fa fa-folder-open fa-fw"></i>{{ upload_form.file }}
                                 </span>
                             </span>
                             <input type="text" id="filenames" class="form-control" readonly>
