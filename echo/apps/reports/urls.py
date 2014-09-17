@@ -5,6 +5,7 @@ from echo.apps.reports import views
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    url(r'^(?P<rid>\d+)$', views.report, name='report'),
     url(r'^$', views.reports, name='reports'),
+    url(r'^failed/(?P<pid>\d+)$', views.failed, name='failed'),
+    url(r'^missing/(?P<pid>\d+)$', views.missing, name='missing'),
 )

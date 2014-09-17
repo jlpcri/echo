@@ -1,0 +1,54 @@
+{% extends "core/base.html" %}
+{% block title %}Report{% endblock %}
+{% load staticfiles %}
+{% block headscript %}
+    <link rel="stylesheet" type="text/css" href="{% static 'core/core.css' %}"/>
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-9">
+                <h3>Failed Report&nbsp;-&nbsp;{{ project.name }}</h3>
+            </div>
+            <div class="col-xs-3">
+                <a href="#" class="btn btn-info btn-sm pull-right" style="width: 100%;">
+                    <i class="fa fa-download fa-fw"></i>&nbsp;Report
+                </a>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col-xs-12">
+                {% if project %}
+                    <table class="table table-striped table-hover">
+                        <thead>
+                        <tr>
+                            <th class="col-xs-4">Prompt Name</th>
+                            <th class="col-xs-4">Verbiage</th>
+                            <th class="col-xs-4">History</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for slot in project.voiceslots_failed %}
+                            <tr>
+                                <td>
+                                    <span class="text-info"><b>{{ slot.name }}</b></span><br>
+                                    <span class="text-default">Path:&nbsp;{{ slot.path }}</span><br>
+                                    <span class="text-default">Lang:&nbsp;{{ slot.language.name }}</span>
+                                </td>
+                                <td class="text-justify">{{ slot.verbiage }}</td>
+                                <td class="text-justify">{% for line in slot.history_list %}{{ line }}<br>{% endfor %}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block endscript %}
+    <script type="text/javascript" src="{% static 'core/core.js' %}"></script>
+    <script type="text/javascript">
+    </script>
+{% endblock %}

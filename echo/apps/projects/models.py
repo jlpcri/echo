@@ -66,7 +66,7 @@ class Project(models.Model):
         return self.voiceslots().count()
 
     def slots_untested_percent(self):
-        return 100 - self.slots_tested
+        return 100 - self.slots_tested()
 
     def usernames(self):
         return [u.username for u in self.users.all()]
@@ -77,8 +77,19 @@ class Project(models.Model):
     def voiceslot_count(self):
         return VoiceSlot.objects.filter(language__project=self).count()
 
-    def voiceslots(self):
-        return VoiceSlot.objects.filter(language__project=self)
+    def voiceslots(self, filter_status=None):
+        vs = VoiceSlot.objects.filter(language__project=self)
+        if filter_status == VoiceSlot.FAIL:
+            vs = vs.filter(status__in=(VoiceSlot.FAIL, VoiceSlot.MISSING))
+        if filter_status == VoiceSlot.MISSING:
+            vs = vs.filter(status=VoiceSlot.MISSING)
+        return vs
+
+    def voiceslots_failed(self):
+        return self.voiceslots(filter_status=VoiceSlot.FAIL)
+
+    def voiceslots_missing(self):
+        return self.voiceslots(filter_status=VoiceSlot.MISSING)
 
 
 class VoiceSlot(models.Model):
