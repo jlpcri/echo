@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
 from echo.apps.core import messages
+from echo.apps.settings.models import Server
 from forms import ProjectForm, ServerForm, UploadForm
 import helpers
 from models import Language, Project, VoiceSlot, VUID
@@ -53,7 +54,7 @@ def language(request, pid, lid):
                 messages.success(request, "Updated voice slot \"{0}\"".format(slot.name))
                 return redirect("projects:language", pid=pid, lid=lid)
             messages.danger(request, "Unable to update voice slot")
-            return render(request, "projects/language.html",  helpers.get_language_context(Language.objects.get(pk=lid)))
+            return render(request, "projects/language.html", helpers.get_language_context(Language.objects.get(pk=lid)))
         elif "retest_slot" in request.POST:
             vsid = request.POST.get('vsid', "")
             if vsid:
@@ -84,7 +85,7 @@ def master(request, pid):
                 messages.success(request, "Updated voice slot \"{0}\"".format(slot.name))
                 return redirect("projects:master", pid=pid)
             messages.danger(request, "Unable to update voice slot")
-            return render(request, "projects/master.html",  helpers.get_master_context(Language.objects.get(pk=pid)))
+            return render(request, "projects/master.html", helpers.get_master_context(Language.objects.get(pk=pid)))
         elif "retest_slot" in request.POST:
             vsid = request.POST.get('vsid', "")
             if vsid:
@@ -123,6 +124,7 @@ def new(request):
                 except ValidationError as e:
                     if 'name' in e.message_dict:
                         messages.danger(request, e.message_dict.get('name')[0])
+                    print e.message_dict
                     return render(request, "projects/new.html", {'project_form': form})
             messages.danger(request, "Unable to create project")
             return render(request, "projects/new.html", {'project_form': form})
@@ -135,14 +137,52 @@ def project(request, pid):
         p = Project.objects.get(pk=pid)
         languages = Language.objects.filter(project=p)
         vuids = VUID.objects.filter(project=p)
+        if p.bravo_server:
+            server_form = ServerForm(initial={'server': p.bravo_server.pk})
+        else:
+            server_form = ServerForm(initial={'server': 0})
         return render(request, "projects/project.html",
-                      {'project': p, 'languages': languages, 'vuids': vuids, 'upload_form': UploadForm(), 'server_form': ServerForm()})
+                      {
+                          'project': p,
+                          'languages': languages,
+                          'vuids': vuids,
+                          'upload_form': UploadForm(),
+                          'server_form': server_form
+                      })
     elif request.method == 'POST':
         if "update_server" in request.POST:
-            pass
+            form = ServerForm(request.POST)
+            p = get_object_or_404(Project, pk=pid)
+            if form.is_valid():
+                sid = int(form.cleaned_data['server'])
+                if sid == 0:
+                    if p.bravo_server is None:
+                        return redirect("projects:project", pid=pid)
+                    p.bravo_server = None
+                    p.save()
+                else:
+                    if p.bravo_server is not None:
+                        if sid == p.bravo_server.pk:
+                            return redirect("projects:project", pid=pid)
+                    p.bravo_server = Server.objects.get(pk=sid)
+                    p.save()
+                messages.success(request, "Updated server successfully")
+                return redirect("projects:project", pid=pid)
+            messages.danger(request, "Unable to update server")
+            return render(request, "projects/project.html",
+                          {
+                              'project': p,
+                              'vuids': VUID.objects.filter(project=p),
+                              'upload_form': UploadForm(),
+                              'server_form': form
+                          })
         if "upload_file" in request.POST:
             form = UploadForm(request.POST, request.FILES)
-            p = Project.objects.get(pk=pid)
+            p = get_object_or_404(Project, pk=pid)
+            if p.bravo_server:
+                server_form = ServerForm(initial={'server': p.bravo_server.pk})
+            else:
+                server_form = ServerForm(initial={'server': 0})
             if form.is_valid():
                 if 'file' in request.FILES and request.FILES['file'].name.endswith('.xlsx'):
                     result = helpers.upload_vuid(form.cleaned_data['file'], request.user, p)
@@ -155,7 +195,12 @@ def project(request, pid):
                 return redirect("projects:project", pid=pid)
             messages.danger(request, "Unable to upload file")
             return render(request, "projects/project.html",
-                          {'project': p, 'vuids': VUID.objects.filter(project=p), 'upload_form': form})
+                          {
+                              'project': p,
+                              'vuids': VUID.objects.filter(project=p),
+                              'upload_form': form,
+                              'server_form': server_form
+                          })
         return redirect("projects:project", pid=pid)
     return HttpResponseNotFound()
 
@@ -178,13 +223,15 @@ def submitslot(request, pid, vsid):
             test_result = request.POST.get('test_result', False)
             if test_result:
                 slot.status = VoiceSlot.PASS
-                slot.history = u"{0}: Test passed at {1}.\n{2}\n".format(request.user.username, datetime.datetime.now(), request.POST['notes']) + slot.history
+                slot.history = u"{0}: Test passed at {1}.\n{2}\n".format(request.user.username, datetime.datetime.now(),
+                                                                         request.POST['notes']) + slot.history
             else:
                 if not request.POST.get('notes', False):
                     messages.danger(request, "Please provide notes on test failure")
                     return redirect("projects:testslot", pid=pid, vsid=vsid)
                 slot.status = VoiceSlot.FAIL
-                slot.history = u"{0}: Test failed at {1}.\n{2}\n".format(request.user.username, datetime.datetime.now(), request.POST['notes']) + slot.history
+                slot.history = u"{0}: Test failed at {1}.\n{2}\n".format(request.user.username, datetime.datetime.now(),
+                                                                         request.POST['notes']) + slot.history
                 project.failure_count += 1
             slot.check_in(request.user)
             slot.save()

@@ -2,7 +2,6 @@ import datetime
 import time
 from django.db import models
 from django.contrib.auth import get_user_model
-from echo.apps.settings.models import Server
 
 
 User = get_user_model()
@@ -16,31 +15,58 @@ class Project(models.Model):
     """Contains data regarding testing and the Bravo server in use"""
     TESTING = 'Testing'
     CLOSED = 'Closed'
-    BRAVO1137 = 'linux1137.wic.west.com'
-    BRAVO4487 = 'linux4487.wic.west.com'
+    # BRAVO1137 = 'linux1137.wic.west.com'
+    # BRAVO4487 = 'linux4487.wic.west.com'
     PROJECT_STATUS_CHOICES = ((TESTING, 'Testing'), (CLOSED, 'Closed'))
-    BRAVO_SERVER_CHOICES = ((BRAVO1137, 'linux1137'), (BRAVO4487, 'linux4487'))
+    # BRAVO_SERVER_CHOICES = ((BRAVO1137, 'linux1137'), (BRAVO4487, 'linux4487'))
     name = models.TextField(unique=True)
     users = models.ManyToManyField(User, blank=True)
     tests_run = models.IntegerField(default=0)
     failure_count = models.IntegerField(default=0)
-    bravo_server = models.TextField(choices=BRAVO_SERVER_CHOICES, default=BRAVO1137)
+    bravo_server = models.ForeignKey('settings.Server', blank=True, null=True)
     status = models.TextField(choices=PROJECT_STATUS_CHOICES, default=TESTING)
 
     def slots_failed(self):
         return self.voiceslots().filter(status=VoiceSlot.FAIL).count()
 
+    def slots_failed_percent(self):
+        if self.slots_total() != 0:
+            return float(self.slots_failed()) / self.slots_total() * 100
+        else:
+            return 0
+
     def slots_missing(self):
         return self.voiceslots().filter(status=VoiceSlot.MISSING).count()
+
+    def slots_missing_percent(self):
+        if self.slots_total() != 0:
+            return float(self.slots_missing()) / self.slots_total() * 100
+        else:
+            return 0
 
     def slots_passed(self):
         return self.voiceslots().filter(status=VoiceSlot.PASS).count()
 
+    def slots_passed_percent(self):
+        if self.slots_total() != 0:
+            return float(self.slots_passed()) / self.slots_total() * 100
+        else:
+            return 0
+
     def slots_tested(self):
         return self.voiceslots().filter(status__in=(VoiceSlot.PASS, VoiceSlot.FAIL)).count()
 
+    def slots_tested_percent(self):
+        if self.slots_total() != 0:
+            return float(self.slots_tested()) / self.slots_total() * 100
+        else:
+            return 0
+
     def slots_total(self):
         return self.voiceslots().count()
+
+    def slots_untested_percent(self):
+        return 100 - self.slots_tested
 
     def usernames(self):
         return [u.username for u in self.users.all()]

@@ -13,5 +13,6 @@ class UploadForm(forms.Form):
 
 
 class ServerForm(forms.Form):
-    server = forms.ModelChoiceField(required=True, queryset=Server.objects.all(), to_field_name='name',
-                               widget=forms.Select(attrs={'class': 'form-control'}))
+    l = [(i.pk,i.name) for i in Server.objects.all()]
+    l.insert(0,(0,'---------'))
+    server = forms.ChoiceField(required=True, choices=l, widget=forms.Select(attrs={'class': 'form-control'}))

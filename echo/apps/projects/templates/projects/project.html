@@ -10,10 +10,6 @@
             <div class="row">
                 <div class="col-xs-9">
                     <h3>{{ project.name }}</h3>
-
-                    <h4>Tests Run:&nbsp;{{ project.tests_run }}</h4>
-                    <h4>Failure Count:&nbsp;{{ project.failure_count }}</h4>
-                    <h4>Bravo Server:&nbsp;{{ project.bravo_server }}</h4>
                 </div>
                 <div class="col-xs-3">
                     {% if user.username not in project.usernames %}
@@ -32,15 +28,31 @@
         {% endif %}
         <hr>
         <div class="row">
-            <div class="col-xs-6">
-
+            <div class="col-xs-12">
+                <div class="progress">
+                    <div class="progress-bar progress-bar-success"
+                         style="width: {{ project.slots_passed_percent }}%">{{ project.slots_passed }}</div>
+                    <div class="progress-bar progress-bar-warning"
+                         style="width: {{ project.slots_failed_percent }}%">{{ project.slots_failed }}</div>
+                    <div class="progress-bar progress-bar-danger"
+                         style="width: {{ project.slots_missing_percent }}%">{{ project.slots_missing }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-3">
+                <h4>Total Tests:&nbsp;{{ project.tests_run }}</h4>
+            </div>
+            <div class="col-xs-3">
+                <h4>Total Failures:&nbsp;{{ project.failure_count }}</h4>
             </div>
             <div class="col-xs-6">
                 <div class="pull-right"><h4>Status:&nbsp;{{ project.status }}</h4></div>
             </div>
         </div>
+        <br>
         <div class="row">
-            <div class="col-xs-6">
+            <div class="col-xs-5">
                 {% if languages %}
                     <label class="control-label" for="language_list">Prompts by Language</label>
                     <ul id="language_list" class="list-group">
@@ -56,6 +68,8 @@
                         {% endfor %}
                     </ul>
                 {% endif %}
+                <br>
+                {% if project.users %}
                 <label class="control-label" for="tester_list">Testers</label>
                 <ul id="tester_list" class="list-group">
                     {% for user in project.users.all %}
@@ -64,7 +78,9 @@
                         </li>
                     {% endfor %}
                 </ul>
+                {% endif %}
             </div>
+            <div class="col-xs-1"></div>
             <div class="col-xs-6">
                 <form action="{% url 'projects:project' project.pk %}" method="post" enctype="multipart/form-data">
                     {% csrf_token %}
@@ -80,6 +96,7 @@
                             </span>
                         </div>
                     </div>
+                    <br>
                     <div class="form-group">
                         <label class="control-label">Upload VUID File (.xlsx format)</label>
 
