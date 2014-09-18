@@ -13,6 +13,5 @@ class UploadForm(forms.Form):
 
 
 class ServerForm(forms.Form):
-    l = [(i.pk,i.name) for i in Server.objects.all()]
-    l.insert(0,(0,'---------'))
-    server = forms.ChoiceField(required=True, choices=l, widget=forms.Select(attrs={'class': 'form-control'}))
+    server = forms.ChoiceField(required=True, choices=Server.choices(),
+                               widget=forms.Select(attrs={'class': 'form-control'}))

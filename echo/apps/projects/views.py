@@ -6,8 +6,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from echo.apps.core import messages
 from echo.apps.settings.models import Server
 from forms import ProjectForm, ServerForm, UploadForm
-import helpers
 from models import Language, Project, VoiceSlot, VUID
+import contexts
+import helpers
 
 
 @login_required
@@ -99,7 +100,7 @@ def master(request, pid):
 @login_required
 def new(request):
     if request.method == 'GET':
-        return render(request, "projects/new.html", {'project_form': ProjectForm()})
+        return render(request, "projects/new.html", contexts.new())
     elif request.method == 'POST':
         if "create_project" in request.POST:
             form = ProjectForm(request.POST, request.FILES)
@@ -124,36 +125,22 @@ def new(request):
                 except ValidationError as e:
                     if 'name' in e.message_dict:
                         messages.danger(request, e.message_dict.get('name')[0])
-                    print e.message_dict
-                    return render(request, "projects/new.html", {'project_form': form})
+                    return render(request, "projects/new.html", contexts.new(form))
             messages.danger(request, "Unable to create project")
-            return render(request, "projects/new.html", {'project_form': form})
+            return render(request, "projects/new.html", contexts.new(form))
     return HttpResponseNotFound()
 
 
 @login_required
 def project(request, pid):
     if request.method == 'GET':
-        p = Project.objects.get(pk=pid)
-        languages = Language.objects.filter(project=p)
-        vuids = VUID.objects.filter(project=p)
-        if p.bravo_server:
-            server_form = ServerForm(initial={'server': p.bravo_server.pk})
-        else:
-            server_form = ServerForm(initial={'server': 0})
+        p = get_object_or_404(Project, pk=pid)
         return render(request, "projects/project.html",
-                      {
-                          'project': p,
-                          'languages': languages,
-                          'vuids': vuids,
-                          'upload_form': UploadForm(),
-                          'server_form': server_form
-                      })
+                      contexts.project(p, server_form=ServerForm(initial={'server': p.current_server_pk()})))
     elif request.method == 'POST':
         if "update_server" in request.POST:
             form = ServerForm(request.POST)
             p = get_object_or_404(Project, pk=pid)
-            languages = Language.objects.filter(project=p)
             if form.is_valid():
                 sid = int(form.cleaned_data['server'])
                 if sid == 0:
@@ -170,22 +157,10 @@ def project(request, pid):
                 messages.success(request, "Updated server successfully")
                 return redirect("projects:project", pid=pid)
             messages.danger(request, "Unable to update server")
-            return render(request, "projects/project.html",
-                          {
-                              'project': p,
-                              'languages': languages,
-                              'vuids': VUID.objects.filter(project=p),
-                              'upload_form': UploadForm(),
-                              'server_form': form
-                          })
+            return render(request, "projects/project.html", contexts.project(p, server_form=form))
         if "upload_file" in request.POST:
             form = UploadForm(request.POST, request.FILES)
             p = get_object_or_404(Project, pk=pid)
-            languages = Language.objects.filter(project=p)
-            if p.bravo_server:
-                server_form = ServerForm(initial={'server': p.bravo_server.pk})
-            else:
-                server_form = ServerForm(initial={'server': 0})
             if form.is_valid():
                 if 'file' in request.FILES and request.FILES['file'].name.endswith('.xlsx'):
                     result = helpers.upload_vuid(form.cleaned_data['file'], request.user, p)
@@ -197,14 +172,9 @@ def project(request, pid):
                     messages.danger(request, "Invalid file type, unable to upload (must be .xlsx)")
                 return redirect("projects:project", pid=pid)
             messages.danger(request, "Unable to upload file")
-            return render(request, "projects/project.html",
-                          {
-                              'project': p,
-                              'languages': languages,
-                              'vuids': VUID.objects.filter(project=p),
-                              'upload_form': form,
-                              'server_form': server_form
-                          })
+            return render(request, "projects/project.html", contexts.project(p, upload_form=form,
+                                                                             server_form=ServerForm(initial={
+                                                                             'server': p.current_server_pk()})))
         return redirect("projects:project", pid=pid)
     return HttpResponseNotFound()
 

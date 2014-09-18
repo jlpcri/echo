@@ -26,6 +26,9 @@ class Project(models.Model):
     bravo_server = models.ForeignKey('settings.Server', blank=True, null=True)
     status = models.TextField(choices=PROJECT_STATUS_CHOICES, default=TESTING)
 
+    def current_server_pk(self):
+        return self.bravo_server.pk if self.bravo_server else 0
+
     def slots_failed(self):
         return self.voiceslots().filter(status=VoiceSlot.FAIL).count()
 
