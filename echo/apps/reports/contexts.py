@@ -21,6 +21,10 @@ def missing(project):
 
 def missing_csv(project, response):
     response['Content-Disposition'] = 'attachment; filename="{0}_missing.csv"'.format(project.name)
+    writer = unicodecsv.writer(response)
+    writer.writerow(["Name", "Full Path"])
+    for slot in project.voiceslots_missing():
+        writer.writerow([slot.name, "{0}/{1}".format(slot.path, slot.name)])
     return response
 
 
