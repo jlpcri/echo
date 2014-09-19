@@ -9,7 +9,7 @@
         {% if project %}
             <div class="row">
                 <div class="col-xs-9">
-                    <h3><a href={% url "projects:project" project.pk %}{{ project.name }}&nbsp;<i><small>{{ project.status }}</small></i></h3>
+                    <h3>{{ project.name }}&nbsp;<i><small>{{ project.status }}</small></i></h3>
                 </div>
                 <div class="col-xs-3">
                     {% if user.username not in project.usernames %}
