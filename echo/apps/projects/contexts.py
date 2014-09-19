@@ -1,5 +1,19 @@
 from forms import ProjectForm, ServerForm, UploadForm
-from models import Language, VUID
+from models import Project, Language, VUID
+
+
+def home(user):
+    return {
+        'projects': Project.objects.filter(users__pk=user.pk)
+    }
+
+
+def language(p, language_type='master'):
+    return {
+        'project': p,
+        'language_type': language_type,
+        'slots': p.voiceslots() if 'master' in language_type else p.voiceslots(filter_language=language_type)
+    }
 
 
 def new(project_form=ProjectForm()):

@@ -36,68 +36,6 @@ def leave_project(request, pid):
 
 
 @login_required
-def language(request, pid, lid):
-    if request.method == 'GET':
-        return render(request, "projects/language.html", helpers.get_language_context(Language.objects.get(pk=lid)))
-    if request.method == 'POST':
-        if "update_slot" in request.POST:
-            vsid = request.POST.get('vsid', "")
-            if vsid:
-                slot = get_object_or_404(VoiceSlot, pk=vsid)
-                is_checkedout = request.POST.get('is_checkedout', False)
-                if is_checkedout == slot.checked_out:
-                    messages.info(request, "Nothing to update for slot \"{0}\"".format(slot.name))
-                    return redirect("projects:language", pid=pid, lid=lid)
-                if request.POST.get('is_checkedout', False):
-                    slot.check_out(request.user, forced=True)
-                else:
-                    slot.check_in(request.user, forced=True)
-                messages.success(request, "Updated voice slot \"{0}\"".format(slot.name))
-                return redirect("projects:language", pid=pid, lid=lid)
-            messages.danger(request, "Unable to update voice slot")
-            return render(request, "projects/language.html", helpers.get_language_context(Language.objects.get(pk=lid)))
-        elif "retest_slot" in request.POST:
-            vsid = request.POST.get('vsid', "")
-            if vsid:
-                slot = get_object_or_404(VoiceSlot, pk=vsid)
-                return redirect("projects:testslot", pid, vsid)
-            messages.danger(request, "Unable to find voice slot")
-            return redirect("projects:master", pid=pid)
-    return HttpResponseNotFound()
-
-
-@login_required
-def master(request, pid):
-    if request.method == 'GET':
-        return render(request, "projects/master.html", helpers.get_master_context(Project.objects.get(pk=pid)))
-    if request.method == 'POST':
-        if "update_slot" in request.POST:
-            vsid = request.POST.get('vsid', "")
-            if vsid:
-                slot = get_object_or_404(VoiceSlot, pk=vsid)
-                is_checkedout = request.POST.get('is_checkedout', False)
-                if is_checkedout == slot.checked_out:
-                    messages.info(request, "Nothing to update for slot \"{0}\"".format(slot.name))
-                    return redirect("projects:master", pid=pid)
-                if request.POST.get('is_checkedout', False):
-                    slot.check_out(request.user, forced=True)
-                else:
-                    slot.check_in(request.user, forced=True)
-                messages.success(request, "Updated voice slot \"{0}\"".format(slot.name))
-                return redirect("projects:master", pid=pid)
-            messages.danger(request, "Unable to update voice slot")
-            return render(request, "projects/master.html", helpers.get_master_context(Language.objects.get(pk=pid)))
-        elif "retest_slot" in request.POST:
-            vsid = request.POST.get('vsid', "")
-            if vsid:
-                slot = get_object_or_404(VoiceSlot, pk=vsid)
-                return redirect("projects:testslot", pid, vsid)
-            messages.danger(request, "Unable to find voice slot")
-            return redirect("projects:master", pid=pid)
-    return HttpResponseNotFound()
-
-
-@login_required
 def new(request):
     if request.method == 'GET':
         return render(request, "projects/new.html", contexts.new())
@@ -230,6 +168,48 @@ def testslot(request, pid, vsid):
             slot = get_object_or_404(VoiceSlot, pk=vsid)
         slot.check_out(request.user)
         return render(request, "projects/testslot.html", helpers.get_testslot_context(project, slot))
+    return HttpResponseNotFound()
+
+
+@login_required
+def voiceslots(request, pid):
+    if request.method == 'GET':
+        p = get_object_or_404(Project, pk=pid)
+        lang = request.GET.get('language', 'master').strip().lower()
+        if lang == 'master' or lang in p.language_list():
+            return render(request, "projects/language.html", contexts.language(p, language_type=lang))
+    if request.method == 'POST':
+        p = get_object_or_404(Project, pk=pid)
+        lang = request.GET.get('language', 'master').strip().lower()
+        if lang == 'master' or lang in p.language_list():
+            if "update_slot" in request.POST:
+                vsid = request.POST.get('vsid', "")
+                if vsid:
+                    slot = get_object_or_404(VoiceSlot, pk=vsid)
+                    is_checkedout = request.POST.get('is_checkedout', False)
+                    if is_checkedout == slot.checked_out:
+                        messages.info(request, "Nothing to update for slot \"{0}\"".format(slot.name))
+                        response = redirect("projects:voiceslots", pid=pid)
+                        response['Location'] += '?language={0}'.format(lang)
+                        return response
+                    if request.POST.get('is_checkedout', False):
+                        slot.check_out(request.user, forced=True)
+                    else:
+                        slot.check_in(request.user, forced=True)
+                    messages.success(request, "Updated voice slot \"{0}\"".format(slot.name))
+                    response = redirect("projects:voiceslots", pid=pid)
+                    response['Location'] += '?language={0}'.format(lang)
+                    return response
+                messages.danger(request, "Unable to update voice slot")
+                return render(request, "projects/language.html",  contexts.language(p, language_type=lang))
+            elif "retest_slot" in request.POST:
+                vsid = request.POST.get('vsid', "")
+                if vsid:
+                    slot = get_object_or_404(VoiceSlot, pk=vsid)
+                    return redirect("projects:testslot", pid, vsid)
+                messages.danger(request, "Unable to find voice slot")
+                response = redirect("projects:voiceslots", pid=pid)
+                return response
     return HttpResponseNotFound()
 
 

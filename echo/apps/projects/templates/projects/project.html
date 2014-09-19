@@ -9,7 +9,7 @@
         {% if project %}
             <div class="row">
                 <div class="col-xs-9">
-                    <h3>{{ project.name }}&nbsp;<i><small>{{ project.status }}</small></i></h3>
+                    <h3><a href={% url "projects:project" project.pk %}{{ project.name }}&nbsp;<i><small>{{ project.status }}</small></i></h3>
                 </div>
                 <div class="col-xs-3">
                     {% if user.username not in project.usernames %}
@@ -46,12 +46,12 @@
                     <ul id="language_list" class="list-group">
                         <li class="list-group-item">
                             <span class="badge">{{ project.voiceslot_count }}</span>
-                            <a href="{% url "projects:master" project.pk %}"><b>Master</b></a>
+                            <a href="{% url "projects:voiceslots" project.pk %}?language=master"><b>Master</b></a>
                         </li>
                         {% for language in languages %}
                             <li class="list-group-item">
                                 <span class="badge">{{ language.voiceslot_count }}</span>
-                                <a href="{% url "projects:language" project.pk language.pk %}">{{ language.name }}</a>
+                                <a href="{% url "projects:voiceslots" project.pk %}?language={{ language.name|lower }}">{{ language.name }}</a>
                             </li>
                         {% endfor %}
                     </ul>

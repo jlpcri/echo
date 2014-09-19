@@ -15,10 +15,7 @@ class Project(models.Model):
     """Contains data regarding testing and the Bravo server in use"""
     TESTING = 'Testing'
     CLOSED = 'Closed'
-    # BRAVO1137 = 'linux1137.wic.west.com'
-    # BRAVO4487 = 'linux4487.wic.west.com'
     PROJECT_STATUS_CHOICES = ((TESTING, 'Testing'), (CLOSED, 'Closed'))
-    # BRAVO_SERVER_CHOICES = ((BRAVO1137, 'linux1137'), (BRAVO4487, 'linux4487'))
     name = models.TextField(unique=True)
     users = models.ManyToManyField(User, blank=True)
     tests_run = models.IntegerField(default=0)
@@ -28,6 +25,9 @@ class Project(models.Model):
 
     def current_server_pk(self):
         return self.bravo_server.pk if self.bravo_server else 0
+
+    def language_list(self):
+        return [i.name.lower() for i in Language.objects.filter(project=self)]
 
     def slots_failed(self):
         return self.voiceslots().filter(status=VoiceSlot.FAIL).count()
@@ -80,8 +80,11 @@ class Project(models.Model):
     def voiceslot_count(self):
         return VoiceSlot.objects.filter(language__project=self).count()
 
-    def voiceslots(self, filter_status=None):
+    def voiceslots(self, filter_language=None, filter_status=None):
         vs = VoiceSlot.objects.filter(language__project=self)
+        if filter_language:
+            vs = vs.filter(language=Language.objects.filter(name__iexact=filter_language))
+            print vs
         if filter_status == VoiceSlot.FAIL:
             vs = vs.filter(status__in=(VoiceSlot.FAIL, VoiceSlot.MISSING))
         if filter_status == VoiceSlot.MISSING:

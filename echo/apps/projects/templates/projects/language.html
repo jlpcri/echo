@@ -8,7 +8,7 @@
     <div class="container">
         <div class="row">
             <div class="col-xs-9">
-                <h3>{{ language.project.name }}&nbsp;<i>({{ language.name }})</i></h3>
+                <h3>{{ project.name }}&nbsp;<i>({{ language_type }})</i></h3>
             </div>
             <div class="col-xs-3">
                 <a href="#" class="btn btn-info btn-sm pull-right" style="width: 100%;">
@@ -33,7 +33,7 @@
                     <tbody>
                     {% for slot in slots %}
                         <tr>
-                            <form method="POST" action="{% url "projects:language" language.project.pk language.pk %}">
+                            <form method="POST" action="{% url "projects:voiceslots" project.pk %}?language={{ language_type }}">
                                 {% csrf_token %}
                                 <input type="hidden" name="vsid" value="{{ slot.pk }}">
                                 <td>
