@@ -61,8 +61,28 @@ def servers(request):
             sid = request.POST.get('sid', "")
             if sid:
                 server = get_object_or_404(Server, pk=sid)
-                # try connection
-                messages.success(request, "Connecting to server \"{0}\" is online".format(server.name))
+                try:
+                    with pysftp.Connection(server.address, username=server.account) as conn:
+                        conn.chdir('/')
+                except IOError:
+                    messages.danger(request, "Unable to connect to server \"{0}\"".format(server.name))
+                    return redirect("settings:servers")
+                except pysftp.ConnectionException:
+                    messages.danger(request, "Connection error to server \"{0}\"".format(server.name))
+                    return redirect("settings:servers")
+                except pysftp.CredentialException:
+                    messages.danger(request, "Credentials error to server \"{0}\"".format(server.name))
+                    return redirect("settings:servers")
+                except pysftp.AuthenticationException:
+                    messages.danger(request, "Authentication error to server \"{0}\"".format(server.name))
+                    return redirect("settings:servers")
+                except pysftp.PasswordRequiredException:
+                    messages.danger(request, "Password required error to server \"{0}\"".format(server.name))
+                    return redirect("settings:servers")
+                except pysftp.SSHException:
+                    messages.danger(request, "SSH error to server \"{0}\"".format(server.name))
+                    return redirect("settings:servers")
+                messages.success(request, "Connecting to server \"{0}\"".format(server.name))
                 return redirect("settings:servers")
     return HttpResponseNotFound()
 
