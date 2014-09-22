@@ -31,7 +31,7 @@ def make_filename(path, name):
 
 
 def parse_vuid(vuid):
-    wb = load_workbook(vuid.file.url)
+    wb = load_workbook(vuid.file.path)
     ws = wb.active
 
     headers = [i.value for i in ws.rows[0]]
@@ -94,10 +94,7 @@ def upload_vuid(uploaded_file, user, project):
 
 
 def verify_vuid(vuid):
-    # path = os.path.join(settings.MEDIA_ROOT, vuid.file.url)
-    # print vuid.file.path
-    # wb = load_workbook(path)
-    wb = load_workbook(vuid.file.url)
+    wb = load_workbook(vuid.file.path)
     ws = wb.active
     if len(ws.rows) > 2:
         if verify_vuid_headers(vuid):
@@ -109,10 +106,7 @@ def verify_vuid(vuid):
 
 
 def verify_vuid_headers(vuid):
-    # path = os.path.join(settings.MEDIA_ROOT, vuid.file.url)
-    # print vuid.file.path
-    # wb = load_workbook(path)
-    wb = load_workbook(vuid.file.url)
+    wb = load_workbook(vuid.file.path)
     ws = wb.active
     if len(ws.rows) >= 2:
         headers = set([i.value for i in ws.rows[0]])
