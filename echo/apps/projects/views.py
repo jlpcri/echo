@@ -172,10 +172,15 @@ def testslot(request, pid, vsid):
         if p.bravo_server:
             try:
                 with pysftp.Connection(p.bravo_server.address, username=p.bravo_server.account) as conn:
-                    conn.get(slot.filepath(), os.path.join(settings.MEDIA_ROOT, slot.name))
-                    filepath = "{0}/{1}".format(settings.MEDIA_URL, slot.name)
-                    print filepath
-                    last_modified = int(conn.execute('stat -c %Y {0}'.format(slot.filepath()))[0])
+                    remote_path = "{0}.wav".format(slot.filepath())
+                    print "remote_path = " + remote_path
+                    local_path = os.path.join(settings.MEDIA_ROOT, "{0}.wav".format(slot.name))
+                    print "local_path = " + local_path
+                    conn.get(remote_path, local_path)
+                    filepath = "{0}{1}.wav".format(settings.MEDIA_URL, slot.name)
+                    print "filepath = " + filepath
+                    last_modified = int(conn.execute('stat -c %Y {0}'.format(remote_path))[0])
+                    print "last_modified = " + str(last_modified)
                     slot.check_out(request.user)
                     slot.history = "Downloaded file last modified on {0}\n".format(
                         datetime.datetime.fromtimestamp(last_modified).strftime("%b %d %Y, %H:%M")) + slot.history
@@ -190,9 +195,6 @@ def testslot(request, pid, vsid):
                 return redirect("projects:project", pid)
             except pysftp.AuthenticationException:
                 messages.danger(request, "Authentication error to server \"{0}\"".format(p.bravo_server.name))
-                return redirect("projects:project", pid)
-            except pysftp.PasswordRequiredException:
-                messages.danger(request, "Password required error to server \"{0}\"".format(p.bravo_server.name))
                 return redirect("projects:project", pid)
             except pysftp.SSHException:
                 messages.danger(request, "SSH error to server \"{0}\"".format(p.bravo_server.name))
