@@ -26,20 +26,6 @@ def get_home_context(user):
     }
 
 
-def get_language_context(language):
-    return {
-        'language': language,
-        'slots': language.voiceslots()
-    }
-
-
-def get_master_context(project):
-    return {
-        'project': project,
-        'slots': project.voiceslots()
-    }
-
-
 def get_testslot_context(project, slot):
     return {
         'project': project,

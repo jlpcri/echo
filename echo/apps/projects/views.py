@@ -6,8 +6,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from echo.apps.core import messages
 from echo.apps.settings.models import Server
 from forms import ProjectForm, ServerForm, UploadForm
-import helpers
 from models import Language, Project, VoiceSlot, VUID
+import contexts
+import helpers
 
 
 @login_required
@@ -35,71 +36,9 @@ def leave_project(request, pid):
 
 
 @login_required
-def language(request, pid, lid):
-    if request.method == 'GET':
-        return render(request, "projects/language.html", helpers.get_language_context(Language.objects.get(pk=lid)))
-    if request.method == 'POST':
-        if "update_slot" in request.POST:
-            vsid = request.POST.get('vsid', "")
-            if vsid:
-                slot = get_object_or_404(VoiceSlot, pk=vsid)
-                is_checkedout = request.POST.get('is_checkedout', False)
-                if is_checkedout == slot.checked_out:
-                    messages.info(request, "Nothing to update for slot \"{0}\"".format(slot.name))
-                    return redirect("projects:language", pid=pid, lid=lid)
-                if request.POST.get('is_checkedout', False):
-                    slot.check_out(request.user, forced=True)
-                else:
-                    slot.check_in(request.user, forced=True)
-                messages.success(request, "Updated voice slot \"{0}\"".format(slot.name))
-                return redirect("projects:language", pid=pid, lid=lid)
-            messages.danger(request, "Unable to update voice slot")
-            return render(request, "projects/language.html", helpers.get_language_context(Language.objects.get(pk=lid)))
-        elif "retest_slot" in request.POST:
-            vsid = request.POST.get('vsid', "")
-            if vsid:
-                slot = get_object_or_404(VoiceSlot, pk=vsid)
-                return redirect("projects:testslot", pid, vsid)
-            messages.danger(request, "Unable to find voice slot")
-            return redirect("projects:master", pid=pid)
-    return HttpResponseNotFound()
-
-
-@login_required
-def master(request, pid):
-    if request.method == 'GET':
-        return render(request, "projects/master.html", helpers.get_master_context(Project.objects.get(pk=pid)))
-    if request.method == 'POST':
-        if "update_slot" in request.POST:
-            vsid = request.POST.get('vsid', "")
-            if vsid:
-                slot = get_object_or_404(VoiceSlot, pk=vsid)
-                is_checkedout = request.POST.get('is_checkedout', False)
-                if is_checkedout == slot.checked_out:
-                    messages.info(request, "Nothing to update for slot \"{0}\"".format(slot.name))
-                    return redirect("projects:master", pid=pid)
-                if request.POST.get('is_checkedout', False):
-                    slot.check_out(request.user, forced=True)
-                else:
-                    slot.check_in(request.user, forced=True)
-                messages.success(request, "Updated voice slot \"{0}\"".format(slot.name))
-                return redirect("projects:master", pid=pid)
-            messages.danger(request, "Unable to update voice slot")
-            return render(request, "projects/master.html", helpers.get_master_context(Language.objects.get(pk=pid)))
-        elif "retest_slot" in request.POST:
-            vsid = request.POST.get('vsid', "")
-            if vsid:
-                slot = get_object_or_404(VoiceSlot, pk=vsid)
-                return redirect("projects:testslot", pid, vsid)
-            messages.danger(request, "Unable to find voice slot")
-            return redirect("projects:master", pid=pid)
-    return HttpResponseNotFound()
-
-
-@login_required
 def new(request):
     if request.method == 'GET':
-        return render(request, "projects/new.html", {'project_form': ProjectForm()})
+        return render(request, "projects/new.html", contexts.new())
     elif request.method == 'POST':
         if "create_project" in request.POST:
             form = ProjectForm(request.POST, request.FILES)
@@ -124,31 +63,18 @@ def new(request):
                 except ValidationError as e:
                     if 'name' in e.message_dict:
                         messages.danger(request, e.message_dict.get('name')[0])
-                    print e.message_dict
-                    return render(request, "projects/new.html", {'project_form': form})
+                    return render(request, "projects/new.html", contexts.new(form))
             messages.danger(request, "Unable to create project")
-            return render(request, "projects/new.html", {'project_form': form})
+            return render(request, "projects/new.html", contexts.new(form))
     return HttpResponseNotFound()
 
 
 @login_required
 def project(request, pid):
     if request.method == 'GET':
-        p = Project.objects.get(pk=pid)
-        languages = Language.objects.filter(project=p)
-        vuids = VUID.objects.filter(project=p)
-        if p.bravo_server:
-            server_form = ServerForm(initial={'server': p.bravo_server.pk})
-        else:
-            server_form = ServerForm(initial={'server': 0})
+        p = get_object_or_404(Project, pk=pid)
         return render(request, "projects/project.html",
-                      {
-                          'project': p,
-                          'languages': languages,
-                          'vuids': vuids,
-                          'upload_form': UploadForm(),
-                          'server_form': server_form
-                      })
+                      contexts.project(p, server_form=ServerForm(initial={'server': p.current_server_pk()})))
     elif request.method == 'POST':
         if "update_server" in request.POST:
             form = ServerForm(request.POST)
@@ -169,20 +95,10 @@ def project(request, pid):
                 messages.success(request, "Updated server successfully")
                 return redirect("projects:project", pid=pid)
             messages.danger(request, "Unable to update server")
-            return render(request, "projects/project.html",
-                          {
-                              'project': p,
-                              'vuids': VUID.objects.filter(project=p),
-                              'upload_form': UploadForm(),
-                              'server_form': form
-                          })
+            return render(request, "projects/project.html", contexts.project(p, server_form=form))
         if "upload_file" in request.POST:
             form = UploadForm(request.POST, request.FILES)
             p = get_object_or_404(Project, pk=pid)
-            if p.bravo_server:
-                server_form = ServerForm(initial={'server': p.bravo_server.pk})
-            else:
-                server_form = ServerForm(initial={'server': 0})
             if form.is_valid():
                 if 'file' in request.FILES and request.FILES['file'].name.endswith('.xlsx'):
                     result = helpers.upload_vuid(form.cleaned_data['file'], request.user, p)
@@ -194,13 +110,9 @@ def project(request, pid):
                     messages.danger(request, "Invalid file type, unable to upload (must be .xlsx)")
                 return redirect("projects:project", pid=pid)
             messages.danger(request, "Unable to upload file")
-            return render(request, "projects/project.html",
-                          {
-                              'project': p,
-                              'vuids': VUID.objects.filter(project=p),
-                              'upload_form': form,
-                              'server_form': server_form
-                          })
+            return render(request, "projects/project.html", contexts.project(p, upload_form=form,
+                                                                             server_form=ServerForm(initial={
+                                                                             'server': p.current_server_pk()})))
         return redirect("projects:project", pid=pid)
     return HttpResponseNotFound()
 
@@ -256,6 +168,48 @@ def testslot(request, pid, vsid):
             slot = get_object_or_404(VoiceSlot, pk=vsid)
         slot.check_out(request.user)
         return render(request, "projects/testslot.html", helpers.get_testslot_context(project, slot))
+    return HttpResponseNotFound()
+
+
+@login_required
+def voiceslots(request, pid):
+    if request.method == 'GET':
+        p = get_object_or_404(Project, pk=pid)
+        lang = request.GET.get('language', 'master').strip().lower()
+        if lang == 'master' or lang in p.language_list():
+            return render(request, "projects/language.html", contexts.language(p, language_type=lang))
+    if request.method == 'POST':
+        p = get_object_or_404(Project, pk=pid)
+        lang = request.GET.get('language', 'master').strip().lower()
+        if lang == 'master' or lang in p.language_list():
+            if "update_slot" in request.POST:
+                vsid = request.POST.get('vsid', "")
+                if vsid:
+                    slot = get_object_or_404(VoiceSlot, pk=vsid)
+                    is_checkedout = request.POST.get('is_checkedout', False)
+                    if is_checkedout == slot.checked_out:
+                        messages.info(request, "Nothing to update for slot \"{0}\"".format(slot.name))
+                        response = redirect("projects:voiceslots", pid=pid)
+                        response['Location'] += '?language={0}'.format(lang)
+                        return response
+                    if request.POST.get('is_checkedout', False):
+                        slot.check_out(request.user, forced=True)
+                    else:
+                        slot.check_in(request.user, forced=True)
+                    messages.success(request, "Updated voice slot \"{0}\"".format(slot.name))
+                    response = redirect("projects:voiceslots", pid=pid)
+                    response['Location'] += '?language={0}'.format(lang)
+                    return response
+                messages.danger(request, "Unable to update voice slot")
+                return render(request, "projects/language.html",  contexts.language(p, language_type=lang))
+            elif "retest_slot" in request.POST:
+                vsid = request.POST.get('vsid', "")
+                if vsid:
+                    slot = get_object_or_404(VoiceSlot, pk=vsid)
+                    return redirect("projects:testslot", pid, vsid)
+                messages.danger(request, "Unable to find voice slot")
+                response = redirect("projects:voiceslots", pid=pid)
+                return response
     return HttpResponseNotFound()
 
 

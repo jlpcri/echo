@@ -31,16 +31,14 @@
             </div>
             <div class="row">
                 <div class="col-xs-12">
-                    <div style="display: inline-block; width:3%;vertical-align:top;text-align: right;">{{ project.slots_tested }}</div>
-                    <div class="progress" style="display: inline-block; width:92%;vertical-align:top;">
+                    <div class="progress">
                         <div class="progress-bar progress-bar-success"
-                             style="width: 35%">{{ project.slots_passed }}</div>
+                             style="width: {{ project.slots_passed_percent }}%">{{ project.slots_passed }}</div>
                         <div class="progress-bar progress-bar-warning"
-                             style="width: 20%">{{ project.slots_failed }}</div>
+                             style="width: {{ project.slots_failed_percent }}%">{{ project.slots_failed }}</div>
                         <div class="progress-bar progress-bar-danger"
-                             style="width: 10%">{{ project.slots_missing }}</div>
+                             style="width: {{ project.slots_missing_percent }}%">{{ project.slots_missing }}</div>
                     </div>
-                    <div style="display: inline-block; width:3%;vertical-align:top;text-align: left;">{{ project.slots_total }}</div>
                 </div>
             </div>
         {% endfor %}
