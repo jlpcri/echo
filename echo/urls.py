@@ -6,6 +6,8 @@ import echo.apps.projects.urls as projectsUrls
 import echo.apps.reports.urls as reportsUrls
 import echo.apps.settings.urls as settingsUrls
 
+import echo.settings.base as settings
+
 admin.autodiscover()
 
 urlpatterns = patterns('',
@@ -14,3 +16,7 @@ urlpatterns = patterns('',
     url(r'^echo/reports/', include(reportsUrls, namespace="reports")),
     url(r'^echo/settings/', include(settingsUrls, namespace="settings")),
 )
+
+urlpatterns += patterns('',
+    (r'^echo/media/(?P<path>.*)$', 'django.views.static.serve', {
+    'document_root': settings.MEDIA_ROOT}))

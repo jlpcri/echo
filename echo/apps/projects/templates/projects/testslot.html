@@ -22,13 +22,13 @@
                     {#                    {% for file in files %}#}
                     <div class="audio-holder">
                         <!--[if gte IE 10]> -->
-                        <audio controls src="voiceslots/back_in_business.wav" type="audio/wav"
+                        <audio id="player" controls src="{{ file }}" type="audio/wav"
                                style="width:100%;">
                             IE support pending. Please use Firefox or Chrome.
                         </audio>
                         <![endif]-->
                         <!--[if IE]>
-                    <embed src="/voiceslots/back_in_business.wav"
+                    <embed src="{{ file }}"
                     <!--<![endif]-->
                         {#                    {% endfor %}#}
                     </div>
@@ -64,10 +64,12 @@
                     </div>
                 </div>
                 <div class="col-xs-3">
-                    <button type="submit" name="submit_test" class="btn btn-primary" style="width: 100%;">Submit</button>
+                    <button type="submit" name="submit_test" class="btn btn-primary" style="width: 100%;">Submit
+                    </button>
                 </div>
                 <div class="col-xs-3">
-                    <button type="submit" name="cancel_test" class="btn btn-default" style="width: 100%;">Cancel</button>
+                    <button type="submit" name="cancel_test" class="btn btn-default" style="width: 100%;">Cancel
+                    </button>
                 </div>
             </div>
         </form>
@@ -76,5 +78,11 @@
 {% block endscript %}
     <script type="text/javascript">
         $("[name='test_result']").bootstrapSwitch();
+
+        document.getElementById('player').addEventListener("ended", function () {
+                    console.log('check');
+                    this.load();
+                }
+        );
     </script>
 {% endblock %}

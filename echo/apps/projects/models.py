@@ -8,7 +8,7 @@ User = get_user_model()
 
 
 def vuid_location(instance, filename):
-    return '/'.join(["vuids", "{0}_{1}".format(str(time.time()), filename)])
+    return "{0}_{1}".format(str(time.time()).replace('.', ''), filename)
 
 
 class Project(models.Model):
@@ -84,7 +84,6 @@ class Project(models.Model):
         vs = VoiceSlot.objects.filter(language__project=self)
         if filter_language:
             vs = vs.filter(language=Language.objects.filter(name__iexact=filter_language))
-            print vs
         if filter_status == VoiceSlot.FAIL:
             vs = vs.filter(status__in=(VoiceSlot.FAIL, VoiceSlot.MISSING))
         if filter_status == VoiceSlot.MISSING:

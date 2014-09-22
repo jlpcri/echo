@@ -16,6 +16,12 @@ from django_auth_ldap.config import LDAPSearch
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
+MEDIA_ROOT = os.path.abspath(os.path.join(BASE_DIR, "..", 'media'))
+
+MEDIA_URL = '/echo/media/'
+
+LOGIN_URL = '/echo/'
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/

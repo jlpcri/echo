@@ -38,7 +38,7 @@ def signout(request):
 @login_required
 def home(request):
     if request.method == 'GET':
-        return render(request, "core/home.html", contexts.home(request.user))
+        return render(request, "core/home.html", contexts.context_home(request.user))
     return HttpResponseNotFound()
 
 

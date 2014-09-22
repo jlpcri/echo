@@ -1,5 +1,7 @@
+import os
 from models import Language, Project, VoiceSlot, VUID
 from openpyxl import load_workbook
+import echo.settings.base as settings
 
 
 PAGE_NAME = "Page Name"
@@ -20,30 +22,6 @@ VUID_HEADER_NAME_SET = {
 }
 
 
-def get_home_context(user):
-    return {
-        'projects': Project.objects.filter(users__pk=user.pk)
-    }
-
-
-def get_testslot_context(project, slot):
-    return {
-        'project': project,
-        'slot': slot
-    }
-
-
-def get_vuid_context(vuid):
-    wb = load_workbook(vuid.file.url)
-    ws = wb.active
-    return {
-        'vuid': vuid,
-        'headers': [i.value for i in ws.rows[0]],
-        'path': ws['A2'].value,
-        'records': [r for r in ws.rows[2:]]
-    }
-
-
 def make_filename(path, name):
     if path.endswith('/') and name.startswith('/'):
         return "{0}{1}".format(path[:-1], name)
@@ -53,7 +31,7 @@ def make_filename(path, name):
 
 
 def parse_vuid(vuid):
-    wb = load_workbook(vuid.file.url)
+    wb = load_workbook(vuid.file.path)
     ws = wb.active
 
     headers = [i.value for i in ws.rows[0]]
@@ -116,7 +94,7 @@ def upload_vuid(uploaded_file, user, project):
 
 
 def verify_vuid(vuid):
-    wb = load_workbook(vuid.file.url)
+    wb = load_workbook(vuid.file.path)
     ws = wb.active
     if len(ws.rows) > 2:
         if verify_vuid_headers(vuid):
@@ -128,7 +106,7 @@ def verify_vuid(vuid):
 
 
 def verify_vuid_headers(vuid):
-    wb = load_workbook(vuid.file.url)
+    wb = load_workbook(vuid.file.path)
     ws = wb.active
     if len(ws.rows) >= 2:
         headers = set([i.value for i in ws.rows[0]])
