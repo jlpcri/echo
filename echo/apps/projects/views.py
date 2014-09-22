@@ -1,14 +1,17 @@
 import datetime
+import os
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
-from django.http import HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
 from echo.apps.core import messages
 from echo.apps.settings.models import Server
 from forms import ProjectForm, ServerForm, UploadForm
 from models import Language, Project, VoiceSlot, VUID
+import echo.settings.base as settings
 import contexts
 import helpers
+import pysftp
 
 
 @login_required
@@ -38,7 +41,7 @@ def leave_project(request, pid):
 @login_required
 def new(request):
     if request.method == 'GET':
-        return render(request, "projects/new.html", contexts.new())
+        return render(request, "projects/new.html", contexts.context_new())
     elif request.method == 'POST':
         if "create_project" in request.POST:
             form = ProjectForm(request.POST, request.FILES)
@@ -63,9 +66,9 @@ def new(request):
                 except ValidationError as e:
                     if 'name' in e.message_dict:
                         messages.danger(request, e.message_dict.get('name')[0])
-                    return render(request, "projects/new.html", contexts.new(form))
+                    return render(request, "projects/new.html", contexts.context_new(form))
             messages.danger(request, "Unable to create project")
-            return render(request, "projects/new.html", contexts.new(form))
+            return render(request, "projects/new.html", contexts.context_new(form))
     return HttpResponseNotFound()
 
 
@@ -74,7 +77,7 @@ def project(request, pid):
     if request.method == 'GET':
         p = get_object_or_404(Project, pk=pid)
         return render(request, "projects/project.html",
-                      contexts.project(p, server_form=ServerForm(initial={'server': p.current_server_pk()})))
+                      contexts.context_project(p, server_form=ServerForm(initial={'server': p.current_server_pk()})))
     elif request.method == 'POST':
         if "update_server" in request.POST:
             form = ServerForm(request.POST)
@@ -95,7 +98,7 @@ def project(request, pid):
                 messages.success(request, "Updated server successfully")
                 return redirect("projects:project", pid=pid)
             messages.danger(request, "Unable to update server")
-            return render(request, "projects/project.html", contexts.project(p, server_form=form))
+            return render(request, "projects/project.html", contexts.context_project(p, server_form=form))
         if "upload_file" in request.POST:
             form = UploadForm(request.POST, request.FILES)
             p = get_object_or_404(Project, pk=pid)
@@ -110,9 +113,9 @@ def project(request, pid):
                     messages.danger(request, "Invalid file type, unable to upload (must be .xlsx)")
                 return redirect("projects:project", pid=pid)
             messages.danger(request, "Unable to upload file")
-            return render(request, "projects/project.html", contexts.project(p, upload_form=form,
-                                                                             server_form=ServerForm(initial={
-                                                                             'server': p.current_server_pk()})))
+            return render(request, "projects/project.html", contexts.context_project(p, upload_form=form,
+                                                                                     server_form=ServerForm(initial={
+                                                                                         'server': p.current_server_pk()})))
         return redirect("projects:project", pid=pid)
     return HttpResponseNotFound()
 
@@ -163,11 +166,40 @@ def submitslot(request, pid, vsid):
 def testslot(request, pid, vsid):
     if request.method == 'GET':
         if pid:
-            project = get_object_or_404(Project, pk=pid)
+            p = get_object_or_404(Project, pk=pid)
         if vsid:
             slot = get_object_or_404(VoiceSlot, pk=vsid)
-        slot.check_out(request.user)
-        return render(request, "projects/testslot.html", helpers.get_testslot_context(project, slot))
+        if p.bravo_server:
+            try:
+                with pysftp.Connection(p.bravo_server.address, username=p.bravo_server.account) as conn:
+                    conn.get(slot.filepath(), os.path.join(settings.MEDIA_ROOT, slot.name))
+                    filepath = "{0}/{1}".format(settings.MEDIA_URL, slot.name)
+                    print filepath
+                    last_modified = int(conn.execute('stat -c %Y {0}'.format(slot.filepath()))[0])
+                    slot.check_out(request.user)
+                    slot.history = "Downloaded file last modified on {0}\n".format(
+                        datetime.datetime.fromtimestamp(last_modified).strftime("%b %d %Y, %H:%M")) + slot.history
+            except IOError:
+                messages.danger(request, "Unable to connect to server \"{0}\"".format(p.bravo_server.name))
+                return redirect("projects:project", pid)
+            except pysftp.ConnectionException:
+                messages.danger(request, "Connection error to server \"{0}\"".format(p.bravo_server.name))
+                return redirect("projects:project", pid)
+            except pysftp.CredentialException:
+                messages.danger(request, "Credentials error to server \"{0}\"".format(p.bravo_server.name))
+                return redirect("projects:project", pid)
+            except pysftp.AuthenticationException:
+                messages.danger(request, "Authentication error to server \"{0}\"".format(p.bravo_server.name))
+                return redirect("projects:project", pid)
+            except pysftp.PasswordRequiredException:
+                messages.danger(request, "Password required error to server \"{0}\"".format(p.bravo_server.name))
+                return redirect("projects:project", pid)
+            except pysftp.SSHException:
+                messages.danger(request, "SSH error to server \"{0}\"".format(p.bravo_server.name))
+                return redirect("projects:project", pid)
+            return render(request, "projects/testslot.html", contexts.context_testslot(p, slot, filepath))
+        messages.danger(request, "No server associated with project")
+        return redirect("projects:project", pid)
     return HttpResponseNotFound()
 
 
@@ -177,7 +209,9 @@ def voiceslots(request, pid):
         p = get_object_or_404(Project, pk=pid)
         lang = request.GET.get('language', 'master').strip().lower()
         if lang == 'master' or lang in p.language_list():
-            return render(request, "projects/language.html", contexts.language(p, language_type=lang))
+            if request.GET.get('export', False) == 'csv':
+                return contexts.context_language_csv(p, HttpResponse(content_type='text/csv'), lang)
+            return render(request, "projects/language.html", contexts.context_language(p, language_type=lang))
     if request.method == 'POST':
         p = get_object_or_404(Project, pk=pid)
         lang = request.GET.get('language', 'master').strip().lower()
@@ -201,7 +235,7 @@ def voiceslots(request, pid):
                     response['Location'] += '?language={0}'.format(lang)
                     return response
                 messages.danger(request, "Unable to update voice slot")
-                return render(request, "projects/language.html",  contexts.language(p, language_type=lang))
+                return render(request, "projects/language.html", contexts.context_language(p, language_type=lang))
             elif "retest_slot" in request.POST:
                 vsid = request.POST.get('vsid', "")
                 if vsid:
@@ -216,5 +250,5 @@ def voiceslots(request, pid):
 @login_required
 def vuid(request, pid, vid):
     if request.method == 'GET':
-        return render(request, "projects/vuid.html", helpers.get_vuid_context(VUID.objects.get(pk=vid)))
+        return render(request, "projects/vuid.html", contexts.context_vuid(VUID.objects.get(pk=vid)))
     return HttpResponseNotFound()

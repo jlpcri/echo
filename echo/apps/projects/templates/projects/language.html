@@ -11,7 +11,7 @@
                 <h3><a href="{% url "projects:project" project.pk %}{{ project.name }}">{{ project.name }}</a>&nbsp;<i>({{ language_type }})</i></h3>
             </div>
             <div class="col-xs-3">
-                <a href="#" class="btn btn-info btn-sm pull-right" style="width: 100%;">
+                <a href="{% url "projects:voiceslots" project.pk %}?export=csv" class="btn btn-info btn-sm pull-right" style="width: 100%;">
                     <i class="fa fa-download fa-fw"></i>&nbsp;Report
                 </a>
             </div>

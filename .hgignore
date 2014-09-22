@@ -4,5 +4,5 @@ syntax: glob
 
 syntax: regexp
 ^.idea/
-^voiceslots/
+^media/
 ^vuids/

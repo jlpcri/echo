@@ -1,5 +1,7 @@
+import os
 from models import Language, Project, VoiceSlot, VUID
 from openpyxl import load_workbook
+import echo.settings.base as settings
 
 
 PAGE_NAME = "Page Name"
@@ -18,30 +20,6 @@ VUID_HEADER_NAME_SET = {
     STATE_NAME,
     DATE_CHANGED
 }
-
-
-def get_home_context(user):
-    return {
-        'projects': Project.objects.filter(users__pk=user.pk)
-    }
-
-
-def get_testslot_context(project, slot):
-    return {
-        'project': project,
-        'slot': slot
-    }
-
-
-def get_vuid_context(vuid):
-    wb = load_workbook(vuid.file.url)
-    ws = wb.active
-    return {
-        'vuid': vuid,
-        'headers': [i.value for i in ws.rows[0]],
-        'path': ws['A2'].value,
-        'records': [r for r in ws.rows[2:]]
-    }
 
 
 def make_filename(path, name):
@@ -116,6 +94,9 @@ def upload_vuid(uploaded_file, user, project):
 
 
 def verify_vuid(vuid):
+    # path = os.path.join(settings.MEDIA_ROOT, vuid.file.url)
+    # print vuid.file.path
+    # wb = load_workbook(path)
     wb = load_workbook(vuid.file.url)
     ws = wb.active
     if len(ws.rows) > 2:
@@ -128,6 +109,9 @@ def verify_vuid(vuid):
 
 
 def verify_vuid_headers(vuid):
+    # path = os.path.join(settings.MEDIA_ROOT, vuid.file.url)
+    # print vuid.file.path
+    # wb = load_workbook(path)
     wb = load_workbook(vuid.file.url)
     ws = wb.active
     if len(ws.rows) >= 2:
