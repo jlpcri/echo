@@ -97,7 +97,7 @@ class Project(models.Model):
         if older_than_ten:
             vs.order_by('checked_out_time')
             time_threshold = datetime.now() - timedelta(minutes=10)
-            vs = vs.objects.filter(checked_out_time__gt=time_threshold)
+            vs = vs.filter(checked_out_time__gt=time_threshold)
         return vs
 
     def voiceslots_checked_out_by_user(self, user, filter_language=None):
