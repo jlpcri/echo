@@ -211,6 +211,8 @@ def submitslot(request, pid, vsid):
                 slot.status = VoiceSlot.PASS
                 slot.history = "{0}: Test passed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
                                                                          request.POST['notes']) + slot.history
+                # do updates to files here and get count for p pass
+                count = p.voiceslots_match(slot, request)
             else:
                 if not request.POST.get('notes', False):
                     messages.danger(request, "Please provide notes on test failure")
@@ -218,12 +220,14 @@ def submitslot(request, pid, vsid):
                 slot.status = VoiceSlot.FAIL
                 slot.history = "{0}: Test failed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
                                                                          request.POST['notes']) + slot.history
+                # do updates to files here and get count for p failure
+                count = p.voiceslots_match(slot, request)
                 p.failure_count += 1
             slot.check_in(request.user)
             slot.save()
             p.tests_run += 1
             p.save()
-            messages.success(request, "Tested voice slot \"{0}\"".format(slot.name))
+            messages.success(request, "Tested voice slot \"{0}\", {1} matching slots updated".format(slot.name, count))
             return redirect("projects:project", pid=pid)
         elif "cancel_test" in request.POST:
             slot = get_object_or_404(VoiceSlot, pk=vsid)

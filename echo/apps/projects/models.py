@@ -93,6 +93,19 @@ class Project(models.Model):
             vs = vs.filter(status=VoiceSlot.MISSING)
         return vs
 
+    def voiceslots_match(self, slot, request):
+        vs = VoiceSlot.objects.filter(verbiage=slot.verbiage, bravo_checksum=slot.bravo_checksum).exclude(slot=slot)
+        for s in vs:
+            s.status = slot.status
+            if s.status == VoiceSlot.PASS:
+                s.history = "{0}: Test auto passed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
+                                                                         request.POST['notes']) + slot.history
+            elif s.status == VoiceSlot.FAIL:
+                s.history = "{0}: Test auto failed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
+                                                                         request.POST['notes']) + slot.history
+        return vs.count()
+
+
     def voiceslots_queue(self, checked_out=False, filter_language=None, older_than_ten=False):
         vs = VoiceSlot.objects.filter(checked_out=checked_out, status=VoiceSlot.NEW)
         if filter_language:
