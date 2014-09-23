@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timedelta
 import time
 from django.db import models
 from django.contrib.auth import get_user_model
@@ -90,12 +90,14 @@ class Project(models.Model):
             vs = vs.filter(status=VoiceSlot.MISSING)
         return vs
 
-    def voiceslots_queue(self, checked_out=False, filter_language=None, sort_by_time=False):
+    def voiceslots_queue(self, checked_out=False, filter_language=None, older_than_ten=False):
         vs = VoiceSlot.objects.filter(checked_out=checked_out, status=VoiceSlot.NEW)
         if filter_language:
             vs = vs.filter(language=Language.objects.filter(name__iexact=filter_language))
-        if sort_by_time:
+        if older_than_ten:
             vs.order_by('checked_out_time')
+            time_threshold = datetime.now() - timedelta(minutes=10)
+            vs = vs.objects.filter(checked_out_time__gt=time_threshold)
         return vs
 
     def voiceslots_checked_out_by_user(self, user, filter_language=None):

@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 import os
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
@@ -141,9 +141,8 @@ def queue(request, pid):
                 if slots:
                     return redirect("projects:testslot", pid=pid, vsid=slots[0].pk)
                 else:
-                    slots = p.voiceslots_queue(checked_out=True, filter_language=lang, sort_by_time=True)
+                    slots = p.voiceslots_queue(checked_out=True, filter_language=lang, older_than_ten=True)
                     if slots:
-                        # still need to do test for time > 10 min
                         return redirect("projects:testslot", pid=pid, vsid=slots[0].pk)
             messages.info(request, 'No slots available for testing')
             return redirect("projects:project", pid)
@@ -163,14 +162,14 @@ def submitslot(request, pid, vsid):
             test_result = request.POST.get('test_result', False)
             if test_result:
                 slot.status = VoiceSlot.PASS
-                slot.history = u"{0}: Test passed at {1}.\n{2}\n".format(request.user.username, datetime.datetime.now(),
+                slot.history = u"{0}: Test passed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
                                                                          request.POST['notes']) + slot.history
             else:
                 if not request.POST.get('notes', False):
                     messages.danger(request, "Please provide notes on test failure")
                     return redirect("projects:testslot", pid=pid, vsid=vsid)
                 slot.status = VoiceSlot.FAIL
-                slot.history = u"{0}: Test failed at {1}.\n{2}\n".format(request.user.username, datetime.datetime.now(),
+                slot.history = u"{0}: Test failed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
                                                                          request.POST['notes']) + slot.history
                 project.failure_count += 1
             slot.check_in(request.user)
@@ -208,7 +207,7 @@ def testslot(request, pid, vsid):
                     print "last_modified = " + str(last_modified)
                     slot.check_out(request.user)
                     slot.history = "Downloaded file last modified on {0}\n".format(
-                        datetime.datetime.fromtimestamp(last_modified).strftime("%b %d %Y, %H:%M")) + slot.history
+                        datetime.fromtimestamp(last_modified).strftime("%b %d %Y, %H:%M")) + slot.history
             except IOError:
                 messages.danger(request, "Unable to connect to server \"{0}\"".format(p.bravo_server.name))
                 return redirect("projects:project", pid)
