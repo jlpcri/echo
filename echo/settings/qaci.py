@@ -1,5 +1,5 @@
 from base import *
 
-STATIC_URL = '/static/echo/'
-STATIC_ROOT = '/opt/static_web/echo'
+STATIC_URL = '/static/'
+STATIC_ROOT = '/opt/static_web/'
 STATICFILES_DIRS = []
