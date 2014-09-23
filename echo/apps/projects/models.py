@@ -90,6 +90,20 @@ class Project(models.Model):
             vs = vs.filter(status=VoiceSlot.MISSING)
         return vs
 
+    def voiceslots_queue(self, checked_out=False, filter_language=None, sort_by_time=False):
+        vs = VoiceSlot.objects.filter(checked_out=checked_out, status=VoiceSlot.NEW)
+        if filter_language:
+            vs = vs.filter(language=Language.objects.filter(name__iexact=filter_language))
+        if sort_by_time:
+            vs.order_by('checked_out_time')
+        return vs
+
+    def voiceslots_checked_out_by_user(self, user, filter_language=None):
+        vs = VoiceSlot.objects.filter(checked_out=True, user=user)
+        if filter_language:
+            vs = vs.filter(language=Language.objects.filter(name__iexact=filter_language))
+        return vs
+
     def voiceslots_failed(self):
         return self.voiceslots(filter_status=VoiceSlot.FAIL)
 
@@ -123,11 +137,11 @@ class VoiceSlot(models.Model):
         if self.checked_out is True:
             self.checked_out = False
             self.check_in_time = datetime.datetime.now()
-            self.user = user
+            self.user = None
             if forced:
-                self.history = u"Forced check in by {0} at {1}\n".format(self.user, self.check_in_time.strftime("%b %d %Y, %H:%M")) + self.history
+                self.history = "Forced check in by {0} at {1}\n".format(self.user, self.check_in_time.strftime("%b %d %Y, %H:%M")) + self.history
             else:
-                self.history = u"Checked in by {0} at {1}\n".format(self.user, self.check_in_time.strftime("%b %d %Y, %H:%M")) + self.history
+                self.history = "Checked in by {0} at {1}\n".format(self.user, self.check_in_time.strftime("%b %d %Y, %H:%M")) + self.history
             self.save()
 
     def check_out(self, user, forced=False):
@@ -136,9 +150,9 @@ class VoiceSlot(models.Model):
             self.checked_out_time = datetime.datetime.now()
             self.user = user
             if forced:
-                self.history = u"Forced check out by {0} at {1}\n".format(self.user, self.checked_out_time.strftime("%b %d %Y, %H:%M")) + self.history
+                self.history = "Forced check out by {0} at {1}\n".format(self.user, self.checked_out_time.strftime("%b %d %Y, %H:%M")) + self.history
             else:
-                self.history = u"Checked out by {0} at {1}\n".format(self.user, self.checked_out_time.strftime("%b %d %Y, %H:%M")) + self.history
+                self.history = "Checked out by {0} at {1}\n".format(self.user, self.checked_out_time.strftime("%b %d %Y, %H:%M")) + self.history
             self.save()
 
     def filepath(self):

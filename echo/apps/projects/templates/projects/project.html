@@ -52,6 +52,7 @@
                             <li class="list-group-item">
                                 <span class="badge">{{ language.voiceslot_count }}</span>
                                 <a href="{% url "projects:voiceslots" project.pk %}?language={{ language.name|lower }}">{{ language.name }}</a>
+                                &nbsp;&nbsp;&nbsp;&nbsp;<a href="{% url "projects:queue" project.pk %}?language={{ language.name|lower }}">Start Testing</a>
                             </li>
                         {% endfor %}
                     </ul>

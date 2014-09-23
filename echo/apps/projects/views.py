@@ -128,6 +128,31 @@ def projects(request):
 
 
 @login_required
+def queue(request, pid):
+    if request.method == 'GET':
+        p = get_object_or_404(Project, pk=pid)
+        lang = request.GET.get('language', '').strip().lower()
+        if lang in p.language_list():
+            slots = p.voiceslots_checked_out_by_user(request.user, filter_language=lang)
+            if slots:
+                return redirect("projects:testslot", pid=pid, vsid=slots[0].pk)
+            else:
+                slots = p.voiceslots_queue(checked_out=False, filter_language=lang)
+                if slots:
+                    return redirect("projects:testslot", pid=pid, vsid=slots[0].pk)
+                else:
+                    slots = p.voiceslots_queue(checked_out=True, filter_language=lang, sort_by_time=True)
+                    if slots:
+                        # still need to do test for time > 10 min
+                        return redirect("projects:testslot", pid=pid, vsid=slots[0].pk)
+            messages.info(request, 'No slots available for testing')
+            return redirect("projects:project", pid)
+        messages.danger(request, "Invalid language type for project {0}".format(p.name))
+        return redirect("projects:project", pid)
+    return HttpResponseNotFound()
+
+
+@login_required
 def submitslot(request, pid, vsid):
     if request.method == 'POST':
         if "submit_test" in request.POST:
