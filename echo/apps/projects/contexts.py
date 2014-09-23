@@ -6,7 +6,7 @@ import unicodecsv
 
 def context_home(user):
     return {
-        'projects': Project.objects.filter(users__pk=user.pk)
+        'projects': Project.objects.filter(users__pk=user.pk).order_by('name')
     }
 
 
@@ -47,6 +47,13 @@ def context_project(project, upload_form=UploadForm(), server_form=ServerForm(in
         'vuids': VUID.objects.filter(project=project),
         'upload_form': upload_form,
         'server_form': server_form
+    }
+
+
+def context_projects(user):
+    projects = Project.objects.filter(users__pk=user.pk).order_by('name') | Project.objects.all().exclude(users__pk=user.pk).order_by('name')
+    return {
+        'projects': projects
     }
 
 

@@ -19,18 +19,9 @@
         <hr>
         {% for project in projects %}
             <div class="row">
-                <div class="col-xs-9">
+                <div class="col-xs-6">
                     <h4><a href="{% url "projects:project" project.pk %}">{{ project.name }}</a></h4>
-                </div>
-                <div class="col-xs-3">
-                    <div class="pull-right">
-                        <i class="fa fa-file-text fa-fw"></i>&nbsp;Reports
-                        <i class="fa fa-users fa-fw"></i>&nbsp;{{ project.users_total }}
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-xs-12">
+
                     <div class="progress">
                         <div class="progress-bar progress-bar-success"
                              style="width: {{ project.slots_passed_percent }}%">{{ project.slots_passed }}</div>
@@ -40,7 +31,27 @@
                              style="width: {{ project.slots_missing_percent }}%">{{ project.slots_missing }}</div>
                     </div>
                 </div>
+                <div class="col-xs-6">
+                    <div class="pull-left">
+                    {% if user.username in project.usernames %}
+                        <b>Start Testing:</b><br>
+                        {% for language in project.languages %}
+                            <a href="{% url "projects:queue" project.pk %}?language={{ language.name|lower }}">
+                                <b>{{ language.name }}</b>
+                            </a><br>
+                        {% endfor %}
+                    {% endif %}
+                    </div>
+                    <div class="pull-right">
+                        <b>Reports:</b>&nbsp;
+                        <a href="{% url "reports:failed" project.pk %}"><i class="fa fa-file-text"></i>&nbsp;Failed</a>
+                        &nbsp;&nbsp;|&nbsp;&nbsp;
+                        <a href="{% url "reports:missing" project.pk %}"><i
+                                class="fa fa-file-text"></i>&nbsp;Missing</a>
+                    </div>
+                </div>
             </div>
+            <hr>
         {% endfor %}
     </div>
 {% endblock %}

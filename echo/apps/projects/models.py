@@ -26,6 +26,9 @@ class Project(models.Model):
     def current_server_pk(self):
         return self.bravo_server.pk if self.bravo_server else 0
 
+    def languages(self):
+        return Language.objects.filter(project=self)
+
     def language_list(self):
         return [i.name.lower() for i in Language.objects.filter(project=self)]
 

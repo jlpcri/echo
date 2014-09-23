@@ -172,7 +172,7 @@ def project(request, pid):
 @login_required
 def projects(request):
     if request.method == 'GET':
-        return render(request, "projects/projects.html", {'projects': Project.objects.all()})
+        return render(request, "projects/projects.html", contexts.context_projects(request.user))
     return HttpResponseNotFound()
 
 
