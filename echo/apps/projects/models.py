@@ -131,6 +131,7 @@ class VoiceSlot(models.Model):
     verbiage = models.TextField(blank=True, null=True)
     checked_out = models.BooleanField(default=False)
     checked_out_time = models.DateTimeField(blank=True, null=True)
+    bravo_checksum = models.TextField(blank=True, null=True, default="")
     bravo_time = models.DateTimeField(blank=True, null=True)
     vuid_time = models.DateField(blank=True, null=True)
     check_in_time = models.DateTimeField(blank=True, null=True)
@@ -138,7 +139,7 @@ class VoiceSlot(models.Model):
     def check_in(self, user, forced=False):
         if self.checked_out is True:
             self.checked_out = False
-            self.check_in_time = datetime.datetime.now()
+            self.check_in_time = datetime.now()
             self.user = None
             if forced:
                 self.history = "Forced check in by {0} at {1}\n".format(self.user, self.check_in_time.strftime("%b %d %Y, %H:%M")) + self.history
@@ -149,7 +150,7 @@ class VoiceSlot(models.Model):
     def check_out(self, user, forced=False):
         if self.checked_out is False:
             self.checked_out = True
-            self.checked_out_time = datetime.datetime.now()
+            self.checked_out_time = datetime.now()
             self.user = user
             if forced:
                 self.history = "Forced check out by {0} at {1}\n".format(self.user, self.checked_out_time.strftime("%b %d %Y, %H:%M")) + self.history

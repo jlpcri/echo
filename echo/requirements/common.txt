@@ -7,3 +7,4 @@ paramiko==1.14.1
 pycrypto==2.6.1
 pysftp==0.2.8
 python-ldap==2.4.15
+unicodecsv==0.9.4
