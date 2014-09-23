@@ -2,16 +2,24 @@
     margin: 0;
 }
 
+h1, h2, h3, h4, h5, h6 {
+    margin: 0px;
+}
+
 html, body {
     height: 100%;
 }
 
-#content {
+#wrapper {
     padding-top: 50px;
     min-height: 100%;
     height: auto !important;
     height: 100%;
     margin: 0 0 -40px 0; /* the bottom margin is the negative value of the footer's height */
+}
+
+#content {
+    margin-top: 20px;
 }
 
 .push {
@@ -27,4 +35,33 @@ html, body {
 #footer p {
     line-height: 40px;
     margin: 0 30px 0 30px;
+}
+
+.btn-file {
+    position: relative;
+    overflow: hidden;
+}
+.btn-file input[type=file] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 100%;
+    min-height: 100%;
+    font-size: 100px;
+    text-align: right;
+    filter: alpha(opacity=0);
+    opacity: 0;
+    outline: none;
+    background: white;
+    cursor: inherit;
+    display: block;
+}
+
+.audio-holder {
+    border: 1px solid darkgray;
+    height: 38px;
+    padding: 3px;
+    border-radius: 5px;
+    -moz-border-radius: 5px;
+    -webkit-border-radius: 5px;
 }

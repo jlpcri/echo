@@ -7,6 +7,8 @@ from echo.apps.core import messages
 from forms import ServerForm
 from models import Server
 
+import pysftp
+
 
 def user_is_superuser(user):
     return user.is_superuser
@@ -40,8 +42,8 @@ def servers(request):
                 except ValidationError as e:
                     if 'name' in e.message_dict:
                         messages.danger(request, e.message_dict.get('name')[0])
-                        return render(request, "settings/servers.html",
-                                      {'servers': Server.objects.all().order_by("name"), 'server_form': form})
+                    return render(request, "settings/servers.html",
+                                  {'servers': Server.objects.all().order_by("name"), 'server_form': form})
             messages.danger(request, "Unable to add server to list")
             return render(request, "settings/servers.html",
                           {'servers': Server.objects.all().order_by("name"), 'server_form': form})
@@ -55,6 +57,33 @@ def servers(request):
             messages.danger(request, "Unable to delete server")
             return render(request, "settings/servers.html",
                           {'servers': Server.objects.all().order_by("name"), 'server_form': ServerForm()})
+        elif "test_connection" in request.POST:
+            sid = request.POST.get('sid', "")
+            if sid:
+                server = get_object_or_404(Server, pk=sid)
+                try:
+                    with pysftp.Connection(server.address, username=server.account) as conn:
+                        conn.chdir('/')
+                except IOError:
+                    messages.danger(request, "Unable to connect to server \"{0}\"".format(server.name))
+                    return redirect("settings:servers")
+                except pysftp.ConnectionException:
+                    messages.danger(request, "Connection error to server \"{0}\"".format(server.name))
+                    return redirect("settings:servers")
+                except pysftp.CredentialException:
+                    messages.danger(request, "Credentials error to server \"{0}\"".format(server.name))
+                    return redirect("settings:servers")
+                except pysftp.AuthenticationException:
+                    messages.danger(request, "Authentication error to server \"{0}\"".format(server.name))
+                    return redirect("settings:servers")
+                except pysftp.PasswordRequiredException:
+                    messages.danger(request, "Password required error to server \"{0}\"".format(server.name))
+                    return redirect("settings:servers")
+                except pysftp.SSHException:
+                    messages.danger(request, "SSH error to server \"{0}\"".format(server.name))
+                    return redirect("settings:servers")
+                messages.success(request, "Connecting to server \"{0}\"".format(server.name))
+                return redirect("settings:servers")
     return HttpResponseNotFound()
 
 

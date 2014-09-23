@@ -2,18 +2,50 @@
 {% block title %}Projects{% endblock %}
 {% load staticfiles %}
 {% block headscript %}
-<link rel="stylesheet" type="text/css" href="{% static 'core/core.css' %}"/>
+
 {% endblock %}
 {% block content %}
     <div class="container">
-        <h1></h1>
+        <div class="row">
+            <div class="col-xs-9">
+                <h3>Projects</h3>
+            </div>
+            <div class="col-xs-3">
+                <a href="{% url "projects:new" %}" class="btn btn-success btn-sm pull-right" style="width: 100%;">
+                    <i class="fa fa-plus fa-fw"></i>&nbsp;Project
+                </a>
+            </div>
+        </div>
+        <hr>
+        {% for project in projects %}
+            <div class="row">
+                <div class="col-xs-9">
+                    <h4><a href="{% url "projects:project" project.pk %}">{{ project.name }}</a></h4>
+                </div>
+                <div class="col-xs-3">
+                    <div class="pull-right">
+                        <i class="fa fa-file-text fa-fw"></i>&nbsp;Reports
+                        <i class="fa fa-users fa-fw"></i>&nbsp;{{ project.users_total }}
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12">
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-success"
+                             style="width: {{ project.slots_passed_percent }}%">{{ project.slots_passed }}</div>
+                        <div class="progress-bar progress-bar-warning"
+                             style="width: {{ project.slots_failed_percent }}%">{{ project.slots_failed }}</div>
+                        <div class="progress-bar progress-bar-danger"
+                             style="width: {{ project.slots_missing_percent }}%">{{ project.slots_missing }}</div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
     </div>
 {% endblock %}
 {% block endscript %}
-    <script type="text/javascript" src="{% static 'core/core.js' %}"></script>
     <script type="text/javascript">
-        $(function () {
-            setHeader("{{ message }}");
-        });
+
     </script>
 {% endblock %}

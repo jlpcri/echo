@@ -1,19 +1,132 @@
 {% extends "core/base.html" %}
-{% block title %}Project{% endblock %}
+{% block title %}Project&nbsp;-&nbsp;{{ project.name }}{% endblock %}
 {% load staticfiles %}
 {% block headscript %}
-<link rel="stylesheet" type="text/css" href="{% static 'core/core.css' %}"/>
+
 {% endblock %}
 {% block content %}
     <div class="container">
-        <h1></h1>
+        {% if project %}
+            <div class="row">
+                <div class="col-xs-9">
+                    <h3>{{ project.name }}&nbsp;<i><small>{{ project.status }}</small></i></h3>
+                </div>
+                <div class="col-xs-3">
+                    {% if user.username not in project.usernames %}
+                        <a href="{% url "projects:joinproject" project.pk %}" class="btn btn-default btn-sm pull-right"
+                           style="width: 100%;">
+                            <i class="fa fa-link fa-fw"></i>&nbsp;Join Project
+                        </a>
+                    {% else %}
+                        <a href="{% url "projects:leaveproject" project.pk %}" class="btn btn-default btn-sm pull-right"
+                           style="width: 100%;">
+                            <i class="fa fa-unlink fa-fw"></i>&nbsp;Leave Project
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+        <hr>
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="progress">
+                    <div class="progress-bar progress-bar-success"
+                         style="width: {{ project.slots_passed_percent }}%">{{ project.slots_passed }}</div>
+                    <div class="progress-bar progress-bar-warning"
+                         style="width: {{ project.slots_failed_percent }}%">{{ project.slots_failed }}</div>
+                    <div class="progress-bar progress-bar-danger"
+                         style="width: {{ project.slots_missing_percent }}%">{{ project.slots_missing }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-5">
+                {% if languages %}
+                    <label class="control-label" for="language_list">Prompts by Language</label>
+                    <ul id="language_list" class="list-group">
+                        <li class="list-group-item">
+                            <span class="badge">{{ project.voiceslot_count }}</span>
+                            <a href="{% url "projects:voiceslots" project.pk %}?language=master"><b>Master</b></a>
+                        </li>
+                        {% for language in languages %}
+                            <li class="list-group-item">
+                                <span class="badge">{{ language.voiceslot_count }}</span>
+                                <a href="{% url "projects:voiceslots" project.pk %}?language={{ language.name|lower }}">{{ language.name }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                <br>
+                {% endif %}
+                {% if project.users %}
+                <label class="control-label" for="tester_list">Testers</label>
+                <ul id="tester_list" class="list-group">
+                    {% for user in project.users.all %}
+                        <li class="list-group-item">
+                            {{ user.first_name }}&nbsp;{{ user.last_name }}
+                        </li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            <div class="col-xs-1"></div>
+            <div class="col-xs-6">
+                <form action="{% url 'projects:project' project.pk %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label class="control-label">Bravo Server</label>
+
+                        <div class="input-group">
+                            {{ server_form.server }}
+                            <span class="input-group-btn">
+                                <button type="submit" name="update_server" class="btn btn-primary">
+                                    Update
+                                </button>
+                            </span>
+                        </div>
+                    </div>
+                    <br>
+                    <div class="form-group">
+                        <label class="control-label">Upload VUID File (.xlsx format)</label>
+
+                        <div class="input-group">
+                            <span class="input-group-btn">
+                                <span class="btn btn-default btn-file">
+                                    <i class="fa fa-folder-open fa-fw"></i>{{ upload_form.file }}
+                                </span>
+                            </span>
+                            <input type="text" id="filenames" class="form-control" readonly>
+                            <span class="input-group-btn">
+                                <button type="submit" name="upload_file" class="btn btn-primary">
+                                    Upload
+                                </button>
+                            </span>
+                        </div>
+                    </div>
+                </form>
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th class="col-xs-5">Filename</th>
+                        <th class="col-xs-4">Upload Date</th>
+                        <th class="col-xs-3">Upload By</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for vuid in vuids %}
+                        <tr>
+                            <td><a href="{% url "projects:vuid" project.pk vuid.pk %}">{{ vuid.filename }}</a></td>
+                            <td>{{ vuid.upload_date }}</td>
+                            <td>{{ vuid.upload_by.first_name }}&nbsp;{{ vuid.upload_by.last_name }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 {% endblock %}
 {% block endscript %}
-    <script type="text/javascript" src="{% static 'core/core.js' %}"></script>
     <script type="text/javascript">
-        $(function () {
-            setHeader("{{ message }}");
-        });
+
     </script>
 {% endblock %}
