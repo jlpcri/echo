@@ -132,17 +132,17 @@ def project(request, pid):
             form = ServerForm(request.POST)
             p = get_object_or_404(Project, pk=pid)
             if form.is_valid():
-                sid = int(form.cleaned_data['server'])
-                if sid == 0:
+                server = form.cleaned_data['server']
+                if server is None:
                     if p.bravo_server is None:
                         return redirect("projects:project", pid=pid)
                     p.bravo_server = None
                     p.save()
                 else:
                     if p.bravo_server is not None:
-                        if sid == p.bravo_server.pk:
+                        if server == p.bravo_server.name:
                             return redirect("projects:project", pid=pid)
-                    p.bravo_server = Server.objects.get(pk=sid)
+                    p.bravo_server = Server.objects.get(name=server)
                     p.save()
                 messages.success(request, "Updated server successfully")
                 return redirect("projects:project", pid=pid)
