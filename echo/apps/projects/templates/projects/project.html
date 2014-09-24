@@ -71,7 +71,7 @@
                     <ul id="tester_list" class="list-group">
                         {% for user in project.users.all %}
                             <li class="list-group-item">
-                                {{ user.first_name }}&nbsp;{{ user.last_name }}
+                                {{ user.username }}
                             </li>
                         {% endfor %}
                     </ul>
