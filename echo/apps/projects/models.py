@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timedelta
 import time
 from django.db import models
 from django.contrib.auth import get_user_model
@@ -25,6 +25,9 @@ class Project(models.Model):
 
     def current_server_pk(self):
         return self.bravo_server.pk if self.bravo_server else 0
+
+    def languages(self):
+        return Language.objects.filter(project=self)
 
     def language_list(self):
         return [i.name.lower() for i in Language.objects.filter(project=self)]
@@ -90,6 +93,35 @@ class Project(models.Model):
             vs = vs.filter(status=VoiceSlot.MISSING)
         return vs
 
+    def voiceslots_match(self, slot, request):
+        vs = VoiceSlot.objects.filter(verbiage=slot.verbiage, bravo_checksum=slot.bravo_checksum).exclude(slot=slot)
+        for s in vs:
+            s.status = slot.status
+            if s.status == VoiceSlot.PASS:
+                s.history = "{0}: Test auto passed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
+                                                                         request.POST['notes']) + slot.history
+            elif s.status == VoiceSlot.FAIL:
+                s.history = "{0}: Test auto failed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
+                                                                         request.POST['notes']) + slot.history
+        return vs.count()
+
+
+    def voiceslots_queue(self, checked_out=False, filter_language=None, older_than_ten=False):
+        vs = VoiceSlot.objects.filter(checked_out=checked_out, status=VoiceSlot.NEW)
+        if filter_language:
+            vs = vs.filter(language=Language.objects.filter(name__iexact=filter_language))
+        if older_than_ten:
+            vs.order_by('checked_out_time')
+            time_threshold = datetime.now() - timedelta(minutes=10)
+            vs = vs.filter(checked_out_time__gt=time_threshold)
+        return vs
+
+    def voiceslots_checked_out_by_user(self, user, filter_language=None):
+        vs = VoiceSlot.objects.filter(checked_out=True, user=user)
+        if filter_language:
+            vs = vs.filter(language=Language.objects.filter(name__iexact=filter_language))
+        return vs
+
     def voiceslots_failed(self):
         return self.voiceslots(filter_status=VoiceSlot.FAIL)
 
@@ -115,6 +147,7 @@ class VoiceSlot(models.Model):
     verbiage = models.TextField(blank=True, null=True)
     checked_out = models.BooleanField(default=False)
     checked_out_time = models.DateTimeField(blank=True, null=True)
+    bravo_checksum = models.TextField(blank=True, null=True, default="")
     bravo_time = models.DateTimeField(blank=True, null=True)
     vuid_time = models.DateField(blank=True, null=True)
     check_in_time = models.DateTimeField(blank=True, null=True)
@@ -122,23 +155,23 @@ class VoiceSlot(models.Model):
     def check_in(self, user, forced=False):
         if self.checked_out is True:
             self.checked_out = False
-            self.check_in_time = datetime.datetime.now()
-            self.user = user
+            self.check_in_time = datetime.now()
+            self.user = None
             if forced:
-                self.history = u"Forced check in by {0} at {1}\n".format(self.user, self.check_in_time.strftime("%b %d %Y, %H:%M")) + self.history
+                self.history = "Forced check in by {0} at {1}\n".format(self.user, self.check_in_time.strftime("%b %d %Y, %H:%M")) + self.history
             else:
-                self.history = u"Checked in by {0} at {1}\n".format(self.user, self.check_in_time.strftime("%b %d %Y, %H:%M")) + self.history
+                self.history = "Checked in by {0} at {1}\n".format(self.user, self.check_in_time.strftime("%b %d %Y, %H:%M")) + self.history
             self.save()
 
     def check_out(self, user, forced=False):
         if self.checked_out is False:
             self.checked_out = True
-            self.checked_out_time = datetime.datetime.now()
+            self.checked_out_time = datetime.now()
             self.user = user
             if forced:
-                self.history = u"Forced check out by {0} at {1}\n".format(self.user, self.checked_out_time.strftime("%b %d %Y, %H:%M")) + self.history
+                self.history = "Forced check out by {0} at {1}\n".format(self.user, self.checked_out_time.strftime("%b %d %Y, %H:%M")) + self.history
             else:
-                self.history = u"Checked out by {0} at {1}\n".format(self.user, self.checked_out_time.strftime("%b %d %Y, %H:%M")) + self.history
+                self.history = "Checked out by {0} at {1}\n".format(self.user, self.checked_out_time.strftime("%b %d %Y, %H:%M")) + self.history
             self.save()
 
     def filepath(self):
