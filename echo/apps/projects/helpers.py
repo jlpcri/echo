@@ -27,8 +27,8 @@ def fetch_slots_from_server(project, sftp):
     for s in slots:
         try:
             remote_path = "{0}.wav".format(s.filepath())
-            sum = sftp.execute('md5sum {0}'.format(remote_path))[0]
-            stat = sftp.execute('stat -c %Y {0}'.format(remote_path))[0]
+            sum = sftp.execute('md5sum {0}'.format(remote_path))[0].strip()
+            stat = sftp.execute('stat -c %Y {0}'.format(remote_path))[0].strip()
             if sum.startswith('md5sum:') or stat.startswith('date:'):
                 s.status = VoiceSlot.MISSING
                 s.history = "Slot missing, {0}\n".format(datetime.now()) + s.history
@@ -36,15 +36,15 @@ def fetch_slots_from_server(project, sftp):
             else:
                 if s.status == VoiceSlot.MISSING:
                     s.status = VoiceSlot.NEW
-                    s.bravo_checksum = sum.split(' ')[0]
-                    s.bravo_time = datetime.fromtimestamp(stat)
+                    s.bravo_checksum = sum.split(' ')[0].strip()
+                    s.bravo_time = datetime.fromtimestamp(float(stat))
                     s.history = "Slot found, {0}\n".format(datetime.now()) + s.history
                     s.save()
                 else:
                     if int(stat) > s.bravo_time and sum.split(' ')[0] != s.bravo_checksum:
                         s.status = VoiceSlot.NEW
-                        s.bravo_checksum = sum.split(' ')[0]
-                        s.bravo_time = datetime.fromtimestamp(stat)
+                        s.bravo_checksum = sum.split(' ')[0].strip()
+                        s.bravo_time = datetime.fromtimestamp(float(stat))
                         s.history = "Slot is new, {0}\n".format(datetime.now()) + s.history
                         s.save()
         except IOError:
