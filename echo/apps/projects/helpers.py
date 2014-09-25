@@ -24,32 +24,33 @@ VUID_HEADER_NAME_SET = {
 
 def fetch_slots_from_server(project, sftp):
     slots = project.voiceslots()
-    count = 1
     for s in slots:
         try:
-            print count
-            count += 1
             remote_path = "{0}.wav".format(s.filepath())
             sum = sftp.execute('md5sum {0}'.format(remote_path))[0]
             stat = sftp.execute('stat -c %Y {0}'.format(remote_path))[0]
             if sum.startswith('md5sum:') or stat.startswith('date:'):
                 s.status = VoiceSlot.MISSING
                 s.history = "Slot missing, {0}\n".format(datetime.now()) + s.history
+                s.save()
             else:
                 if s.status == VoiceSlot.MISSING:
                     s.status = VoiceSlot.NEW
                     s.bravo_checksum = sum.split(' ')[0]
                     s.bravo_time = int(stat)
                     s.history = "Slot found, {0}\n".format(datetime.now()) + s.history
+                    s.save()
                 else:
                     if int(stat) > s.bravo_time and sum.split(' ')[0] != s.bravo_checksum:
                         s.status = VoiceSlot.NEW
                         s.bravo_checksum = sum.split(' ')[0]
                         s.bravo_time = int(stat)
                         s.history = "Slot is new, {0}\n".format(datetime.now()) + s.history
+                        s.save()
         except IOError:
             s.status = VoiceSlot.MISSING
             s.history = "Slot missing, {0}\n".format(datetime.now()) + s.history
+            s.save()
 
 
 def make_filename(path, name):
