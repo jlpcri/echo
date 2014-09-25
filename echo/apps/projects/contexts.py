@@ -66,7 +66,7 @@ def context_testslot(project, slot, filepath):
 
 
 def context_vuid(vuid):
-    wb = load_workbook(vuid.file.url)
+    wb = load_workbook(vuid.file.path)
     ws = wb.active
     return {
         'vuid': vuid,
