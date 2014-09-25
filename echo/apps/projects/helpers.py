@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 import os
 from models import Language, Project, VoiceSlot, VUID
 from openpyxl import load_workbook
@@ -34,17 +34,19 @@ def fetch_slots_from_server(project, sftp):
                 s.history = "Slot missing, {0}\n".format(datetime.now()) + s.history
                 s.save()
             else:
+                dt = datetime.utcfromtimestamp(float(stat))
+                bravo_time = s.bravo_time.replace(tzinfo=None)
                 if s.status == VoiceSlot.MISSING:
                     s.status = VoiceSlot.NEW
-                    s.bravo_checksum = sum.split(' ')[0].strip()
-                    s.bravo_time = datetime.fromtimestamp(float(stat))
+                    s.bravo_checksum = sum.split(' ')[0]
+                    s.bravo_time = dt
                     s.history = "Slot found, {0}\n".format(datetime.now()) + s.history
                     s.save()
                 else:
-                    if int(stat) > s.bravo_time and sum.split(' ')[0] != s.bravo_checksum:
+                    if bravo_time < dt and sum.split(' ')[0] != s.bravo_checksum:
                         s.status = VoiceSlot.NEW
-                        s.bravo_checksum = sum.split(' ')[0].strip()
-                        s.bravo_time = datetime.fromtimestamp(float(stat))
+                        s.bravo_checksum = sum.split(' ')[0]
+                        s.bravo_time = dt
                         s.history = "Slot is new, {0}\n".format(datetime.now()) + s.history
                         s.save()
         except IOError:
