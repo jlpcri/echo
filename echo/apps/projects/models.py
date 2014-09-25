@@ -107,9 +107,9 @@ class Project(models.Model):
 
 
     def voiceslots_queue(self, checked_out=False, filter_language=None, older_than_ten=False):
-        vs = VoiceSlot.objects.filter(checked_out=checked_out, status=VoiceSlot.NEW)
+        vs = self.voiceslots().filter(checked_out=checked_out, status=VoiceSlot.NEW)
         if filter_language:
-            vs = vs.filter(language=Language.objects.filter(name__iexact=filter_language))
+            vs = vs.filter(language__name__iexact=filter_language)
         if older_than_ten:
             vs.order_by('checked_out_time')
             time_threshold = datetime.now() - timedelta(minutes=10)
@@ -117,9 +117,9 @@ class Project(models.Model):
         return vs
 
     def voiceslots_checked_out_by_user(self, user, filter_language=None):
-        vs = VoiceSlot.objects.filter(checked_out=True, user=user)
+        vs = self.voiceslots().filter(checked_out=True, user=user)
         if filter_language:
-            vs = vs.filter(language=Language.objects.filter(name__iexact=filter_language))
+            vs = vs.filter(language__name__iexact=filter_language)
         return vs
 
     def voiceslots_failed(self):
