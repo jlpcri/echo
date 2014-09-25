@@ -9,9 +9,7 @@
         {% if project %}
             <div class="row">
                 <div class="col-xs-9">
-                    <h3>{{ project.name }}&nbsp;<i>
-                        <small>{{ project.status }}</small>
-                    </i></h3>
+                    <h3>{{ project.name }}&nbsp;<i><small>{{ project.status }}</small></i></h3>
                 </div>
                 <div class="col-xs-3">
                     {% if user.username not in project.usernames %}
@@ -130,7 +128,7 @@
                         <tr>
                             <td><a href="{% url "projects:vuid" project.pk vuid.pk %}">{{ vuid.filename }}</a></td>
                             <td>{{ vuid.upload_date }}</td>
-                            <td>{{ vuid.upload_by.first_name }}&nbsp;{{ vuid.upload_by.last_name }}</td>
+                            <td>{{ vuid.upload_by.username }}</td>
                         </tr>
                     {% endfor %}
                     </tbody>

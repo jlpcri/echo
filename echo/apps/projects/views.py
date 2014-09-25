@@ -20,32 +20,8 @@ def fetch(request, pid):
         p = get_object_or_404(Project, pk=pid)
         if p.bravo_server:
             try:
-                with pysftp.Connection(p.bravo_server.address, username=str(p.bravo_server.account)) as conn:
-                    try:
-                        slots = p.voiceslots()
-                        for s in slots:
-                            remote_path = "{0}.wav".format(s.filepath())
-                            sum = conn.execute('md5sum {0}'.format(remote_path))[0]
-                            stat = conn.execute('stat -c %Y {0}'.format(remote_path))[0]
-                            if sum.startswith('md5sum:') or stat.startswith('date:'):
-                                s.status = VoiceSlot.MISSING
-                                s.history = "Slot missing, {0}\n".format(datetime.now()) + s.history
-                            else:
-                                if s.status == VoiceSlot.MISSING:
-                                    s.status = VoiceSlot.NEW
-                                    s.bravo_checksum = sum.split(' ')[0]
-                                    s.bravo_time = int(stat)
-                                    s.history = "Slot found, {0}\n".format(datetime.now()) + s.history
-                                else:
-                                    if int(stat) > s.bravo_time and sum.split(' ')[0] != s.bravo_checksum:
-                                        s.status = VoiceSlot.NEW
-                                        s.bravo_checksum = sum.split(' ')[0]
-                                        s.bravo_time = int(stat)
-                                        s.history = "Slot is new, {0}\n".format(datetime.now()) + s.history
-                    except IOError:
-                        s.status = VoiceSlot.MISSING
-                        s.history = "Slot missing, {0}\n".format(datetime.now()) + s.history
-                        pass
+                with pysftp.Connection(p.bravo_server.address, username=str(p.bravo_server.account)) as sftp:
+                    helpers.fetch_slots_from_server(p, sftp)
             except pysftp.ConnectionException:
                 messages.danger(request, "Connection error to server \"{0}\"".format(p.bravo_server.name))
                 return redirect("projects:project", pid)

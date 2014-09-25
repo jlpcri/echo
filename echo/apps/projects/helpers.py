@@ -1,16 +1,16 @@
+from datetime import datetime
 import os
 from models import Language, Project, VoiceSlot, VUID
 from openpyxl import load_workbook
 import echo.settings.base as settings
 
 
-PAGE_NAME = "Page Name"
-PROMPT_NAME = "Prompt Name"
-PROMPT_TEXT = "Prompt Text"
-LANGUAGE = "Language"
-STATE_NAME = "State Name"
-DATE_CHANGED = "Date Changed"
-
+PAGE_NAME = "page name"
+PROMPT_NAME = "prompt name"
+PROMPT_TEXT = "prompt text"
+LANGUAGE = "language"
+STATE_NAME = "state name"
+DATE_CHANGED = "date changed"
 
 VUID_HEADER_NAME_SET = {
     PAGE_NAME,
@@ -20,6 +20,36 @@ VUID_HEADER_NAME_SET = {
     STATE_NAME,
     DATE_CHANGED
 }
+
+
+def fetch_slots_from_server(project, sftp):
+    slots = project.voiceslots()
+    count = 1
+    for s in slots:
+        try:
+            print count
+            count += 1
+            remote_path = "{0}.wav".format(s.filepath())
+            sum = sftp.execute('md5sum {0}'.format(remote_path))[0]
+            stat = sftp.execute('stat -c %Y {0}'.format(remote_path))[0]
+            if sum.startswith('md5sum:') or stat.startswith('date:'):
+                s.status = VoiceSlot.MISSING
+                s.history = "Slot missing, {0}\n".format(datetime.now()) + s.history
+            else:
+                if s.status == VoiceSlot.MISSING:
+                    s.status = VoiceSlot.NEW
+                    s.bravo_checksum = sum.split(' ')[0]
+                    s.bravo_time = int(stat)
+                    s.history = "Slot found, {0}\n".format(datetime.now()) + s.history
+                else:
+                    if int(stat) > s.bravo_time and sum.split(' ')[0] != s.bravo_checksum:
+                        s.status = VoiceSlot.NEW
+                        s.bravo_checksum = sum.split(' ')[0]
+                        s.bravo_time = int(stat)
+                        s.history = "Slot is new, {0}\n".format(datetime.now()) + s.history
+        except IOError:
+            s.status = VoiceSlot.MISSING
+            s.history = "Slot missing, {0}\n".format(datetime.now()) + s.history
 
 
 def make_filename(path, name):
@@ -34,7 +64,7 @@ def parse_vuid(vuid):
     wb = load_workbook(vuid.file.path)
     ws = wb.active
 
-    headers = [i.value for i in ws.rows[0]]
+    headers = [i.value.lower() for i in ws.rows[0]]
     try:
         prompt_name_i = headers.index(PROMPT_NAME)
         prompt_text_i = headers.index(PROMPT_TEXT)
@@ -43,22 +73,25 @@ def parse_vuid(vuid):
     except ValueError:
         return {"valid": False, "message": "Parser error, invalid headers"}
 
-    v = ws['A2'].value
+    v = unicode(ws['A2'].value).strip()
     i = v.find('/')
     path = v[i:].strip()
 
     for w in ws.rows[2:]:
         try:
-            language = Language.objects.get(project=vuid.project, name=w[language_i].value.strip())
+            if w[language_i].value is not None:
+                language = Language.objects.get(project=vuid.project, name=unicode(w[language_i].value).strip().lower())
+            else:
+                language = Language.objects.get(project=vuid.project, name=unicode('english'))
         except Language.DoesNotExist:
-            language = Language(project=vuid.project, name=w[language_i].value.strip())
+            language = Language(project=vuid.project, name=unicode(w[language_i].value).strip().lower())
             language.save()
         except Language.MultipleObjectsReturned:
             return {"valid": False, "message": "Parser error, multiple languages returned"}
 
-        name = w[prompt_name_i].value.strip()
-        verbiage = w[prompt_text_i].value.strip()
-        vuid_time = w[date_changed_i].value.date()
+        name = unicode(w[prompt_name_i].value).strip()
+        verbiage = unicode(w[prompt_text_i].value).strip()
+        vuid_time = w[date_changed_i].value.date() if w[date_changed_i].value is datetime else None
 
         try:
             vs = VoiceSlot.objects.get(name=name, path=path, language=language)
@@ -109,7 +142,8 @@ def verify_vuid_headers(vuid):
     wb = load_workbook(vuid.file.path)
     ws = wb.active
     if len(ws.rows) >= 2:
-        headers = set([i.value for i in ws.rows[0]])
-        if headers.issubset(VUID_HEADER_NAME_SET) and ws['A2'].value.startswith("Bravo path:"):
+        headers = set([i.value.lower() for i in ws.rows[0]])
+        i = unicode(ws['A2'].value).strip().find('/')
+        if headers.issubset(VUID_HEADER_NAME_SET) and i != -1:
             return True
     return False
