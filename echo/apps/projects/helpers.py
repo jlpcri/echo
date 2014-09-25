@@ -37,14 +37,14 @@ def fetch_slots_from_server(project, sftp):
                 if s.status == VoiceSlot.MISSING:
                     s.status = VoiceSlot.NEW
                     s.bravo_checksum = sum.split(' ')[0]
-                    s.bravo_time = int(stat)
+                    s.bravo_time = datetime.fromtimestamp(stat)
                     s.history = "Slot found, {0}\n".format(datetime.now()) + s.history
                     s.save()
                 else:
                     if int(stat) > s.bravo_time and sum.split(' ')[0] != s.bravo_checksum:
                         s.status = VoiceSlot.NEW
                         s.bravo_checksum = sum.split(' ')[0]
-                        s.bravo_time = int(stat)
+                        s.bravo_time = datetime.fromtimestamp(stat)
                         s.history = "Slot is new, {0}\n".format(datetime.now()) + s.history
                         s.save()
         except IOError:
