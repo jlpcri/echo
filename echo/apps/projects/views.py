@@ -187,6 +187,8 @@ def submitslot(request, pid, vsid):
                 slot.status = VoiceSlot.PASS
                 slot.history = "{0}: Test passed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
                                                                          request.POST['notes']) + slot.history
+                slot.check_in(request.user)
+                slot.save()
                 # do updates to files here and get count for p pass
                 count = p.voiceslots_match(slot, request)
             else:
@@ -196,11 +198,11 @@ def submitslot(request, pid, vsid):
                 slot.status = VoiceSlot.FAIL
                 slot.history = "{0}: Test failed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
                                                                          request.POST['notes']) + slot.history
+                slot.check_in(request.user)
+                slot.save()
                 # do updates to files here and get count for p failure
                 count = p.voiceslots_match(slot, request)
                 p.failure_count += 1
-            slot.check_in(request.user)
-            slot.save()
             p.tests_run += 1
             p.save()
             messages.success(request, "Tested voice slot \"{0}\", {1} matching slots updated".format(slot.name, count))
