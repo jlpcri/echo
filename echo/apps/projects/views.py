@@ -302,3 +302,12 @@ def vuid(request, pid, vid):
     if request.method == 'GET':
         return render(request, "projects/vuid.html", contexts.context_vuid(VUID.objects.get(pk=vid)))
     return HttpResponseNotFound()
+
+
+@login_required
+def temp(request):
+    if request.method == 'GET':
+        print request.user_agent.browser
+        print request.user_agent.browser.family
+        return render(request, "projects/temp.html", {"browser": request.user_agent.browser.family.lower()})
+    return HttpResponseNotFound()
