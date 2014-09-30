@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 import os
 
 import ldap
+import socket
 from django_auth_ldap.config import LDAPSearch
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -124,6 +125,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
-
+STATIC_ROOT = ''
 STATIC_URL = '/static/'
-STATICFILES_DIRS = ('C:/Users/ewhitcom/Dropbox/Static',)
+# STATICFILES_DIRS = ()
+STATICFILES_DIRS = ('/home/ewhitcom/Dropbox/Static',)
