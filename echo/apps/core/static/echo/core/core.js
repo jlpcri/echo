@@ -1,6 +1,6 @@
 var attemptConnect;
 attemptConnect = attemptConnect || (function () {
-    var modalAttemptConnect = $('<div class="modal" data-backdrop="static" data-keyboard="false"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h3 class="text-center">Attempting to Connect</h3></div><div class="modal-body"><div class="text-center"><i class="fa fa-spinner fa-5x fa-spin"></i></div></div></div></div></div>');
+    var modalAttemptConnect = $('<div class="modal" data-backdrop="static" data-keyboard="false"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h3 class="text-center">Connecting...</h3></div><div class="modal-body"><div class="text-center"><i class="fa fa-spinner fa-5x fa-spin"></i></div></div></div></div></div>');
     return {
         show: function() {
             modalAttemptConnect.modal('show');
@@ -25,6 +25,10 @@ $(document).ready(function () {
     });
 
     $('[name="test_connection"]').click(function(){
+        attemptConnect.show()
+    });
+
+    $('[name="update_files"]').click(function(){
         attemptConnect.show()
     });
 });

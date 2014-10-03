@@ -179,7 +179,7 @@ class VoiceSlot(models.Model):
             self.save()
 
     def filepath(self):
-        return "{0}/{1}".format(self.path, self.name)
+        return "{0}/{1}.wav".format(self.path, self.name)
 
     def history_list(self):
         return [s for s in self.history.split('\n') if len(s) > 0]

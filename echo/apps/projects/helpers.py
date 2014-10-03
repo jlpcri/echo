@@ -1,8 +1,7 @@
-from datetime import date, datetime
-import os
+from datetime import datetime
+from itertools import izip, takewhile
 from models import Language, Project, VoiceSlot, VUID
 from openpyxl import load_workbook
-import echo.settings.base as settings
 
 
 PAGE_NAME = "page name"
@@ -22,40 +21,79 @@ VUID_HEADER_NAME_SET = {
 }
 
 
+class FileStatus(object):
+    def __init__(self, pathname, msum, mtime):
+        self.pathname = pathname
+        self.msum = msum
+        self.mtime = float(mtime)
+
+
+def allnamesequal(name):
+    return all(n == name[0] for n in name[1:])
+
+
+def commonprefix(paths, sep='/'):
+    bydirectorylevels = zip(*[p.split(sep) for p in paths])
+    return sep.join(x[0] for x in takewhile(allnamesequal, bydirectorylevels))
+
+
 def fetch_slots_from_server(project, sftp):
-    slots = project.voiceslots()
-    for s in slots:
-        try:
-            remote_path = "{0}.wav".format(s.filepath())
-            sum = sftp.execute('md5sum {0}'.format(remote_path))[0].strip()
-            stat = sftp.execute('stat -c %Y {0}'.format(remote_path))[0].strip()
-            if sum.startswith('md5sum:') or stat.startswith('date:'):
-                s.status = VoiceSlot.MISSING
-                s.history = "Slot missing, {0}\n".format(datetime.now()) + s.history
-                s.save()
-            else:
-                dt = datetime.utcfromtimestamp(float(stat))
-                if s.bravo_time:
-                    bravo_time = s.bravo_time.replace(tzinfo=None)
-                if s.status == VoiceSlot.MISSING:
-                    s.status = VoiceSlot.NEW
-                    s.bravo_checksum = sum.split(' ')[0]
-                    g = dt
-                    s.bravo_time = dt
-                    s.history = "Slot found, {0}\n".format(datetime.now()) + s.history
-                    s.save()
+    # get shared path of all distinct paths from voiceslot models in project
+    path = commonprefix(project.voiceslots().values_list('path', flat=True).distinct())
+    try:
+        result = sftp.execute('find {0}/ -name "*.wav"'.format(path) + ' -exec md5sum {} \; -exec stat -c"%Y" {} \;')
+    except IOError:
+        # something in the execute didn't stir the kool-aid
+        return {"valid": False, "message": "Error running command on server"}
+    if len(result) == 0:
+        # means path exists, but no files in path, mark all files as missing
+        for slot in project.voiceslots():
+            slot.status = VoiceSlot.MISSING
+            slot.history = "Slot missing, {0}\n".format(datetime.now()) + slot.history
+            slot.save()
+        return {"valid": False, "message": "All files missing on server, given path \"{0}\"".format(path)}
+    elif len(result) == 1 and result[0].startswith('find:'):
+        # means error was returned, path does not exist
+        return {"valid": False, "message": "Path \"{0}\" does not exist on server".format(path)}
+    else:
+        if len(result) % 2 == 1:
+            # dataset should be 2 lines per record, if odd then something is not right
+            return {"valid": False, "message": "Server providing invalid dataset"}
+        else:
+            # parse result into dictionary
+            l = izip(*([iter(result)]*2))
+            map = {}
+            for i in l:
+                msum, pathname = i[0].strip().split('  ')
+                mtime = i[1].strip()
+                map[pathname] = FileStatus(pathname, msum, mtime)
+            # get voiceslots for project and iterate over them
+            for slot in project.voiceslots():
+                # check for slot.filepath() in map.keys()
+                if slot.filepath() not in map:
+                    # if slot not in map, slot is missing
+                    slot.status = VoiceSlot.MISSING
+                    slot.history = "Slot missing, {0}\n".format(datetime.now()) + slot.history
+                    slot.save()
                 else:
-                    if s.bravo_time is None or bravo_time < dt and sum.split(' ')[0] != s.bravo_checksum:
-                        s.status = VoiceSlot.NEW
-                        s.bravo_checksum = sum.split(' ')[0]
-                        g = dt
-                        s.bravo_time = dt
-                        s.history = "Slot is new, {0}\n".format(datetime.now()) + s.history
-                        s.save()
-        except IOError:
-            s.status = VoiceSlot.MISSING
-            s.history = "Slot missing, {0}\n".format(datetime.now()) + s.history
-            s.save()
+                    # else slot in map, run additional tests
+                    fs = map.get(slot.filepath())
+                    bravo_time = datetime.fromtimestamp(fs.mtime)
+                    if slot.bravo_time:
+                        bravo_time = slot.bravo_time.replace(tzinfo=None)
+                    if slot.status == VoiceSlot.MISSING:
+                        slot.status = VoiceSlot.NEW
+                        slot.bravo_checksum = fs.msum
+                        slot.bravo_time = datetime.fromtimestamp(fs.mtime)
+                        slot.history = "Slot found, {0}\n".format(datetime.now()) + slot.history
+                        slot.save()
+                    elif slot.bravo_time is None or bravo_time < datetime.fromtimestamp(fs.mtime) and slot.bravo_checksum != fs.msum:
+                        slot.status = VoiceSlot.NEW
+                        slot.bravo_checksum = fs.msum
+                        slot.bravo_time = datetime.fromtimestamp(fs.mtime)
+                        slot.history = "Slot is new, {0}\n".format(datetime.now()) + slot.history
+                        slot.save()
+            return {"valid": True, "message": "Files from Bravo Server have been fetched"}
 
 
 def make_filename(path, name):
