@@ -1,8 +1,13 @@
 syntax: glob
 *.pyc
 *.sqlite3
+.hgignore
 
 syntax: regexp
 ^.idea/
 ^media/
 ^vuids/
+syntax: glob
+*.orig
+*.xlsx
+*.hg
