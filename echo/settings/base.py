@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 import os
 
 import ldap
+import socket
 from django_auth_ldap.config import LDAPSearch
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -70,6 +71,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_user_agents',
     'echo.apps.core',
     'echo.apps.projects',
     'echo.apps.reports',
@@ -83,6 +85,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_user_agents.middleware.UserAgentMiddleware',
 )
 
 ROOT_URLCONF = 'echo.urls'
@@ -122,6 +125,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
-
+STATIC_ROOT = ''
 STATIC_URL = '/static/'
-STATICFILES_DIRS = ('C:/Users/ewhitcom/Development/system',)
+# STATICFILES_DIRS = ()
+STATICFILES_DIRS = ('/home/ewhitcom/Dropbox/Static',)
