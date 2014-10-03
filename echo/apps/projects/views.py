@@ -21,7 +21,12 @@ def fetch(request, pid):
         if p.bravo_server:
             try:
                 with pysftp.Connection(p.bravo_server.address, username=str(p.bravo_server.account)) as sftp:
-                    helpers.fetch_slots_from_server(p, sftp)
+                    result = helpers.fetch_slots_from_server(p, sftp)
+                    if result['valid']:
+                        messages.success(request, result["message"])
+                    else:
+                        messages.danger(request, result['message'])
+                return redirect("projects:project", pid)
             except pysftp.ConnectionException:
                 messages.danger(request, "Connection error to server \"{0}\"".format(p.bravo_server.name))
                 return redirect("projects:project", pid)
@@ -34,8 +39,6 @@ def fetch(request, pid):
             except pysftp.SSHException:
                 messages.danger(request, "SSH error to server \"{0}\"".format(p.bravo_server.name))
                 return redirect("projects:project", pid)
-            messages.info(request, "Files from Bravo Server have been fetched")
-            return redirect("projects:project", pid)
         messages.danger(request, "No server associated with project")
         return redirect("projects:project", pid)
     return HttpResponseNotFound()
@@ -222,7 +225,7 @@ def testslot(request, pid, vsid):
         if p.bravo_server:
             try:
                 with pysftp.Connection(p.bravo_server.address, username=str(p.bravo_server.account)) as conn:
-                    remote_path = "{0}.wav".format(slot.filepath())
+                    remote_path = "{0}".format(slot.filepath())
                     local_path = os.path.join(settings.MEDIA_ROOT, "{0}.wav".format(slot.name))
                     conn.get(remote_path, local_path)
                     filepath = "{0}{1}.wav".format(settings.MEDIA_URL, slot.name)

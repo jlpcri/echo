@@ -90,7 +90,7 @@
                             </span>
                         </div>
                     </div>
-                    <a href="{% url "projects:fetch" project.pk %}" class="btn btn-warning pull-right"
+                    <a href="{% url "projects:fetch" project.pk %}" name="update_files" class="btn btn-warning pull-right"
                        style="width: 50%;">
                         <i class="fa fa-refresh fa-fw"></i>&nbsp;Update File Statuses
                     </a>
@@ -119,8 +119,8 @@
                     <thead>
                     <tr>
                         <th class="col-xs-5">Filename</th>
-                        <th class="col-xs-4">Upload Date</th>
-                        <th class="col-xs-3">Upload By</th>
+                        <th class="col-xs-5">Upload Date</th>
+                        <th class="col-xs-2">Upload By</th>
                     </tr>
                     </thead>
                     <tbody>
