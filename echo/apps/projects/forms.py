@@ -13,9 +13,5 @@ class UploadForm(forms.Form):
 
 
 class ServerForm(forms.Form):
-    server = forms.ChoiceField(required=True, choices=Server.choices(),
+    server = forms.ModelChoiceField(required=False, queryset=Server.objects.all(),
                                widget=forms.Select(attrs={'class': 'form-control'}))
-
-    def __init__(self, *args, **kwargs):
-        super(ServerForm, self).__init__(*args, **kwargs)
-        self.choices = Server.choices()

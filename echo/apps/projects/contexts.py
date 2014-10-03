@@ -6,7 +6,7 @@ import unicodecsv
 
 def context_home(user):
     return {
-        'projects': Project.objects.filter(users__pk=user.pk)
+        'projects': Project.objects.filter(users__pk=user.pk).order_by('name')
     }
 
 
@@ -50,6 +50,13 @@ def context_project(project, upload_form=UploadForm(), server_form=ServerForm(in
     }
 
 
+def context_projects(user):
+    projects = Project.objects.filter(users__pk=user.pk).order_by('name') | Project.objects.all().exclude(users__pk=user.pk).order_by('name')
+    return {
+        'projects': projects
+    }
+
+
 def context_testslot(project, slot, filepath):
     return {
         'project': project,
@@ -59,7 +66,7 @@ def context_testslot(project, slot, filepath):
 
 
 def context_vuid(vuid):
-    wb = load_workbook(vuid.file.url)
+    wb = load_workbook(vuid.file.path)
     ws = wb.active
     return {
         'vuid': vuid,

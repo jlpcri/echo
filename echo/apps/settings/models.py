@@ -6,8 +6,5 @@ class Server(models.Model):
     address = models.TextField(blank=False)
     account = models.TextField(blank=False)
 
-    @classmethod
-    def choices(cls):
-        items = [(i.pk, i.name) for i in Server.objects.all()]
-        items.insert(0, (0, '---------'))
-        return items
+    def __unicode__(self):
+        return self.name

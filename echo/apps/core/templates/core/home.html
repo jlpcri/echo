@@ -8,21 +8,50 @@
     <div class="container">
         <div class="row">
             <div class="col-xs-12">
-                <h3>Home&nbsp;-&nbsp;My Projects</h3>
+                <h3>Home&nbsp;<i><small>My Projects</small></i></h3>
             </div>
         </div>
         <hr>
-        <div class="row">
-            <div class="col-xs-12">
-                {% for project in projects %}
-                    <p>{{ project.name }}</p>
-                {% endfor %}
+        {% for project in projects %}
+            <div class="row">
+                <div class="col-xs-6">
+                    <h4><a href="{% url "projects:project" project.pk %}">{{ project.name }}</a></h4>
+
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-success"
+                             style="width: {{ project.slots_passed_percent }}%">{{ project.slots_passed }}</div>
+                        <div class="progress-bar progress-bar-warning"
+                             style="width: {{ project.slots_failed_percent }}%">{{ project.slots_failed }}</div>
+                        <div class="progress-bar progress-bar-danger"
+                             style="width: {{ project.slots_missing_percent }}%">{{ project.slots_missing }}</div>
+                    </div>
+                </div>
+                <div class="col-xs-6">
+                    <div class="pull-left">
+                    {% if user.username in project.usernames %}
+                        <b>Start Testing:</b><br>
+                        {% for language in project.languages %}
+                            <a href="{% url "projects:queue" project.pk %}?language={{ language.name|lower }}">
+                                <b>{{ language.name }}</b>
+                            </a><br>
+                        {% endfor %}
+                    {% endif %}
+                    </div>
+                    <div class="pull-right">
+                        <b>Reports:</b>&nbsp;
+                        <a href="{% url "reports:failed" project.pk %}"><i class="fa fa-file-text"></i>&nbsp;Failed</a>
+                        &nbsp;&nbsp;|&nbsp;&nbsp;
+                        <a href="{% url "reports:missing" project.pk %}"><i
+                                class="fa fa-file-text"></i>&nbsp;Missing</a>
+                    </div>
+                </div>
             </div>
-        </div>
+            <hr>
+        {% endfor %}
     </div>
 {% endblock %}
 {% block endscript %}
-    <script type="text/javascript" src="{% static 'core/core.js' %}"></script>
+    <script type="text/javascript" src="{% static 'echo/core/core.js' %}"></script>
     <script type="text/javascript">
 
     </script>
