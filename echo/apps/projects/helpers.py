@@ -84,6 +84,9 @@ def fetch_slots_from_server(project, sftp):
                     bt = "bravo_time= {0}".format(type(bravo_time))
                     sbt = "slot.bravo_time= {0}".format(type(slot.bravo_time))
                     fsmtime = "fs.mtime= {0}".format(type(datetime.fromtimestamp(fs.mtime)))
+                    print bt
+                    print sbt
+                    print fsmtime
                     if slot.status == VoiceSlot.MISSING:
                         slot.status = VoiceSlot.NEW
                         slot.bravo_checksum = fs.msum
