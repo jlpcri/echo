@@ -78,16 +78,19 @@ def fetch_slots_from_server(project, sftp):
                 else:
                     # else slot in map, run additional tests
                     fs = map.get(slot.filepath())
-                    # bravo_time = datetime.fromtimestamp(fs.mtime)
-                    # if slot.bravo_time:
-                    #     bravo_time = slot.bravo_time.replace(tzinfo=None)
+                    bravo_time = datetime.fromtimestamp(fs.mtime)
+                    if slot.bravo_time:
+                        bravo_time = slot.bravo_time.replace(tzinfo=None)
+                    bt = "bravo_time= {0}".format(type(bravo_time))
+                    sbt = "slot.bravo_time= {0}".format(type(slot.bravo_time))
+                    fsmtime = "fs.mtime= {0}".format(type(datetime.fromtimestamp(fs.mtime)))
                     if slot.status == VoiceSlot.MISSING:
                         slot.status = VoiceSlot.NEW
                         slot.bravo_checksum = fs.msum
                         slot.bravo_time = datetime.fromtimestamp(fs.mtime)
                         slot.history = "Slot found, {0}\n".format(datetime.now()) + slot.history
                         slot.save()
-                    elif slot.bravo_time is None or slot.bravo_time < datetime.fromtimestamp(fs.mtime) and slot.bravo_checksum != fs.msum:
+                    elif slot.bravo_time is None or bravo_time < datetime.fromtimestamp(fs.mtime) and slot.bravo_checksum != fs.msum:
                         slot.status = VoiceSlot.NEW
                         slot.bravo_checksum = fs.msum
                         slot.bravo_time = datetime.fromtimestamp(fs.mtime)
