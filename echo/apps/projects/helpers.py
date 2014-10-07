@@ -60,7 +60,7 @@ def fetch_slots_from_server(project, sftp):
             # dataset should be 2 lines per record, if odd then something is not right
             return {"valid": False, "message": "Server providing invalid dataset"}
         else:
-            # parse result into dictionary
+            # parse result into dictionary using izip
             l = izip(*([iter(result)]*2))
             map = {}
             for i in l:
