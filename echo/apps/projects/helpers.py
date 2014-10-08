@@ -39,25 +39,31 @@ def commonprefix(paths, sep='/'):
 
 def fetch_slots_from_server(project, sftp):
     # get shared path of all distinct paths from voiceslot models in project
+    start_time = datetime.now()
     path = commonprefix(project.voiceslots().values_list('path', flat=True).distinct())
+    print "Post distinct path: {}".format(datetime.now() - start_time)
     try:
         result = sftp.execute('find {0}/ -name "*.wav"'.format(path) + ' -exec md5sum {} \; -exec stat -c"%Y" {} \;')
     except IOError:
         # something in the execute didn't stir the kool-aid
         return {"valid": False, "message": "Error running command on server"}
+    print "Post sftp execute: {}".format(datetime.now() - start_time)
     if len(result) == 0:
         # means path exists, but no files in path, mark all files as missing
         for slot in project.voiceslots():
             slot.status = VoiceSlot.MISSING
             slot.history = "Slot missing, {0}\n".format(datetime.now()) + slot.history
             slot.save()
+        print "Post all files missing: {}".format(datetime.now() - start_time)
         return {"valid": False, "message": "All files missing on server, given path \"{0}\"".format(path)}
     elif len(result) == 1 and result[0].startswith('find:'):
         # means error was returned, path does not exist
+        print "Post path does not exist: {}".format(datetime.now() - start_time)
         return {"valid": False, "message": "Path \"{0}\" does not exist on server".format(path)}
     else:
         if len(result) % 2 == 1:
             # dataset should be 2 lines per record, if odd then something is not right
+            print "Post invalid dataset: {}".format(datetime.now() - start_time)
             return {"valid": False, "message": "Server providing invalid dataset"}
         else:
             # parse result into dictionary using izip
@@ -67,6 +73,7 @@ def fetch_slots_from_server(project, sftp):
                 msum, pathname = i[0].strip().split('  ')
                 mtime = i[1].strip()
                 map[pathname] = FileStatus(pathname, msum, mtime)
+            print "Post list to map: {}".format(datetime.now() - start_time)
             # get voiceslots for project and iterate over them
             for slot in project.voiceslots():
                 # check for slot.filepath() in map.keys()
@@ -93,6 +100,7 @@ def fetch_slots_from_server(project, sftp):
                         slot.bravo_time = datetime.fromtimestamp(fs.mtime)
                         slot.history = "Slot is new, {0}\n".format(datetime.now()) + slot.history
                         slot.save()
+            print "Post iterate voiceslots: {}".format(datetime.now() - start_time)
             return {"valid": True, "message": "Files from Bravo Server have been fetched"}
 
 
