@@ -1,4 +1,5 @@
 from datetime import datetime
+from django.db import transaction
 from itertools import izip, takewhile
 from models import Language, Project, VoiceSlot, VUID
 from openpyxl import load_workbook
@@ -37,6 +38,12 @@ def commonprefix(paths, sep='/'):
     return sep.join(x[0] for x in takewhile(allnamesequal, bydirectorylevels))
 
 
+@transaction.atomic
+def do_transaction(instances_to_save):
+    for inst in instances_to_save:
+        inst.save()
+
+
 def fetch_slots_from_server(project, sftp):
     # get shared path of all distinct paths from voiceslot models in project
     start_time = datetime.now()
@@ -50,10 +57,12 @@ def fetch_slots_from_server(project, sftp):
     print "Post sftp execute: {}".format(datetime.now() - start_time)
     if len(result) == 0:
         # means path exists, but no files in path, mark all files as missing
-        for slot in project.voiceslots():
+        slots = project.voiceslots()
+        for slot in slots:
             slot.status = VoiceSlot.MISSING
             slot.history = "Slot missing, {0}\n".format(datetime.now()) + slot.history
-            slot.save()
+            # slot.save()
+        do_transaction(slots)
         print "Post all files missing: {}".format(datetime.now() - start_time)
         return {"valid": False, "message": "All files missing on server, given path \"{0}\"".format(path)}
     elif len(result) == 1 and result[0].startswith('find:'):
@@ -75,7 +84,8 @@ def fetch_slots_from_server(project, sftp):
                 map[pathname] = FileStatus(pathname, msum, mtime)
             print "Post list to map: {}".format(datetime.now() - start_time)
             # get voiceslots for project and iterate over them
-            for slot in project.voiceslots():
+            slots = project.voiceslots()
+            for slot in slots:
                 # check for slot.filepath() in map.keys()
                 if slot.filepath() not in map:
                     # if slot not in map, slot is missing
@@ -101,6 +111,8 @@ def fetch_slots_from_server(project, sftp):
                         slot.history = "Slot is new, {0}\n".format(datetime.now()) + slot.history
                         # slot.save()
             print "Post iterate voiceslots: {}".format(datetime.now() - start_time)
+            do_transaction(slots)
+            print "Post process transaction: {}".format(datetime.now() - start_time)
             return {"valid": True, "message": "Files from Bravo Server have been fetched"}
 
 
