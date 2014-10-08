@@ -140,6 +140,7 @@ def parse_vuid(vuid):
     v = unicode(ws['A2'].value).strip()
     i = v.find('/')
     path = v[i:].strip()
+    slots = []
 
     for w in ws.rows[2:]:
         try:
@@ -167,12 +168,15 @@ def parse_vuid(vuid):
                 if vs.verbiage != verbiage:
                     vs.verbiage = verbiage
                     vs.vuid = vuid
-            vs.save()
+            slots.append(vs)
+            # vs.save()
         except VoiceSlot.DoesNotExist:
             vs = VoiceSlot(name=name, path=path, verbiage=verbiage, language=language, vuid_time=vuid_time, vuid=vuid)
-            vs.save()
+            slots.append(vs)
+            # vs.save()
         except VoiceSlot.MultipleObjectsReturned:
             return {"valid": False, "message": "Parser error, multiple voice slots returned"}
+    do_transaction(slots)
     return {"valid": True, "message": "Parsed file successfully"}
 
 
