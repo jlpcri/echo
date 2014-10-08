@@ -81,7 +81,7 @@ def fetch_slots_from_server(project, sftp):
                     # if slot not in map, slot is missing
                     slot.status = VoiceSlot.MISSING
                     slot.history = "Slot missing, {0}\n".format(datetime.now()) + slot.history
-                    slot.save()
+                    # slot.save()
                 else:
                     # else slot in map, run additional tests
                     fs = map.get(slot.filepath())
@@ -93,13 +93,13 @@ def fetch_slots_from_server(project, sftp):
                         slot.bravo_checksum = fs.msum
                         slot.bravo_time = datetime.fromtimestamp(fs.mtime)
                         slot.history = "Slot found, {0}\n".format(datetime.now()) + slot.history
-                        slot.save()
+                        # slot.save()
                     elif slot.bravo_time is None or bravo_time < datetime.fromtimestamp(fs.mtime) and slot.bravo_checksum != fs.msum:
                         slot.status = VoiceSlot.NEW
                         slot.bravo_checksum = fs.msum
                         slot.bravo_time = datetime.fromtimestamp(fs.mtime)
                         slot.history = "Slot is new, {0}\n".format(datetime.now()) + slot.history
-                        slot.save()
+                        # slot.save()
             print "Post iterate voiceslots: {}".format(datetime.now() - start_time)
             return {"valid": True, "message": "Files from Bravo Server have been fetched"}
 
