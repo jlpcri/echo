@@ -3,6 +3,7 @@ import os
 
 import pysftp
 
+from django.db import transaction
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse, HttpResponseNotFound
@@ -68,6 +69,7 @@ def leave_project(request, pid):
     return HttpResponseNotFound()
 
 
+@transaction.atomic
 @login_required
 def new(request):
     if request.method == 'GET':
@@ -101,7 +103,7 @@ def new(request):
             return render(request, "projects/new.html", contexts.context_new(form))
     return HttpResponseNotFound()
 
-
+@transaction.atomic
 @login_required
 def project(request, pid):
     if request.method == 'GET':

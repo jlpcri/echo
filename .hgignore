@@ -11,3 +11,4 @@ syntax: glob
 *.orig
 *.xlsx
 *.hg
+re:^manage\.py\.lprof$
