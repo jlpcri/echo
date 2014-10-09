@@ -76,6 +76,7 @@ INSTALLED_APPS = (
     'echo.apps.projects',
     'echo.apps.reports',
     'echo.apps.settings',
+    'django_extensions',
 )
 
 MIDDLEWARE_CLASSES = (

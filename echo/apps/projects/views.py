@@ -1,17 +1,20 @@
 from datetime import datetime
 import os
+
+import pysftp
+
+from django.db import transaction
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
+from django.conf import settings
+
 from echo.apps.core import messages
 from echo.apps.settings.models import Server
-from forms import ProjectForm, ServerForm, UploadForm
-from models import Language, Project, VoiceSlot, VUID
-import echo.settings.base as settings
-import contexts
-import helpers
-import pysftp
+from echo.apps.projects.forms import ProjectForm, ServerForm, UploadForm
+from echo.apps.projects.models import Language, Project, VoiceSlot, VUID
+from echo.apps.projects import contexts, helpers
 
 
 @login_required
@@ -66,6 +69,7 @@ def leave_project(request, pid):
     return HttpResponseNotFound()
 
 
+@transaction.atomic
 @login_required
 def new(request):
     if request.method == 'GET':
@@ -99,7 +103,7 @@ def new(request):
             return render(request, "projects/new.html", contexts.context_new(form))
     return HttpResponseNotFound()
 
-
+@transaction.atomic
 @login_required
 def project(request, pid):
     if request.method == 'GET':
@@ -233,7 +237,8 @@ def testslot(request, pid, vsid):
                     slot.check_out(request.user)
                     slot.history = "Downloaded file last modified on {0}\n".format(
                         datetime.fromtimestamp(last_modified).strftime("%b %d %Y, %H:%M")) + slot.history
-            except IOError:
+            except IOError as e:
+                print e
                 messages.danger(request, "File missing on server \"{0}\"".format(p.bravo_server.name))
                 slot.status = VoiceSlot.MISSING
                 slot.history = "Attempted test, slot missing, {0}\n".format(datetime.now()) + slot.history
