@@ -1,8 +1,12 @@
 from datetime import datetime, timedelta
 import time
+import os
+
+import pysftp
+
 from django.db import models
 from django.contrib.auth import get_user_model
-
+from django.conf import settings
 
 User = get_user_model()
 
@@ -183,6 +187,19 @@ class VoiceSlot(models.Model):
 
     def history_list(self):
         return [s for s in self.history.split('\n') if len(s) > 0]
+
+    def download(self):
+        """Downloads a file from the remote server and returns the path on the local server"""
+        p = self.language.project
+        with pysftp.Connection(p.bravo_server.address, username=str(p.bravo_server.account)) as conn:
+            remote_path = "{0}".format(self.filepath())
+            local_path = os.path.join(settings.MEDIA_ROOT, "{0}.wav".format(self.name))
+            conn.get(remote_path, local_path)
+            filepath = "{0}{1}.wav".format(settings.MEDIA_URL, self.name)
+            last_modified = int(conn.execute('stat -c %Y {0}'.format(remote_path))[0])
+            self.history = "Downloaded file last modified on {0}\n".format(
+                datetime.fromtimestamp(last_modified).strftime("%b %d %Y, %H:%M")) + self.history
+        return filepath
 
 
 class VUID(models.Model):

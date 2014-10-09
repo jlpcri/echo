@@ -163,37 +163,70 @@ def projects(request):
 def queue(request, pid):
     if request.method == 'GET':
         p = get_object_or_404(Project, pk=pid)
-        lang = request.GET.get('language', '').strip().lower()
-        if lang in p.language_list():
-            slots = p.voiceslots_checked_out_by_user(request.user, filter_language=lang)
-            if slots:
-                return redirect("projects:testslot", pid=pid, vsid=slots[0].pk)
+        lang = get_object_or_404(Language, project=p, name=request.GET.get('language', '__malformed').lower())
+        slots_out = request.user.voiceslot_set
+        if slots_out.count() < 0:
+            slot = slots_out.first()
+            if slot.language.pk == lang.pk:
+                slot_file = slot.download()
+                return render(request, "projects/testslot.html", {'slot': slot, 'file': slot_file})
             else:
-                slots = p.voiceslots_queue(checked_out=False, filter_language=lang)
-                if slots:
-                    return redirect("projects:testslot", pid=pid, vsid=slots[0].pk)
-                else:
-                    slots = p.voiceslots_queue(checked_out=True, filter_language=lang, older_than_ten=True)
-                    if slots:
-                        return redirect("projects:testslot", pid=pid, vsid=slots[0].pk)
-            messages.info(request, 'No slots available for testing')
-            return redirect("projects:project", pid)
-        messages.danger(request, "Invalid language type for project {0}".format(p.name))
-        return redirect("projects:project", pid)
-    return HttpResponseNotFound()
+                for slot in slots_out:
+                    slot.check_in()
+        slot = lang.voiceslot_set.filter(status=VoiceSlot.NEW, checked_out=False).first()
+        slot_file = slot.download()
+        return render(request, "projects/testslot.html", {'slot': slot, 'file': slot_file})
+    elif request.method == 'POST':
+        p = get_object_or_404(Project, pk=pid)
+        lang = get_object_or_404(Language, project=p, name=request.GET.get('language', '__malformed').lower())
+        tested_slot = get_object_or_404(VoiceSlot, pk=request.POST.get('slot-id', -1))
+        if "cancel_test" in request.POST:
+            tested_slot.check_in(request.user)
+            return redirect("projects:project", pid=pid)
+        elif "submit_test" in request.POST:
+            test_result = request.POST.get('test_result', False)
+            if test_result:
+                tested_slot.status = VoiceSlot.PASS
+                tested_slot.history = "{0}: Test passed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
+                                                                        request.POST['notes']) + tested_slot.history
+                tested_slot.check_in(request.user)
+                tested_slot.save()
+                # do updates to files here and get count for p pass
+                count = p.voiceslots_match(tested_slot, request)
+            else:
+                if not request.POST.get('notes', False):
+                    messages.danger(request, "Please provide notes on test failure")
+                    return redirect("projects:testslot", pid=p.pk, vsid=tested_slot.pk)
+                tested_slot.status = VoiceSlot.FAIL
+                tested_slot.history = "{0}: Test failed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
+                                                                         request.POST['notes']) + tested_slot.history
+                tested_slot.check_in(request.user)
+                tested_slot.save()
+                # do updates to files here and get count for p failure
+                count = p.voiceslots_match(tested_slot, request)
+                p.failure_count += 1
+            p.tests_run += 1
+            p.save()
+            if count > 0:
+                messages.success(request, "{0} matching slots updated".format(count))
 
+            slot = lang.voiceslot_set.filter(status=VoiceSlot.NEW, checked_out=False).first()
+            slot_file = slot.download()
+            return render(request, "projects/testslot.html", {'slot': slot, 'file': slot_file})
+        else:
+            return HttpResponseNotFound()
 
 @login_required
-def submitslot(request, pid, vsid):
+def submitslot(request, vsid):
     if request.method == 'POST':
         if "submit_test" in request.POST:
-            p = get_object_or_404(Project, pk=pid)
             slot = get_object_or_404(VoiceSlot, pk=vsid)
+            p = slot.language.project
             test_result = request.POST.get('test_result', False)
             if test_result:
                 slot.status = VoiceSlot.PASS
                 slot.history = "{0}: Test passed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
-                                                                         request.POST['notes']) + slot.history
+                                                                        request.POST['notes']) + slot.history
                 slot.check_in(request.user)
                 slot.save()
                 # do updates to files here and get count for p pass
@@ -201,7 +234,7 @@ def submitslot(request, pid, vsid):
             else:
                 if not request.POST.get('notes', False):
                     messages.danger(request, "Please provide notes on test failure")
-                    return redirect("projects:testslot", pid=pid, vsid=vsid)
+                    return redirect("projects:testslot", pid=p.pk, vsid=vsid)
                 slot.status = VoiceSlot.FAIL
                 slot.history = "{0}: Test failed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
                                                                          request.POST['notes']) + slot.history
@@ -213,11 +246,11 @@ def submitslot(request, pid, vsid):
             p.tests_run += 1
             p.save()
             messages.success(request, "Tested voice slot \"{0}\", {1} matching slots updated".format(slot.name, count))
-            return redirect("projects:project", pid=pid)
+            return redirect("projects:project", pid=p.pk)
         elif "cancel_test" in request.POST:
             slot = get_object_or_404(VoiceSlot, pk=vsid)
             slot.check_in(request.user)
-            return redirect("projects:project", pid=pid)
+            return redirect("projects:project", pid=slot.language.project.pk)
     return HttpResponseNotFound()
 
 
@@ -258,7 +291,7 @@ def testslot(request, pid, vsid):
             return render(request, "projects/testslot.html", contexts.context_testslot(p, slot, filepath))
         messages.danger(request, "No server associated with project")
         return redirect("projects:project", pid)
-    return HttpResponseNotFound()
+    return submitslot(request, vsid)
 
 
 @login_required

@@ -1,5 +1,5 @@
 {% extends "core/base.html" %}
-{% block title %}Projects&nbsp;-&nbsp;{{ project.name }}&nbsp;-&nbsp;Test Voice Slot{% endblock %}
+{% block title %}Projects&nbsp;-&nbsp;{{ slot.language.project.name }}&nbsp;-&nbsp;Test Voice Slot{% endblock %}
 {% load staticfiles %}
 {% block headscript %}
 
@@ -8,12 +8,13 @@
     <div class="container">
         <div class="row">
             <div class="col-xs-12">
-                <h3>{{ project.name }}&nbsp;-&nbsp;<i>({{ slot.language.name }})</i></h3>
+                <h3>{{ slot.language.project.name }}&nbsp;-&nbsp;<i>({{ slot.language.name }})</i></h3>
             </div>
         </div>
         <hr>
-        <form action="{% url "projects:submitslot" project.pk slot.pk %}" method="post">
+        <form method="post">
             {% csrf_token %}
+            <input type="hidden" name="slot-id" value="{{slot.pk}}">
             <div class="row">
                 <div class="col-xs-6">
                     <h3>{{ slot.name }}</h3>
