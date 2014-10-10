@@ -25,7 +25,10 @@ class Project(models.Model):
     tests_run = models.IntegerField(default=0)
     failure_count = models.IntegerField(default=0)
     bravo_server = models.ForeignKey('settings.Server', blank=True, null=True)
+    preprod_server = models.ForeignKey('settings.PreprodServer', blank=True, null=True)
+    preprod_path = models.TextField(blank=True)
     status = models.TextField(choices=PROJECT_STATUS_CHOICES, default=TESTING)
+
 
     def current_server_pk(self):
         return self.bravo_server.pk if self.bravo_server else 0
