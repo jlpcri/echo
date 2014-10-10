@@ -65,15 +65,15 @@ function Inform() {
         var now = new Date();
         var interval = (now.getTime() - Last.getTime()) / 1000;
         SoundPos += interval;
-        console.log(SoundPos);
+//        console.log(SoundPos);
         Last = now;
-        console.log(Last);
+//        console.log(Last);
     }
     InfoState.innerHTML = State + "(" + SoundPos.toFixed(2) + "/" + SoundLen.toFixed(2) + ") sec (" + getPerc(SoundPos, SoundLen) + "%)";
     updateProgress(SoundPos, SoundLen);
 }
 function SoundState(state, position) {
-    console.log(state);
+//    console.log(state);
     if (position != undefined) SoundPos = position;
     if (State != "PLAYING" && state == "PLAYING") {
         Last = new Date();
