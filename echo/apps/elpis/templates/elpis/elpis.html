@@ -24,6 +24,10 @@
                 $("#run-verify").removeAttr("disabled");
                 $("#file-structure-div").html('<label class="control-label">File Structure</label><p>Click Run to begin verification.</p>');
             });
+            $("#run-verify").click( function(event){
+                $("#run-verify").attr('disabled', 'disabled').html("Running...")
+
+            });
         });
     </script>
 {% endblock %}
@@ -64,14 +68,14 @@
                 {% endif %}
             </div>
             <div class="col-xs-1">
-                <input type="button" id="run-verify" value="Run" class="btn btn-primary" {% if not project.preprod_server or not project.preprod_path %}disabled{% endif %}>
+                <button id="run-verify" class="btn btn-primary" {% if not project.preprod_server or not project.preprod_path %}disabled{% endif %}>Run</button>
             </div>
         </div>
     </div>
-    <div class="modal fade" id="preprod-modal" action="{% url "elpis:set_server" project.pk %}">
+    <div class="modal fade" id="preprod-modal">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form id='server-select-modal-form' method="post">
+                <form id='server-select-modal-form' method="post" action="{% url "elpis:set_server" project.pk %}">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal">
                             <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
@@ -95,10 +99,10 @@
             </div>
         </div>
     </div>
-    <div class="modal fade" id="preprod-path-modal" action="{% url "elpis:set_path" project.pk %}">
+    <div class="modal fade" id="preprod-path-modal">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form id='path-select-modal-form' method="post">
+                <form id='path-select-modal-form' method="post" action="{% url "elpis:set_path" project.pk %}">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal">
                             <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
@@ -115,6 +119,31 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                         <button type="submit" id="preprod-path-save" class="btn btn-primary">Select Path</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="run-applications-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id='run-applications-modal-form' method="post">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">
+                            <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+                        </button>
+                        <h4 class="modal-title">Select Applications</h4>
+                    </div>
+                    <div class="modal-body">
+                        {% csrf_token %}
+                        <p>The following applications were found on the server. Please select applications in scope for this project.</p>
+                        <select multiple name="applications" id="run-applications-select" class="form-control">
+
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="submit" id="run-applications-save" class="btn btn-primary">Select Path</button>
                     </div>
                 </form>
             </div>
