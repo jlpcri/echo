@@ -39,6 +39,10 @@ class Project(models.Model):
     def language_list(self):
         return [i.name.lower() for i in Language.objects.filter(project=self)]
 
+    def set_preprod_path(self, client):
+        self.preprod_path = self.preprod_server.get_path_for_client(client)
+        self.save()
+
     def slots_failed(self):
         return self.voiceslots().filter(status=VoiceSlot.FAIL).count()
 

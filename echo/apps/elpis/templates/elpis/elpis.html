@@ -2,22 +2,122 @@
 {% block title %}Verify File Transfer{% endblock %}
 {% load staticfiles %}
 {% block headscript %}
-
+    <script>
+        $(function() {
+            $("#server-select-modal-form").on( "submit", function() {
+                event.preventDefault();
+                $.post("{% url 'elpis:set_server' project.pk %}", $("#server-select-modal-form").serialize()).done(function(data) {
+                    $("#preprod-server-display").text("Preprod server: " + $("#preprod-server-select").find("option[value='" + $("#preprod-server-select").val() + "']").text())
+                    $.each(data.paths, function( i, val) {
+                        $('#preprod-path-select').append('<option value="' + val + '">' + val + '</option>');
+                    });
+                    $("#preprod-modal").modal('hide');
+                    $("#preprod-path-modal").modal('show');
+                });
+            });
+            $("#path-select-modal-form").on( "submit", function() {
+                event.preventDefault();
+                $.post("{% url 'elpis:set_path' project.pk %}", $("#path-select-modal-form").serialize()).done(function(data) {
+                    $("#preprod-path-display").text("Preprod path: " + data.path);
+                });
+                $("#preprod-path-modal").modal('hide');
+                $("#file-structure-div").html('<label class="control-label">File Structure</label><p>Click Run to begin verification.</p>');
+            });
+        });
+    </script>
 {% endblock %}
 {% block content %}
     <div class="container">
         <div class="row">
+            <div class="col-xs-12">
             <!-- Start header row -->
-            <h3>{{ project.name }}</h3>
+                <h3>{{ project.name }} - Verify File Deployment</h3>
+            </div>
         </div>
+        <hr>
         <div class="row">
             <div class="col-xs-4">
                 <!-- Start left column -->
+                <label class="control-label" for="preprod-info">Preprod Information</label>
+                <ul id="preprod-info" class="list-group">
+                    <li class="list-group-item">
+                        Bravo server: {{project.bravo_server.name|default:"None"}}
+                    </li>
+                    <li class="list-group-item" id="preprod-server-display">
+                        Preprod server: {{project.preprod_server.name|default:"None"}}
+                    </li>
+                    <li class="list-group-item" id="preprod-path-display">
+                        Preprod path: {{project.preprod_path|default:"Unknown"}}
+                    </li>
+                </ul>
+                <input type="button" data-toggle="modal" data-target="#preprod-modal" value="Update Preprod Information" class="btn btn-primary">
 
             </div>
-            <div class="col-xs-4">
+            <div class="col-xs-7" id="file-structure-div">
                 <!-- Start right column -->
+                <label class="control-label">File Structure</label>
+                {% if project.preprod_server and project.preprod_path %}
+                <p>Click Run to begin verification.</p>
+                {% else %}
+                <p>Update preprod information before running file deployment verification.</p>
+                {% endif %}
+            </div>
+            <div class="col-xs-1">
+                <input type="button" id="run" value="Run" class="btn btn-primary">
             </div>
         </div>
     </div>
+    <div class="modal fade" id="preprod-modal" action="{% url "elpis:set_server" project.pk %}">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id='server-select-modal-form' method="post">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">
+                            <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+                        </button>
+                        <h4 class="modal-title">Update Preprod Information</h4>
+                    </div>
+                    <div class="modal-body">
+                        {% csrf_token %}
+                        <label for="preprod-server-select">Preprod server:</label>
+                        <select name="preprod-server" id="preprod-server-select" class="form-control">
+                            {% for server in preprod_servers %}
+                            <option value="{{server.pk}}">{{server.name}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="submit" id="preprod-save" class="btn btn-primary">Select Server</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="preprod-path-modal" action="{% url "elpis:set_path" project.pk %}">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id='path-select-modal-form' method="post">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">
+                            <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
+                        </button>
+                        <h4 class="modal-title">Select Preprod Path</h4>
+                    </div>
+                    <div class="modal-body">
+                        {% csrf_token %}
+                        <label for="preprod-path-select">Preprod client paths:</label>
+                        <select name="preprod-path" id="preprod-path-select" class="form-control">
+
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="submit" id="preprod-path-save" class="btn btn-primary">Select Path</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 {% endblock %}

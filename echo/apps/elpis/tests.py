@@ -6,13 +6,13 @@ from echo.apps.projects.models import Project
 
 User = get_user_model()
 
-class TestSetView(test.TestCase):
+class TestSetServerView(test.TestCase):
     def setUp(self):
         self.client = test.Client()
         User.objects.create_user(username='test_user', password='test')
         Project.objects.create(name='Test Project',)
         self.client.login(username='test_user', password='test')
-        self.url = reverse('elpis:set', args=(1,))
+        self.url = reverse('elpis:set_server', args=(1,))
 
     def test_dashboard_load(self):
         response = self.client.get(self.url)
