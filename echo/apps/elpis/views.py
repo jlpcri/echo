@@ -1,7 +1,5 @@
 import json
 
-from mock import MagicMock
-
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
@@ -53,5 +51,13 @@ def set_preprod_path(request, pid):
 def verify_file_transfer(request, pid):
     """View to identify potential problems with file transfer from Bravo to Preprod"""
     p = get_object_or_404(Project, pk=pid)
-    json_data = json.dumps({})
-    return HttpResponse(json_data, content_type="application/json")
+    if request.method == 'GET':
+        apps = p.get_applications()
+        json_data = json.dumps({'apps': apps})
+        return HttpResponse(json_data, content_type="application/json")
+    elif request.method == 'POST':
+        apps = request.POST.getlist('applications')
+        files = p.preprod_server.get_wavs_from_apps(p.preprod_client_id, apps)
+        print files
+        json_data = json.dumps(files)
+        return HttpResponse(json_data, content_type="application/json")

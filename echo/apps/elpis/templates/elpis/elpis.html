@@ -22,11 +22,25 @@
                 });
                 $("#preprod-path-modal").modal('hide');
                 $("#run-verify").removeAttr("disabled");
-                $("#file-structure-div").html('<label class="control-label">File Structure</label><p>Click Run to begin verification.</p>');
+                $("#file-structure-div div").html('<p>Click Run to begin verification.</p>');
             });
             $("#run-verify").click( function(event){
-                $("#run-verify").attr('disabled', 'disabled').html("Running...")
+                $.get("{% url 'elpis:verify' project.pk%}").done(function(data){
+                    $.each(data.apps, function( i, val ) {
+                        $("#run-applications-select").append('<option selected value="' + val + '">' + val + '</option>')
+                    });
+                    $('#run-applications-modal').modal('show');
+                });
 
+            });
+            $("#run-applications-modal-form").on( "submit", function() {
+                event.preventDefault();
+                $("#run-verify").attr('disabled', 'disabled').html("Running...")
+                $("#file-structure-div div").html('<i class="fa fa-spin fa-cog fa-2x"></i>');
+                $('#run-applications-modal').modal('hide');
+                $.post("{% url 'elpis:verify' project.pk %}", $("#run-applications-modal-form").serialize()).done(function(data) {
+                    $("#file-structure-div div").text(data);
+                });
             });
         });
     </script>
@@ -61,11 +75,13 @@
             <div class="col-xs-7" id="file-structure-div">
                 <!-- Start right column -->
                 <label class="control-label">File Structure</label>
-                {% if project.preprod_server and project.preprod_path %}
-                <p>Click Run to begin verification.</p>
-                {% else %}
-                <p>Update preprod information before running file deployment verification.</p>
-                {% endif %}
+                <div>
+                    {% if project.preprod_server and project.preprod_path %}
+                    <p>Click Run to begin verification.</p>
+                    {% else %}
+                    <p>Update preprod information before running file deployment verification.</p>
+                    {% endif %}
+                </div>
             </div>
             <div class="col-xs-1">
                 <button id="run-verify" class="btn btn-primary" {% if not project.preprod_server or not project.preprod_path %}disabled{% endif %}>Run</button>
@@ -75,7 +91,7 @@
     <div class="modal fade" id="preprod-modal">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form id='server-select-modal-form' method="post" action="{% url "elpis:set_server" project.pk %}">
+                <form id='server-select-modal-form' method="post" action="{% url 'elpis:set_server' project.pk %}">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal">
                             <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
@@ -102,7 +118,7 @@
     <div class="modal fade" id="preprod-path-modal">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form id='path-select-modal-form' method="post" action="{% url "elpis:set_path" project.pk %}">
+                <form id='path-select-modal-form' method="post" action="{% url 'elpis:set_path' project.pk %}">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal">
                             <span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
@@ -143,7 +159,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                        <button type="submit" id="run-applications-save" class="btn btn-primary">Select Path</button>
+                        <button type="submit" id="run-applications-save" class="btn btn-primary">Select Applications</button>
                     </div>
                 </form>
             </div>

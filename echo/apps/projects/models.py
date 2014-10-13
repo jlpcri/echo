@@ -29,15 +29,21 @@ class Project(models.Model):
     preprod_path = models.TextField(blank=True)
     status = models.TextField(choices=PROJECT_STATUS_CHOICES, default=TESTING)
 
-
     def current_server_pk(self):
         return self.bravo_server.pk if self.bravo_server else 0
+
+    def get_applications(self):
+        return self.preprod_server.get_applications_for_client(self.preprod_client_id)
 
     def languages(self):
         return Language.objects.filter(project=self)
 
     def language_list(self):
         return [i.name.lower() for i in Language.objects.filter(project=self)]
+
+    @property
+    def preprod_client_id(self):
+        return self.preprod_path.split('/')[-1]
 
     def set_preprod_path(self, client):
         self.preprod_path = self.preprod_server.get_path_for_client(client)

@@ -84,10 +84,17 @@ class TestVerifyView(test.TestCase):
     def setUp(self):
         self.client = test.Client()
         User.objects.create_user(username='test_user', password='test')
-        Project.objects.create(name='Test Project',)
+        # TODO: Mock preprod servers
+        pps = PreprodServer.objects.create(name='linux4095', address='linux4095.wic.west.com', account='wicqacip',
+                                           application_type=PreprodServer.PRODUCER)
+        Project.objects.create(name='Test Project', preprod_server=pps,
+                               preprod_path='/usr/local/tuvox/public/Projects/21cent')
         self.client.login(username='test_user', password='test')
         self.url = reverse('elpis:verify', args=(1,))
 
-    def test_verify_loads(self):
+    def test_verify_get_apps(self):
+        """GET on URL should return a JSON list of applications for client"""
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, 200)
+        response_body = json.loads(response.content)
+        self.assertTrue(response_body['apps'])
