@@ -21,6 +21,7 @@
                     $("#preprod-path-display").text("Preprod path: " + data.path);
                 });
                 $("#preprod-path-modal").modal('hide');
+                $("#run-verify").removeAttr("disabled");
                 $("#file-structure-div").html('<label class="control-label">File Structure</label><p>Click Run to begin verification.</p>');
             });
         });
@@ -63,7 +64,7 @@
                 {% endif %}
             </div>
             <div class="col-xs-1">
-                <input type="button" id="run" value="Run" class="btn btn-primary">
+                <input type="button" id="run-verify" value="Run" class="btn btn-primary" {% if not project.preprod_server or not project.preprod_path %}disabled{% endif %}>
             </div>
         </div>
     </div>
