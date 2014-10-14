@@ -92,7 +92,7 @@ color: #f00;
 #file-struct ul li.folder {
     position:relative;
 }
-li.folder:before {
+#file-struct li.folder:before {
 font-family: 'FontAwesome';
 content: '\f114';
 margin:0 5px 0 -15px;
