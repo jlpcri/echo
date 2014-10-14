@@ -1,0 +1,13 @@
+<div class="row">
+    <h4>Missing Files</h4>
+    <ul>
+    {% for f in missing_slots %}
+    <li>{{f}}</li>
+    {% endfor %}
+    </ul>
+</div>
+<hr>
+<div class="row">
+    <h4>Preprod File Structure</h4>
+    <ul>{{file_struct|unordered_list}}</ul>
+</div>
