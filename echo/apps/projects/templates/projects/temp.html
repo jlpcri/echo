@@ -8,16 +8,20 @@
     <div class="container">
         <div class="row">
             <div class="col-xs-12">
-                <h3>Temp&nbsp;<i><small>{{ browser }}</small></i></h3>
+                <h3>
+                    Temp&nbsp;<i><small>{{ browser }}</small></i>
+                </h3>
             </div>
         </div>
         <hr>
         <div class="row">
             <div class="col-xs-6">
-            <label>Using HTML5 Audio Control</label>
+                <label>Using HTML5 Audio Control</label>
+
                 <div class="audio-holder">
                     <!--[if gte IE 10]> -->
-                    <audio id="player" controls src="http://localhost:8000/echo/media/back_in_business.wav" type="audio/wav"
+                    <audio id="player" controls src="http://localhost:8000/echo/media/back_in_business.wav"
+                           type="audio/wav"
                            style="width:100%;">
                         IE support pending. Please use Firefox or Chrome.
                     </audio>
@@ -32,7 +36,8 @@
                     <bgsound id="sound"></bgsound>
                     <label>Using Background Sound</label>
                     <br>
-                    <button class="btn btn-primary" onclick="playSound('http://localhost:8000/echo/media/back_in_business.wav');">
+                    <button class="btn btn-primary"
+                            onclick="playSound('http://localhost:8000/echo/media/back_in_business.wav');">
                         <i class="fa fa-play"></i>
                     </button>
                 {% else %}
@@ -50,52 +55,42 @@
                 {% endif %}
             </div>
         </div>
+        <hr>
+        <div class="row">
+            <div class="col-xs-6">
+                <button class="btn btn-default"
+                        onclick="doPlay('http://localhost:8000/echo/media/back_in_business.wav');"><i
+                        class="fa fa-play"></i></button>
+                <button class="btn btn-default"
+                        onclick="doStop();"><i
+                        class="fa fa-stop"></i></button>
+                <div class="progress" style="height: 36px;">
+                    <div id="player-progress" class="progress-bar" style="width: 0%;"></div>
+                </div>
+            </div>
+            <div class="col-xs-6">
+                <div id="InfoFile"></div>
+                <div id="InfoSound"></div>
+                <div id="InfoState"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12">
+                <object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000"
+                        id="audio1"
+                        align="middle">
+                    <param name="quality" value="high"/>
+                    <embed src="{% static 'common/flash-wav-player/wavplayer.swf' %}?gui=none"
+                           bgcolor="#ffffff"
+                           name="audio1"
+                           quality="high"
+                           allowScriptAccess="always"
+                           type="application/x-shockwave-flash"
+                           pluginspage="http://www.macromedia.com/go/getflashplayer"></embed>
+                </object>
+            </div>
+        </div>
     </div>
-{#                                <ul class="jp-controls">#}
-{#                                    <li><a href="javascript:;" class="jp-play" tabindex="1">play</a></li>#}
-{#                                    <li><a href="javascript:;" class="jp-pause" tabindex="1">pause</a></li>#}
-{#                                    <li><a href="javascript:;" class="jp-stop" tabindex="1">stop</a></li>#}
-{#                                    <li><a href="javascript:;" class="jp-mute" tabindex="1" title="mute">mute</a></li>#}
-{#                                    <li><a href="javascript:;" class="jp-unmute" tabindex="1" title="unmute">unmute</a>#}
-{#                                    </li>#}
-{#                                    <li><a href="javascript:;" class="jp-volume-max" tabindex="1" title="max volume">max#}
-{#                                        volume</a></li>#}
-{#                                </ul>#}
-{#                                <div class="jp-progress">#}
-{#                                    <div class="jp-seek-bar">#}
-{#                                        <div class="jp-play-bar"></div>#}
-{##}
-{#                                    </div>#}
-{#                                </div>#}
-{#                                <div class="jp-volume-bar">#}
-{#                                    <div class="jp-volume-bar-value"></div>#}
-{#                                </div>#}
-{#                                <div class="jp-current-time"></div>#}
-{#                                <div class="jp-duration"></div>#}
-{#                                <ul class="jp-toggles">#}
-{#                                    <li><a href="javascript:;" class="jp-repeat" tabindex="1" title="repeat">repeat</a>#}
-{#                                    </li>#}
-{#                                    <li><a href="javascript:;" class="jp-repeat-off" tabindex="1" title="repeat off">repeat#}
-{#                                        off</a></li>#}
-{#                                </ul>#}
-{#                            </div>#}
-{#                            <div class="jp-details">#}
-{#                                <ul>#}
-{#                                    <li><span class="jp-title"></span></li>#}
-{#                                </ul>#}
-{#                            </div>#}
-{#                            <div class="jp-no-solution">#}
-{#                                <span>Update Required</span>#}
-{#                                To play the media you will need to either update your browser to a recent version or#}
-{#                                update#}
-{#                                your <a href="http://get.adobe.com/flashplayer/" target="_blank">Flash plugin</a>.#}
-{#                            </div>#}
-{#                        </div>#}
-{#                    </div>#}
-{#                {% endif %}#}
-{#            </div>#}
-{#        </div>#}
-{#    </div>#}
 {% endblock %}
 {% block endscript %}
     <script type="text/javascript">
@@ -117,6 +112,19 @@
             remainingDuration: true,
             toggleDuration: true
         });
+
+        var player = getPlayer('audio1');
+        if (!player || !player.attachHandler) setTimeout(init, 100); // Wait for load
+        else {
+            player.attachHandler("progress", "FileLoad");
+            player.attachHandler("PLAYER_LOAD", "SoundLoad");
+            player.attachHandler("PLAYER_BUFFERING", "SoundState", "BUFFERING");
+            player.attachHandler("PLAYER_PLAYING", "SoundState", "PLAYING");
+            player.attachHandler("PLAYER_STOPPED", "SoundState", "STOPPED");
+            player.attachHandler("PLAYER_PAUSED", "SoundState", "PAUSED");
+            InfoState = document.getElementById('InfoState')
+            Inform();
+        }
 
         function playSound(url) {
             document.all.sound.src = url;

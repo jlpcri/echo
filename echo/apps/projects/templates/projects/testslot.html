@@ -19,19 +19,14 @@
                 <div class="col-xs-6">
                     <h3>{{ slot.name }}</h3>
                 </div>
-                <div class="col-xs-4">
-                    {#                    {% for file in files %}#}
-                    <div class="audio-holder">
-                        <!--[if gte IE 10]> -->
-                        <audio id="player" controls src="{{ file }}" type="audio/wav"
-                               style="width:100%;">
-                            IE support pending. Please use Firefox or Chrome.
-                        </audio>
-                        <![endif]-->
-                        <!--[if IE]>
-                    <embed src="{{ file }}"
-                    <!--<![endif]-->
-                        {#                    {% endfor %}#}
+                <div class="col-xs-1">
+                    <button type="button" class="btn btn-default"
+                            onclick="doPlay('{{ file }}');"><i
+                            class="fa fa-play"></i></button>
+                </div>
+                <div class="col-xs-3">
+                    <div class="progress" style="height: 36px;">
+                        <div id="player-progress" class="progress-bar" style="width: 0%;"></div>
                     </div>
                 </div>
                 <div class="col-xs-2">
@@ -74,6 +69,18 @@
                 </div>
             </div>
         </form>
+        <object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000"
+                id="audio1"
+                align="middle">
+            <param name="quality" value="high"/>
+            <embed src="{% static 'common/flash-wav-player/wavplayer.swf' %}?gui=none"
+                   bgcolor="#ffffff"
+                   name="audio1"
+                   quality="high"
+                   allowScriptAccess="always"
+                   type="application/x-shockwave-flash"
+                   pluginspage="http://www.macromedia.com/go/getflashplayer"></embed>
+        </object>
     </div>
 {% endblock %}
 {% block endscript %}
@@ -85,5 +92,18 @@
                     this.load();
                 }
         );
+
+        var player = getPlayer('audio1');
+        if (!player || !player.attachHandler) setTimeout(init, 100); // Wait for load
+        else {
+            player.attachHandler("progress", "FileLoad");
+            player.attachHandler("PLAYER_LOAD", "SoundLoad");
+            player.attachHandler("PLAYER_BUFFERING", "SoundState", "BUFFERING");
+            player.attachHandler("PLAYER_PLAYING", "SoundState", "PLAYING");
+            player.attachHandler("PLAYER_STOPPED", "SoundState", "STOPPED");
+            player.attachHandler("PLAYER_PAUSED", "SoundState", "PAUSED");
+            InfoState = document.getElementById('InfoState')
+            Inform();
+        }
     </script>
 {% endblock %}
