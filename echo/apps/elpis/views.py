@@ -78,5 +78,5 @@ def verify_file_transfer(request, pid):
                         missing_slots.add(slot.filepath())
             file_struct = DirectoryTree('/usr/local/tuvox/public/Projects')
             for f in files[language]:
-
+                pass
         return render(request, 'elpis/verify_results.html', {'missing_slots': missing_slots})
