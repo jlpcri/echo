@@ -98,3 +98,5 @@ class PreprodServer(models.Model):
                         else:
                             raise e
             return files
+        elif self.application_type == self.NATIVE_VXML:
+            raise NotImplementedError

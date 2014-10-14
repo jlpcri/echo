@@ -39,7 +39,7 @@
                 $("#file-structure-div div").html('<i class="fa fa-spin fa-cog fa-2x"></i>');
                 $('#run-applications-modal').modal('hide');
                 $.post("{% url 'elpis:verify' project.pk %}", $("#run-applications-modal-form").serialize()).done(function(data) {
-                    $("#file-structure-div div").text(data);
+                    $("#file-structure-div div").html(data);
                 });
             });
         });
@@ -74,7 +74,6 @@
             </div>
             <div class="col-xs-7" id="file-structure-div">
                 <!-- Start right column -->
-                <label class="control-label">File Structure</label>
                 <div>
                     {% if project.preprod_server and project.preprod_path %}
                     <p>Click Run to begin verification.</p>

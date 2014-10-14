@@ -1,10 +1,12 @@
+from collections import Counter
 import json
 
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 
-from echo.apps.projects.models import Project
+from echo.apps.elpis.utils.directory_tree import DirectoryTree
+from echo.apps.projects.models import Project, Language
 from echo.apps.settings.models import PreprodServer
 
 
@@ -58,5 +60,23 @@ def verify_file_transfer(request, pid):
     elif request.method == 'POST':
         apps = request.POST.getlist('applications')
         files = p.preprod_server.get_wavs_from_apps(p.preprod_client_id, apps)
-        json_data = json.dumps(files)
-        return HttpResponse(json_data, content_type="application/json")
+        language_list = Language.objects.filter(project=p)
+        missing_slots = set()
+        for language in language_list:
+            if language.name in files.keys():
+                lang_name = language.name
+            elif language.name == 'english' and 'en-us' in files.keys():
+                lang_name = 'en-us'
+            elif language.name == 'spanish' and 'es-us' in files.keys():
+                lang_name = 'es-us'
+            file_name_count = Counter([f.filename.split('/')[-1] for f in files[lang_name]])
+            for slot in language.voiceslot_set.all():
+                slot_name = slot.name.split('/')[-1] + '.wav'
+                matching_name_count = language.voiceslot_set.filter(name=slot.name).count()
+                if matching_name_count == 1:
+                    if file_name_count[slot_name] == 0:
+                        missing_slots.add(slot.filepath())
+            file_struct = DirectoryTree('/usr/local/tuvox/public/Projects')
+            for f in files[language]:
+
+        return render(request, 'elpis/verify_results.html', {'missing_slots': missing_slots})
