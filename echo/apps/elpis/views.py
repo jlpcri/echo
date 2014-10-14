@@ -58,6 +58,5 @@ def verify_file_transfer(request, pid):
     elif request.method == 'POST':
         apps = request.POST.getlist('applications')
         files = p.preprod_server.get_wavs_from_apps(p.preprod_client_id, apps)
-        print files
         json_data = json.dumps(files)
         return HttpResponse(json_data, content_type="application/json")

@@ -6,6 +6,7 @@ from django.contrib.auth import get_user_model
 
 from echo.apps.projects.models import Project
 from echo.apps.settings.models import Server, PreprodServer
+from echo.apps.elpis.utils.directory_tree import DirectoryTree, FileNotOnPathError
 
 User = get_user_model()
 
@@ -98,3 +99,40 @@ class TestVerifyView(test.TestCase):
         self.assertEqual(response.status_code, 200)
         response_body = json.loads(response.content)
         self.assertTrue(response_body['apps'])
+
+class TestDirectoryTree(test.TestCase):
+    """Test suite for DirectoryTree"""
+
+    def test_without_path(self):
+        """Tests DirectoryTree with no path specified"""
+        dt = DirectoryTree()
+        self.assertEqual(dt.entries, [])
+        dt.add('/path/to/some/file.wav')
+        self.assertEqual(dt.entries, ['/', ['path/', ['to/', ['some/', ['file.wav']]]]])
+        dt.add('/path/to/some/other.wav')
+        self.assertEqual(dt.entries, ['/', ['path/', ['to/', ['some/', ['file.wav', 'other.wav']]]]])
+        dt.add('/path/to/another/place.wav')
+        self.assertEqual(dt.entries, ['/', ['path/', ['to/', ['some/', ['file.wav', 'other.wav'],
+                                                              'another/', ['place.wav']]]]])
+
+    def test_with_path(self):
+        """Tests DirectoryTree with a root path specified"""
+        dt = DirectoryTree('/path/to/')
+        dt.add('/path/to/some/file.wav')
+        self.assertEqual(dt.entries, ['some/', ['file.wav']])
+        dt.add('/path/to/some/other.wav')
+        self.assertEqual(dt.entries, ['some/', ['file.wav', 'other.wav']])
+        dt.add('/path/to/another/place.wav')
+        self.assertEqual(dt.entries, ['some/', ['file.wav', 'other.wav'], 'another/', ['place.wav']])
+
+    def test_bad_path(self):
+        """DirectoryTree raises an exception if a file is added off the init path"""
+        dt = DirectoryTree('/path/to/')
+        self.assertRaises(FileNotOnPathError, dt.add, '/wrong/path/to/some/file.wav')
+
+    def test_contains_without_path(self):
+        """'if filepath in DirectoryTree' functionality"""
+        dt = DirectoryTree()
+        dt.add('/path/to/some/file.txt')
+        self.assertTrue('/path/to/some/file.txt' in dt)
+        self.assertFalse('/path/leading/nowhere' in dt)

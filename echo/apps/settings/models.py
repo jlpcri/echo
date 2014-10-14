@@ -1,3 +1,4 @@
+from collections import defaultdict, namedtuple
 import os
 
 import pysftp
@@ -46,6 +47,7 @@ class PreprodServer(models.Model):
             return ''
 
     def get_applications_for_client(self, client):
+        """Returns a list of application directories for the specified client on this server"""
         if self.application_type == self.PRODUCER:
             with pysftp.Connection(self.address, username=self.account) as conn:
                 return conn.listdir(remotepath=self.TUVOX_ROOT + client)
@@ -53,8 +55,16 @@ class PreprodServer(models.Model):
             return []
 
     def get_wavs_from_apps(self, client, apps):
+        """
+        Returns a dict of languages and files for specified applications in client directory
+
+        Returns a defaultdict(list) where the keys are the languages found and the value is a list of files
+        """
+        WavFile = namedtuple('WavFile', ['md5sum', 'filename'])
+        q = WavFile('one string', 'two string')
+        print q
         if self.application_type == self.PRODUCER:
-            files = []
+            files = defaultdict(list)
             with pysftp.Connection(self.address, username=self.account) as conn:
                 for app in apps:
                     try:
@@ -67,13 +77,24 @@ class PreprodServer(models.Model):
                                 if current_dir_date > latest_date:
                                     latest_date = current_dir_date
                                     latest_dir = dir
-                        languages = conn.listdir(remotepath=os.path.join(self.TUVOX_ROOT, client, app, latest_dir, 'voice'))
-                        print languages
+                        voice_root = os.path.join(self.TUVOX_ROOT, client, app, latest_dir, 'voice')
+                        language_candidates = conn.listdir(remotepath=voice_root)
+
+                        for entry in language_candidates:
+                            if conn.isdir(os.path.join(voice_root, entry)):
+
+                                to_split = conn.execute("find " + os.path.join(voice_root, entry) + ' -name "*.wav" -exec md5sum {} \;')
+                                for f in to_split:
+                                    try:
+                                        md5sum, filename = f.split(None, 1)
+                                        files[entry].append(WavFile(md5sum, filename.strip()))
+                                    except TypeError:
+                                        print 'Error: ' + repr(f.split(None, 1))
+
                     except IOError as e:
                         if str(e) == "[Errno 2] No such file":
                             print "No voice dir in " + app
                             continue
                         else:
                             raise e
-
             return files
