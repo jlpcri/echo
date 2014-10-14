@@ -61,8 +61,6 @@ class PreprodServer(models.Model):
         Returns a defaultdict(list) where the keys are the languages found and the value is a list of files
         """
         WavFile = namedtuple('WavFile', ['md5sum', 'filename'])
-        q = WavFile('one string', 'two string')
-        print q
         if self.application_type == self.PRODUCER:
             files = defaultdict(list)
             with pysftp.Connection(self.address, username=self.account) as conn:
