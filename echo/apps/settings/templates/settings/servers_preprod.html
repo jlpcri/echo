@@ -1,5 +1,5 @@
 {% extends "core/base.html" %}
-{% block title %}Settings - Servers{% endblock %}
+{% block title %}Settings - Preprod Servers{% endblock %}
 {% load staticfiles %}
 {% block headscript %}
     <link rel="stylesheet" type="text/css" href="{% static 'core/core.css' %}"/>
@@ -15,8 +15,8 @@
         <div class="row">
             <div class="col-xs-12">
                 <ul class="nav nav-tabs" style="margin-bottom: 15px;">
-                    <li class="active"><a href="{% url "settings:servers" %}">Servers</a></li>
-                    <li><a href="{% url "settings:servers_preprod" %}">Preprod Servers</a></li>
+                    <li><a href="{% url "settings:servers" %}">Servers</a></li>
+                    <li class="active"><a href="{% url "settings:servers_preprod" %}">Preprod Servers</a></li>
                     <li><a href="{% url "settings:users" %}">Users</a></li>
                 </ul>
             </div>
