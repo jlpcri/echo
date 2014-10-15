@@ -1,0 +1,119 @@
+{% extends "core/base.html" %}
+{% block title %}Settings - Preprod Servers{% endblock %}
+{% load staticfiles %}
+{% block headscript %}
+    <link rel="stylesheet" type="text/css" href="{% static 'core/core.css' %}"/>
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-12">
+                <h3>Settings</h3>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col-xs-12">
+                <ul class="nav nav-tabs" style="margin-bottom: 15px;">
+                    <li><a href="{% url "settings:servers" %}">Servers</a></li>
+                    <li class="active"><a href="{% url "settings:servers_preprod" %}">Preprod Servers</a></li>
+                    <li><a href="{% url "settings:users" %}">Users</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="row">
+            <div id="tab_content" class="tab-content">
+                <div class="tab-pane active">
+                    <div class="col-xs-12">
+                        <table class="table">
+                            <tr>
+                                <form method="POST" action="{% url "settings:servers_preprod" %}">
+                                    {% csrf_token %}
+                                    <td class="col-xs-3" style="border: none;">
+                                        {{ server_form_preprod.name }}
+                                        {% if server_form_preprod.name.errors %}
+                                            <span class="text-danger">{{ server_form_preprod.name.errors|first }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="col-xs-3" style="border: none;">
+                                        {{ server_form_preprod.address }}
+                                        {% if server_form_preprod.address.errors %}
+                                            <span class="text-danger">{{ server_form_preprod.address.errors|first }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="col-xs-2" style="border: none;">
+                                        {{ server_form_preprod.account }}
+                                        {% if server_form_preprod.account.errors %}
+                                            <span class="text-danger">{{ server_form_preprod.account.errors|first }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="col-xs-3" style="border: none;">
+                                        {{ server_form_preprod.application_type }}
+                                        {% if server_form_preprod.appication_type.errors %}
+                                            <span class="text-danger">{{ server_form_preprod.appication_type.errors|first }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="col-xs-1" style="border: none;">
+                                        <button type="submit" id="add_server_preprod" name="add_server_preprod"
+                                                class="btn btn-success btn-sm" style="width: 100%;" title="Add Preprod Server">
+                                            <i class="fa fa-plus fa-fw"></i>&nbsp;Preprod Server
+                                        </button>
+                                    </td>
+                                </form>
+                            </tr>
+                        </table>
+                        <table class="table table-striped table-hover">
+                            <thead>
+                            <tr>
+                                <th class="col-xs-3">Server Name</th>
+                                <th class="col-xs-3">Server Address</th>
+                                <th class="col-xs-2">Service Account</th>
+                                <th class="col-xs-3">Application Type</th>
+                                <th class="col-xs-1"></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for server in servers_preprod %}
+                                <tr>
+                                    <form method="POST" action="{% url "settings:servers_preprod" %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="sid" value="{{ server.pk }}">
+                                        <td>{{ server.name }}</td>
+                                        <td>{{ server.address }}</td>
+                                        <td>{{ server.account }}</td>
+                                        <td>
+                                            {% if server.application_type == 1 %}
+                                                Producer
+                                            {% elif server.application_type == 2 %}
+                                                Native VXML
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="pull-right">
+                                                <button type="submit" name="test_connection_preprod"
+                                                        class="btn btn-primary btn-xs" title="Test Preprod Connection">
+                                                    <i class="fa fa-play fa-fw"></i>
+                                                </button>
+                                                <button type="submit" name="delete_server_preprod"
+                                                        class="btn btn-danger btn-xs" title="Delete Preprod Server">
+                                                    <i class="fa fa-trash-o fa-fw"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </form>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block endscript %}
+    <script type="text/javascript" src="{% static 'core/core.js' %}"></script>
+    <script type="text/javascript">
+
+    </script>
+{% endblock %}
