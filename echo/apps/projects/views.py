@@ -76,6 +76,9 @@ def new(request):
         return render(request, "projects/new.html", contexts.context_new())
     elif request.method == 'POST':
         if "create_project" in request.POST:
+            bravo_server = get_object_or_404(Server, pk=1)
+            print bravo_server.pk
+
             form = ProjectForm(request.POST, request.FILES)
             if form.is_valid():
                 n = form.cleaned_data['name']

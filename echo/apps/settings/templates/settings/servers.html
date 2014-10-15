@@ -35,18 +35,19 @@
                                             <span class="text-danger">{{ server_form.name.errors|first }}</span>
                                         {% endif %}
                                     </td>
-                                    <td class="col-xs-4" style="border: none;">
+                                    <td class="col-xs-3" style="border: none;">
                                         {{ server_form.address }}
                                         {% if server_form.address.errors %}
                                             <span class="text-danger">{{ server_form.address.errors|first }}</span>
                                         {% endif %}
                                     </td>
-                                    <td class="col-xs-4" style="border: none;">
+                                    <td class="col-xs-3" style="border: none;">
                                         {{ server_form.account }}
                                         {% if server_form.account.errors %}
                                             <span class="text-danger">{{ server_form.account.errors|first }}</span>
                                         {% endif %}
                                     </td>
+                                    <td class="col-xs-2" style="border: none;"></td>
                                     <td class="col-xs-1" style="border: none;">
                                         <button type="submit" id="add_server" name="add_server"
                                                 class="btn btn-success btn-sm" style="width: 100%;" title="Add Server">
@@ -60,9 +61,10 @@
                             <thead>
                             <tr>
                                 <th class="col-xs-3">Server Name</th>
-                                <th class="col-xs-4">Server Address</th>
-                                <th class="col-xs-4">Service Account</th>
-                                <th class="col-xs-1"></th>
+                                <th class="col-xs-3">Server Address</th>
+                                <th class="col-xs-3">Service Account</th>
+                                <th class="col-xs-1">Active</th>
+                                <th class="col-xs-2"></th>
                             </tr>
                             </thead>
                             <tbody>
@@ -75,10 +77,18 @@
                                         <td>{{ server.address }}</td>
                                         <td>{{ server.account }}</td>
                                         <td>
+                                            <input type="radio" value="is_active_{{ server.id }}" name="is_active"
+                                                   {% if server.active %}checked{% endif %}>
+                                        </td>
+                                        <td>
                                             <div class="pull-right">
                                                 <button type="submit" name="test_connection"
                                                         class="btn btn-primary btn-xs" title="Test Connection">
                                                     <i class="fa fa-play fa-fw"></i>
+                                                </button>
+                                                <button type="submit" name="update_active"
+                                                        class="btn btn-primary btn-xs" title="Update Active">
+                                                    <i class="fa fa-refresh fa-fw"></i>
                                                 </button>
                                                 <button type="submit" name="delete_server"
                                                         class="btn btn-danger btn-xs" title="Delete Server">
