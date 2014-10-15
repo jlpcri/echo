@@ -81,7 +81,13 @@
                                         <td>{{ server.name }}</td>
                                         <td>{{ server.address }}</td>
                                         <td>{{ server.account }}</td>
-                                        <td>{{ server.application_type }}</td>
+                                        <td>
+                                            {% if server.application_type == 1 %}
+                                                Producer
+                                            {% elif server.application_type == 2 %}
+                                                Native VXML
+                                            {% endif %}
+                                        </td>
                                         <td>
                                             <div class="pull-right">
                                                 <button type="submit" name="test_connection_preprod"
