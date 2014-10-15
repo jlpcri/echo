@@ -37,7 +37,7 @@
                         <td class="text-right">{{ project.slots_failed }}</td>
                         <td class="text-right">{{ project.slots_missing }}</td>
                         <td class="text-right">{{ project.slots_total }}</td>
-                        <td class="text-right">{{ project.slots_tested_percent }}%</td>
+                        <td class="text-right">{{ project.slots_tested_percent | floatformat:2}}%</td>
                         <td class="text-right">{{ project.users_total }}</td>
                         <td></td>
                         <td class="text-center">
