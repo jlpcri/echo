@@ -27,6 +27,7 @@
             $("#run-verify").click( function(event){
                 $.get("{% url 'elpis:verify' project.pk%}").done(function(data){
                     $.each(data.apps, function( i, val ) {
+                        $("#run-applications-select").html("")
                         $("#run-applications-select").append('<option selected value="' + val + '">' + val + '</option>')
                     });
                     $('#run-applications-modal').modal('show');
@@ -40,6 +41,8 @@
                 $('#run-applications-modal').modal('hide');
                 $.post("{% url 'elpis:verify' project.pk %}", $("#run-applications-modal-form").serialize()).done(function(data) {
                     $("#file-structure-div div").html(data);
+                    $("#run-verify").removeAttr("disabled");
+                    $("#run-verify").html("Run");
                 });
             });
         });

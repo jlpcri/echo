@@ -63,6 +63,11 @@
                         {% endfor %}
                     </ul>
                     <br>
+                    <label class="control-label" for="action_list">Project Actions</label>
+                    <ul id="action_list" class="list-group">
+                        <li class="list-group-item"><a href="{% url 'elpis:dashboard' project.pk %}"><b>Verify File Transfer</b></a></li>
+                    </ul>
+                    <br>
                 {% endif %}
                 {% if project.users %}
                     <label class="control-label" for="tester_list">Testers</label>

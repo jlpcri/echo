@@ -69,14 +69,22 @@ def verify_file_transfer(request, pid):
                 lang_name = 'en-us'
             elif language.name == 'spanish' and 'es-us' in files.keys():
                 lang_name = 'es-us'
+            else:
+                lang_name = language.name
+                print language.name + " used by default from " + repr(files.keys())
             file_name_count = Counter([f.filename.split('/')[-1] for f in files[lang_name]])
+            for i, f in enumerate(files[lang_name]):
+                files[lang_name][i] = f+'(untracked)'
             for slot in language.voiceslot_set.all():
                 slot_name = slot.name.split('/')[-1] + '.wav'
                 matching_name_count = language.voiceslot_set.filter(name=slot.name).count()
                 if matching_name_count == 1:
                     if file_name_count[slot_name] == 0:
                         missing_slots.add(slot.filepath())
-            file_struct = DirectoryTree('/usr/local/tuvox/public/Projects')
-            for f in files[language]:
-                pass
-        return render(request, 'elpis/verify_results.html', {'missing_slots': missing_slots})
+
+            file_struct = DirectoryTree('/usr/local/tuvox/public/Projects/')
+            for f in files[lang_name]:
+                file_struct.add(f.filename)
+
+        return render(request, 'elpis/verify_results.html', {'missing_slots': missing_slots,
+                                                             'file_struct': file_struct.entries})
