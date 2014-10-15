@@ -27,30 +27,36 @@
                     <div class="col-xs-12">
                         <table class="table">
                             <tr>
-                                <form method="POST" action="{% url "settings:servers" %}">
+                                <form method="POST" action="{% url "settings:servers_preprod" %}">
                                     {% csrf_token %}
                                     <td class="col-xs-3" style="border: none;">
-                                        {{ server_form.name }}
-                                        {% if server_form.name.errors %}
-                                            <span class="text-danger">{{ server_form.name.errors|first }}</span>
+                                        {{ server_form_preprod.name }}
+                                        {% if server_form_preprod.name.errors %}
+                                            <span class="text-danger">{{ server_form_preprod.name.errors|first }}</span>
                                         {% endif %}
                                     </td>
-                                    <td class="col-xs-4" style="border: none;">
-                                        {{ server_form.address }}
-                                        {% if server_form.address.errors %}
-                                            <span class="text-danger">{{ server_form.address.errors|first }}</span>
+                                    <td class="col-xs-3" style="border: none;">
+                                        {{ server_form_preprod.address }}
+                                        {% if server_form_preprod.address.errors %}
+                                            <span class="text-danger">{{ server_form_preprod.address.errors|first }}</span>
                                         {% endif %}
                                     </td>
-                                    <td class="col-xs-4" style="border: none;">
-                                        {{ server_form.account }}
-                                        {% if server_form.account.errors %}
-                                            <span class="text-danger">{{ server_form.account.errors|first }}</span>
+                                    <td class="col-xs-2" style="border: none;">
+                                        {{ server_form_preprod.account }}
+                                        {% if server_form_preprod.account.errors %}
+                                            <span class="text-danger">{{ server_form_preprod.account.errors|first }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="col-xs-3" style="border: none;">
+                                        {{ server_form_preprod.application_type }}
+                                        {% if server_form_preprod.appication_type.errors %}
+                                            <span class="text-danger">{{ server_form_preprod.appication_type.errors|first }}</span>
                                         {% endif %}
                                     </td>
                                     <td class="col-xs-1" style="border: none;">
-                                        <button type="submit" id="add_server" name="add_server"
-                                                class="btn btn-success btn-sm" style="width: 100%;" title="Add Server">
-                                            <i class="fa fa-plus fa-fw"></i>&nbsp;Server
+                                        <button type="submit" id="add_server_preprod" name="add_server_preprod"
+                                                class="btn btn-success btn-sm" style="width: 100%;" title="Add Preprod Server">
+                                            <i class="fa fa-plus fa-fw"></i>&nbsp;Preprod Server
                                         </button>
                                     </td>
                                 </form>
@@ -60,28 +66,30 @@
                             <thead>
                             <tr>
                                 <th class="col-xs-3">Server Name</th>
-                                <th class="col-xs-4">Server Address</th>
-                                <th class="col-xs-4">Service Account</th>
+                                <th class="col-xs-3">Server Address</th>
+                                <th class="col-xs-2">Service Account</th>
+                                <th class="col-xs-3">Application Type</th>
                                 <th class="col-xs-1"></th>
                             </tr>
                             </thead>
                             <tbody>
-                            {% for server in servers %}
+                            {% for server in servers_preprod %}
                                 <tr>
-                                    <form method="POST" action="{% url "settings:servers" %}">
+                                    <form method="POST" action="{% url "settings:servers_preprod" %}">
                                         {% csrf_token %}
                                         <input type="hidden" name="sid" value="{{ server.pk }}">
                                         <td>{{ server.name }}</td>
                                         <td>{{ server.address }}</td>
                                         <td>{{ server.account }}</td>
+                                        <td>{{ server.application_type }}</td>
                                         <td>
                                             <div class="pull-right">
-                                                <button type="submit" name="test_connection"
-                                                        class="btn btn-primary btn-xs" title="Test Connection">
+                                                <button type="submit" name="test_connection_preprod"
+                                                        class="btn btn-primary btn-xs" title="Test Preprod Connection">
                                                     <i class="fa fa-play fa-fw"></i>
                                                 </button>
-                                                <button type="submit" name="delete_server"
-                                                        class="btn btn-danger btn-xs" title="Delete Server">
+                                                <button type="submit" name="delete_server_preprod"
+                                                        class="btn btn-danger btn-xs" title="Delete Preprod Server">
                                                     <i class="fa fa-trash-o fa-fw"></i>
                                                 </button>
                                             </div>

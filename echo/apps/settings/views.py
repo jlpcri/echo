@@ -4,8 +4,8 @@ from django.core.exceptions import ValidationError
 from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
 from echo.apps.core import messages
-from forms import ServerForm
-from models import Server
+from forms import ServerForm, ServerPreprodForm
+from models import Server, PreprodServer
 
 import pysftp
 
@@ -117,60 +117,71 @@ def users(request):
 def servers_preprod(request):
     if request.method == 'GET':
         return render(request, "settings/servers_preprod.html",
-                      {'servers': Server.objects.all().order_by("name"), 'server_form': ServerForm()})
+                      {'servers_preprod': PreprodServer.objects.all().order_by("name"),
+                       # Application type default: Producer-1, NativeVxml-2
+                       'server_form_preprod': ServerPreprodForm(initial={'application_type': '1'})})
     elif request.method == 'POST':
-        if "add_server" in request.POST:
-            form = ServerForm(request.POST)
+        if "add_server_preprod" in request.POST:
+            form = ServerPreprodForm(request.POST)
             if form.is_valid():
                 name = form.cleaned_data['name']
                 address = form.cleaned_data['address']
                 account = form.cleaned_data['account']
-                server = Server(name=name, address=address, account=account)
+                application_type = form.cleaned_data['application_type']
+                server = PreprodServer(name=name,
+                                       address=address,
+                                       account=account,
+                                       application_type=application_type
+                                       )
                 try:
                     server.full_clean()
                     server.save()
-                    messages.success(request, "Added server to list")
+                    messages.success(request, "Added preprod server to list")
                     return redirect("settings:servers_preprod")
                 except ValidationError as e:
                     if 'name' in e.message_dict:
                         messages.danger(request, e.message_dict.get('name')[0])
                     return render(request, "settings/servers_preprod.html",
-                                  {'servers': Server.objects.all().order_by("name"), 'server_form': form})
+                                  {'servers_preprod': PreprodServer.objects.all().order_by("name"),
+                                   'server_form_preprod': form})
             messages.danger(request, "Unable to add server to list")
             return render(request, "settings/servers_preprod.html",
-                          {'servers': Server.objects.all().order_by("name"), 'server_form': form})
-        elif "delete_server" in request.POST:
+                          {'servers_preprod': PreprodServer.objects.all().order_by("name"),
+                           'server_form_preprod': form})
+        elif "delete_server_preprod" in request.POST:
             sid = request.POST.get('sid', "")
             if sid:
-                server = get_object_or_404(Server, pk=sid)
+                server = get_object_or_404(PreprodServer, pk=sid)
                 server.delete()
-                messages.success(request, "Server \"{0}\" has been deleted".format(server.name))
+                messages.success(request, "Preprod Server \"{0}\" has been deleted".format(server.name))
                 return redirect("settings:servers_preprod")
-            messages.danger(request, "Unable to delete server")
+            messages.danger(request, "Unable to delete preprod server")
             return render(request, "settings/servers_preprod.html",
-                          {'servers': Server.objects.all().order_by("name"), 'server_form': ServerForm()})
-        elif "test_connection" in request.POST:
+                          {'servers_preprod': PreprodServer.objects.all().order_by("name"),
+                           'server_form_preprod': ServerPreprodForm()
+                          })
+        elif "test_connection_preprod" in request.POST:
             sid = request.POST.get('sid', "")
             if sid:
-                server = get_object_or_404(Server, pk=sid)
+                server = get_object_or_404(PreprodServer, pk=sid)
                 try:
                     with pysftp.Connection(server.address, username=str(server.account)) as conn:
                         conn.chdir('/')
                 except IOError:
-                    messages.danger(request, "Unable to connect to server \"{0}\"".format(server.name))
+                    messages.danger(request, "Unable to connect to preprod server \"{0}\"".format(server.name))
                     return redirect("settings:servers_preprod")
                 except pysftp.ConnectionException:
-                    messages.danger(request, "Connection error to server \"{0}\"".format(server.name))
+                    messages.danger(request, "Connection error to preprod server \"{0}\"".format(server.name))
                     return redirect("settings:servers_preprod")
                 except pysftp.CredentialException:
-                    messages.danger(request, "Credentials error to server \"{0}\"".format(server.name))
+                    messages.danger(request, "Credentials error to preprod server \"{0}\"".format(server.name))
                     return redirect("settings:servers_preprod")
                 except pysftp.AuthenticationException:
-                    messages.danger(request, "Authentication error to server \"{0}\"".format(server.name))
+                    messages.danger(request, "Authentication error to preprod server \"{0}\"".format(server.name))
                     return redirect("settings:servers_preprod")
                 except pysftp.SSHException:
-                    messages.danger(request, "SSH error to server \"{0}\"".format(server.name))
+                    messages.danger(request, "SSH error to preprod server \"{0}\"".format(server.name))
                     return redirect("settings:servers_preprod")
-                messages.success(request, "Connecting to server \"{0}\"".format(server.name))
+                messages.success(request, "Connecting to preprod server \"{0}\"".format(server.name))
                 return redirect("settings:servers_preprod")
     return HttpResponseNotFound()
