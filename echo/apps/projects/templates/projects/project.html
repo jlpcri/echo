@@ -147,11 +147,10 @@
 {% block endscript %}
     <script type="text/javascript">
         $('#upload_file').click(function () {
-            $('#throbber').show();
             setTimeout(function () {
+                $('#throbber').show();
                 $('#upload_file').attr('disabled', 'disabled');
-            }, 1000);
-
+            }, 0);
         })
     </script>
 {% endblock %}
