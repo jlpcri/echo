@@ -76,6 +76,7 @@ INSTALLED_APPS = (
     'echo.apps.projects',
     'echo.apps.reports',
     'echo.apps.settings',
+    'echo.apps.elpis',
 )
 
 MIDDLEWARE_CLASSES = (

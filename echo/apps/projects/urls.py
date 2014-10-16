@@ -15,6 +15,6 @@ urlpatterns = patterns('',
     url(r'^(?P<pid>\d+)/vuids/(?P<vid>\d+)$', views.vuid, name='vuid'),
     url(r'^(?P<pid>\d+)/voiceslots/?$', views.voiceslots, name='voiceslots'),
     url(r'^(?P<pid>\d+)/voiceslots/(?P<vsid>\d+)$', views.testslot, name='testslot'),
-    url(r'^(?P<pid>\d+)/voiceslots/(?P<vsid>\d+)/submit$', views.submitslot, name='submitslot'),
+    url(r'^/voiceslots/(?P<vsid>\d+)/submit$', views.submitslot, name='submitslot'),
     url(r'^temp/$', views.temp, name='temp'),
 )

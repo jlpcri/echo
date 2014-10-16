@@ -63,6 +63,11 @@
                         {% endfor %}
                     </ul>
                     <br>
+                    <label class="control-label" for="action_list">Project Actions</label>
+                    <ul id="action_list" class="list-group">
+                        <li class="list-group-item"><a href="{% url 'elpis:dashboard' project.pk %}"><b>Verify File Transfer</b></a></li>
+                    </ul>
+                    <br>
                 {% endif %}
                 {% if project.users %}
                     <label class="control-label" for="tester_list">Testers</label>
@@ -99,6 +104,8 @@
                     <hr>
                     <div class="form-group">
                         <label class="control-label">Upload VUID File (.xlsx format)</label>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <label id="throbber" hidden><i class="fa fa-spinner fa-2x fa-spin"></i> </label>
 
                         <div class="input-group">
                             <span class="input-group-btn">
@@ -108,7 +115,7 @@
                             </span>
                             <input type="text" id="filenames" class="form-control" readonly>
                             <span class="input-group-btn">
-                                <button type="submit" name="upload_file" class="btn btn-primary">
+                                <button type="submit" name="upload_file" id="upload_file" class="btn btn-primary">
                                     Upload
                                 </button>
                             </span>
@@ -139,6 +146,11 @@
 {% endblock %}
 {% block endscript %}
     <script type="text/javascript">
-
+        $('#upload_file').click(function () {
+            setTimeout(function () {
+                $('#throbber').show();
+                $('#upload_file').attr('disabled', 'disabled');
+            }, 0);
+        })
     </script>
 {% endblock %}

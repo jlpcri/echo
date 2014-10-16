@@ -1,4 +1,5 @@
 from datetime import datetime
+from django.db import transaction
 from itertools import izip, takewhile
 from models import Language, Project, VoiceSlot, VUID
 from openpyxl import load_workbook
@@ -36,34 +37,30 @@ def commonprefix(paths, sep='/'):
     bydirectorylevels = zip(*[p.split(sep) for p in paths])
     return sep.join(x[0] for x in takewhile(allnamesequal, bydirectorylevels))
 
-
+@transaction.atomic
 def fetch_slots_from_server(project, sftp):
+    """Contains logic to update file statuses"""
     # get shared path of all distinct paths from voiceslot models in project
-    start_time = datetime.now()
     path = commonprefix(project.voiceslots().values_list('path', flat=True).distinct())
-    print "Post distinct path: {}".format(datetime.now() - start_time)
     try:
         result = sftp.execute('find {0}/ -name "*.wav"'.format(path) + ' -exec md5sum {} \; -exec stat -c"%Y" {} \;')
     except IOError:
         # something in the execute didn't stir the kool-aid
         return {"valid": False, "message": "Error running command on server"}
-    print "Post sftp execute: {}".format(datetime.now() - start_time)
     if len(result) == 0:
         # means path exists, but no files in path, mark all files as missing
-        for slot in project.voiceslots():
+        slots = project.voiceslots()
+        for slot in slots:
             slot.status = VoiceSlot.MISSING
             slot.history = "Slot missing, {0}\n".format(datetime.now()) + slot.history
             slot.save()
-        print "Post all files missing: {}".format(datetime.now() - start_time)
         return {"valid": False, "message": "All files missing on server, given path \"{0}\"".format(path)}
     elif len(result) == 1 and result[0].startswith('find:'):
         # means error was returned, path does not exist
-        print "Post path does not exist: {}".format(datetime.now() - start_time)
         return {"valid": False, "message": "Path \"{0}\" does not exist on server".format(path)}
     else:
         if len(result) % 2 == 1:
             # dataset should be 2 lines per record, if odd then something is not right
-            print "Post invalid dataset: {}".format(datetime.now() - start_time)
             return {"valid": False, "message": "Server providing invalid dataset"}
         else:
             # parse result into dictionary using izip
@@ -73,9 +70,9 @@ def fetch_slots_from_server(project, sftp):
                 msum, pathname = i[0].strip().split('  ')
                 mtime = i[1].strip()
                 map[pathname] = FileStatus(pathname, msum, mtime)
-            print "Post list to map: {}".format(datetime.now() - start_time)
             # get voiceslots for project and iterate over them
-            for slot in project.voiceslots():
+            slots = project.voiceslots()
+            for slot in slots:
                 # check for slot.filepath() in map.keys()
                 if slot.filepath() not in map:
                     # if slot not in map, slot is missing
@@ -100,7 +97,6 @@ def fetch_slots_from_server(project, sftp):
                         slot.bravo_time = datetime.fromtimestamp(fs.mtime)
                         slot.history = "Slot is new, {0}\n".format(datetime.now()) + slot.history
                         slot.save()
-            print "Post iterate voiceslots: {}".format(datetime.now() - start_time)
             return {"valid": True, "message": "Files from Bravo Server have been fetched"}
 
 
@@ -111,7 +107,7 @@ def make_filename(path, name):
         return "{0}{1}".format(path, name)
     return "{0}/{1}".format(path, name)
 
-
+@transaction.atomic
 def parse_vuid(vuid):
     wb = load_workbook(vuid.file.path)
     ws = wb.active
@@ -128,6 +124,7 @@ def parse_vuid(vuid):
     v = unicode(ws['A2'].value).strip()
     i = v.find('/')
     path = v[i:].strip()
+    slots = []
 
     for w in ws.rows[2:]:
         try:
@@ -155,9 +152,11 @@ def parse_vuid(vuid):
                 if vs.verbiage != verbiage:
                     vs.verbiage = verbiage
                     vs.vuid = vuid
+            slots.append(vs)
             vs.save()
         except VoiceSlot.DoesNotExist:
             vs = VoiceSlot(name=name, path=path, verbiage=verbiage, language=language, vuid_time=vuid_time, vuid=vuid)
+            slots.append(vs)
             vs.save()
         except VoiceSlot.MultipleObjectsReturned:
             return {"valid": False, "message": "Parser error, multiple voice slots returned"}
