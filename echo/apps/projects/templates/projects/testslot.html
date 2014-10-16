@@ -17,16 +17,29 @@
             <input type="hidden" name="slot-id" value="{{slot.pk}}">
             <div class="row">
                 <div class="col-xs-6">
-                    <h3>{{ slot.name }}</h3>
+                    <h3>{{ slot.name }}</h3>{{ file }}
                 </div>
-                <div class="col-xs-1">
-                    <button type="button" class="btn btn-default"
-                            onclick="doPlay('{{ file }}');"><i
-                            class="fa fa-play"></i></button>
-                </div>
-                <div class="col-xs-3">
-                    <div class="progress" style="height: 36px;">
-                        <div id="player-progress" class="progress-bar" style="width: 0%;"></div>
+                <div class="col-xs-4">
+                    <div class="well" style="background-color:transparent;">
+                        <div class="pull-left">
+                            <button type="button" class="btn btn-default" id="button_play"
+                                    onclick="buttonPlayPauseHandler('{{ file }}');">
+                                <i class="fa fa-play"></i></button>
+                            <button type="button" class="btn btn-default" id="button_stop"
+                                    onclick="buttonStopHandler();"><i
+                                    class="fa fa-stop"></i></button>
+                        </div>
+                        <div class="pull-right">
+                            <div id="player_panel" class="pull-left" style="width: 100%; background-color: gainsboro;">
+                                <div id="player_info" class="pull-left">NONE</div>
+                                <div id="player_time" class="pull-right">00/00</div>
+                            </div>
+                            <br>
+                            <label for="volume"><i class="fa fa-volume-down"></i></label>
+                            <input id="volume" type="text" class="span2" value="5" data-slider-tooltip="hide"/>
+                            <label for="volume"><i class="fa fa-volume-up"></i></label>
+                        </div>
+                        <div class="clearfix"></div>
                     </div>
                 </div>
                 <div class="col-xs-2">
@@ -70,12 +83,13 @@
             </div>
         </form>
         <object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000"
-                id="audio1"
+                id="player"
+                name="audio1"
                 align="middle">
             <param name="quality" value="high"/>
             <embed src="{% static 'common/flash-wav-player/wavplayer.swf' %}?gui=none"
                    bgcolor="#ffffff"
-                   name="audio1"
+                   name="player"
                    quality="high"
                    allowScriptAccess="always"
                    type="application/x-shockwave-flash"
@@ -86,24 +100,16 @@
 {% block endscript %}
     <script type="text/javascript">
         $("[name='test_result']").bootstrapSwitch();
-
-        document.getElementById('player').addEventListener("ended", function () {
-                    console.log('check');
-                    this.load();
-                }
-        );
-
-        var player = getPlayer('audio1');
-        if (!player || !player.attachHandler) setTimeout(init, 100); // Wait for load
-        else {
-            player.attachHandler("progress", "FileLoad");
-            player.attachHandler("PLAYER_LOAD", "SoundLoad");
-            player.attachHandler("PLAYER_BUFFERING", "SoundState", "BUFFERING");
-            player.attachHandler("PLAYER_PLAYING", "SoundState", "PLAYING");
-            player.attachHandler("PLAYER_STOPPED", "SoundState", "STOPPED");
-            player.attachHandler("PLAYER_PAUSED", "SoundState", "PAUSED");
-            InfoState = document.getElementById('InfoState')
-            Inform();
-        }
+        {#        document.getElementById('player').addEventListener("ended", function () {#}
+        {#                    this.load();#}
+        {#                }#}
+        {#        );#}
+        $('#volume').slider();
+        init();
+        $('#volume').slider()
+                .on('slide', function (ev) {
+                    var n = ev.value * 0.1;
+                    setVolume(n);
+                });
     </script>
 {% endblock %}
