@@ -11,11 +11,18 @@ attemptConnect = attemptConnect || (function () {
     };
 })();
 
-function updateProgress(a, b) {
-//    console.log(parseInt(getPerc(a, b)) + "%")
-    $("#player-progress").css("width", parseInt(getPerc(a, b)) + "%");
-//    $("#player-progress").css("width", '50%');
-}
+var player = undefined;
+var playerInfo = undefined;
+var playerTime = undefined;
+var playerState = "STOPPED";
+var soundLength = 0;
+var soundPosition = 0;
+var last = undefined;
+var timer = undefined;
+
+//function updateProgress(a, b) {
+//    $("#player-progress").css("width", parseInt(getPercent(a, b)) + "%");
+//}
 
 function getPlayer(pid) {
     var obj = document.getElementById(pid);
@@ -25,83 +32,88 @@ function getPlayer(pid) {
         if (child.tagName == "EMBED") return child;
     }
 }
-function doPlay(fname) {
-    var player = getPlayer('audio1');
-    player.doPlay(fname);
-}
-function doStop() {
-    var player = getPlayer('audio1');
-    player.doStop();
-}
-function setVolume(v) {
-    var player = getPlayer('audio1');
-    player.setVolume(v);
-}
-function setPan(p) {
-    var player = getPlayer('audio1');
-    player.setPan(p);
-}
-var SoundLen = 0;
-var SoundPos = 0;
-var Last = undefined;
-var State = "STOPPED";
-var Timer = undefined;
-function getPerc(a, b) {
-    return ((b == 0 ? 0.0 : a / b) * 100).toFixed(2);
-}
-function FileLoad(bytesLoad, bytesTotal) {
-    document.getElementById('InfoFile').innerHTML = "Loaded " + bytesLoad + "/" + bytesTotal + " bytes (" + getPerc(bytesLoad, bytesTotal) + "%)";
-//    console.log(getPerc(bytesLoad, bytesTotal));
-//    updateProgress(bytesLoad, bytesTotal);
-}
-function SoundLoad(secLoad, secTotal) {
-    document.getElementById('InfoSound').innerHTML = "Available " + secLoad.toFixed(2) + "/" + secTotal.toFixed(2) + " seconds (" + getPerc(secLoad, secTotal) + "%)";
-//    updateProgress(secLoad, secTotal);
-    SoundLen = secTotal;
-}
-var InfoState = undefined;
-function Inform() {
-    if (Last != undefined) {
-        var now = new Date();
-        var interval = (now.getTime() - Last.getTime()) / 1000;
-        SoundPos += interval;
-//        console.log(SoundPos);
-        Last = now;
-//        console.log(Last);
-    }
-    InfoState.innerHTML = State + "(" + SoundPos.toFixed(2) + "/" + SoundLen.toFixed(2) + ") sec (" + getPerc(SoundPos, SoundLen) + "%)";
-    updateProgress(SoundPos, SoundLen);
-}
-function SoundState(state, position) {
-//    console.log(state);
-    if (position != undefined) SoundPos = position;
-    if (State != "PLAYING" && state == "PLAYING") {
-        Last = new Date();
-        Timer = setInterval(Inform, 178);
-//        Inform();
-    } else if (State == "PLAYING" && state != "PLAYING") {
-        clearInterval(Timer);
-        Timer = undefined;
-//        Inform();
-    }
-    State = state;
-    Inform();
-}
-function init() {
-    var player = getPlayer('audio1');
-    if (!player || !player.attachHandler) setTimeout(init, 100); // Wait for load
-    else {
-        player.attachHandler("progress", "FileLoad");
-        player.attachHandler("PLAYER_LOAD", "SoundLoad");
-        player.attachHandler("PLAYER_BUFFERING", "SoundState", "BUFFERING");
-        player.attachHandler("PLAYER_PLAYING", "SoundState", "PLAYING");
-        player.attachHandler("PLAYER_STOPPED", "SoundState", "STOPPED");
-        player.attachHandler("PLAYER_PAUSED", "SoundState", "PAUSED");
-        InfoState = document.getElementById('InfoState')
-        Inform();
+
+function buttonPlayPauseHandler(fname) {
+    var player = getPlayer('player');
+    if (playerState == 'PLAYING') {
+        player.doPause();
+    } else if (playerState == 'PAUSED') {
+        player.doResume();
+    } else {
+        player.doPlay(fname);
     }
 }
 
+function buttonStopHandler() {
+    var player = getPlayer('player');
+    player.doStop();
+}
+
+function setVolume(v) {
+    var player = getPlayer('player');
+    player.setVolume(v);
+}
+
+function getPercent(a, b) {
+    return ((b == 0 ? 0.0 : a / b) * 100).toFixed(2);
+}
+
+function fileLoad(bytesLoad, bytesTotal) {
+    document.getElementById('InfoFile').innerHTML = "Loaded " + bytesLoad + "/" + bytesTotal + " bytes (" + getPercent(bytesLoad, bytesTotal) + "%)";
+}
+
+function soundLoad(secLoad, secTotal) {
+    soundLength = secTotal;
+}
+
+function inform() {
+    if (last != undefined) {
+        var now = new Date();
+        soundPosition += (now.getTime() - last.getTime()) / 1000;
+        console.log(soundPosition);
+        last = now;
+    }
+    playerInfo.innerHTML = playerState;
+    playerTime.innerHTML = soundPosition.toFixed(0) + soundLength.toFixed(0);
+//    updateProgress(soundPosition, soundLength);
+}
+
+function playerController(state, position) {
+    if (position != undefined) soundPosition = position;
+    if (state == "BUFFERING") {
+
+    } else if (state == 'STOPPED') {
+        $('#button_play').children().first().removeClass('fa-pause').addClass('fa-play');
+        clearInterval(timer);
+        last = undefined;
+        timer = undefined;
+    } else if (state == "PAUSED") {
+        $('#button_play').children().first().removeClass('fa-pause').addClass('fa-play');
+    } else if (state == "PLAYING") {
+        $('#button_play').children().first().removeClass('fa-play').addClass('fa-pause');
+        last = new Date();
+        timer = setInterval(inform, 50);
+    }
+    playerState = state;
+    inform();
+}
+
+function init() {
+    player = getPlayer('player');
+    if (!player || !player.attachHandler) {
+        setTimeout(init, 100); // Wait for load
+    } else {
+        player.attachHandler("progress", "fileLoad");
+        player.attachHandler("PLAYER_LOAD", "soundLoad");
+        player.attachHandler("PLAYER_BUFFERING", "playerController", "BUFFERING");
+        player.attachHandler("PLAYER_PLAYING", "playerController", "PLAYING");
+        player.attachHandler("PLAYER_STOPPED", "playerController", "STOPPED");
+        player.attachHandler("PLAYER_PAUSED", "playerController", "PAUSED");
+        playerInfo = document.getElementById('player_info');
+        playerTime = document.getElementById('player_time');
+        inform();
+    }
+}
 
 $(document).on('change', '.btn-file :file', function () {
     var input = $(this);
@@ -117,10 +129,10 @@ $(document).ready(function () {
     });
 
     $('[name="test_connection"]').click(function () {
-        attemptConnect.show()
+        attemptConnect.show();
     });
 
     $('[name="update_files"]').click(function () {
-        attemptConnect.show()
+        attemptConnect.show();
     });
 });
