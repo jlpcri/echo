@@ -11,6 +11,7 @@ class Server(models.Model):
     name = models.TextField(unique=True, blank=False)
     address = models.TextField(blank=False)
     account = models.TextField(blank=False)
+    active = models.BooleanField(default=False)
 
     def __unicode__(self):
         return self.name

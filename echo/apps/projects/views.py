@@ -78,12 +78,20 @@ def new(request):
         if "create_project" in request.POST:
             form = ProjectForm(request.POST, request.FILES)
             if form.is_valid():
+                # Check if default Bravo Server exist
+                try:
+                    bravo_server = Server.objects.get(active=True)
+                except Server.DoesNotExist:
+                    messages.danger(request, "Please set default Bravo Server first.")
+                    return render(request, "projects/new.html", contexts.context_new(form))
+
                 n = form.cleaned_data['name']
                 p = Project(name=n)
                 try:
                     p.full_clean()
                     p.save()
                     p.users.add(request.user)
+                    p.bravo_server = bravo_server  # set default bravo server
                     p.save()
                     messages.success(request, "Created project")
                     if 'file' in request.FILES and request.FILES['file'].name.endswith('.xlsx'):
