@@ -1,5 +1,6 @@
 from datetime import datetime
 import os
+import uuid
 
 import pysftp
 
@@ -263,9 +264,10 @@ def testslot(request, pid, vsid):
             try:
                 with pysftp.Connection(p.bravo_server.address, username=str(p.bravo_server.account)) as conn:
                     remote_path = "{0}".format(slot.filepath())
-                    local_path = os.path.join(settings.MEDIA_ROOT, "{0}.wav".format(slot.name))
+                    filename = "{0}.wav".format(str(uuid.uuid4()))
+                    local_path = os.path.join(settings.MEDIA_ROOT, filename)
                     conn.get(remote_path, local_path)
-                    filepath = "{0}{1}.wav".format(settings.MEDIA_URL, slot.name)
+                    filepath = "{0}{1}".format(settings.MEDIA_URL, filename)
                     last_modified = int(conn.execute('stat -c %Y {0}'.format(remote_path))[0])
                     slot.check_out(request.user)
                     slot.history = "Downloaded file last modified on {0}\n".format(
