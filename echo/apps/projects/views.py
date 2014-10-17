@@ -281,7 +281,6 @@ def testslot(request, pid, vsid):
                     slot.history = "Downloaded file last modified on {0}\n".format(
                         datetime.fromtimestamp(last_modified).strftime("%b %d %Y, %H:%M")) + slot.history
             except IOError as e:
-                print e
                 messages.danger(request, "File missing on server \"{0}\"".format(p.bravo_server.name))
                 slot.status = VoiceSlot.MISSING
                 slot.history = "Attempted test, slot missing, {0}\n".format(datetime.now()) + slot.history
