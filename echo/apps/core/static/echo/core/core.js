@@ -11,7 +11,6 @@ attemptConnect = attemptConnect || (function () {
     };
 })();
 
-var player = undefined;
 var playerInfo = undefined;
 var playerTime = undefined;
 var playerState = "STOPPED";
@@ -30,20 +29,17 @@ function getPlayer(pid) {
 }
 
 function buttonPlayPauseHandler(fname) {
+    var player = getPlayer('player');
     if (playerState == 'PLAYING') {
-        console.log('pause');
         player.doPause();
     } else if (playerState == 'PAUSED') {
-        console.log('resume');
         player.doResume();
     } else {
-        console.log('play');
         player.doPlay(fname);
     }
 }
 
 function buttonStopHandler() {
-    console.log('stop');
     var player = getPlayer('player');
     player.doStop();
 }
@@ -57,31 +53,24 @@ function getPercent(a, b) {
     return ((b == 0 ? 0.0 : a / b) * 100).toFixed(2);
 }
 
-function fileLoad(bytesLoad, bytesTotal) {
-    console.log('inform()');
-    document.getElementById('InfoFile').innerHTML = "Loaded " + bytesLoad + "/" + bytesTotal + " bytes (" + getPercent(bytesLoad, bytesTotal) + "%)";
-}
-
 function soundLoad(secLoad, secTotal) {
-    console.log('inform()');
     soundLength = secTotal;
 }
 
 function inform() {
-    console.log('inform()');
     if (last != undefined) {
         var now = new Date();
         soundPosition += (now.getTime() - last.getTime()) / 1000;
         last = now;
     }
     playerInfo.innerHTML = playerState;
-    playerTime.innerHTML = soundPosition.toFixed(0) + soundLength.toFixed(0);
+    playerTime.innerHTML = soundPosition.toFixed(0) + '/' + soundLength.toFixed(0) + ' SEC';
 }
 
 function playerController(state, position) {
     if (position != undefined) soundPosition = position;
     if (state == "BUFFERING") {
-        console.log('buffering if conditional');
+        // empty
     } else if (state == 'STOPPED') {
         $('#button_play').children().first().removeClass('fa-pause').addClass('fa-play');
         clearInterval(timer);
@@ -95,16 +84,14 @@ function playerController(state, position) {
         timer = setInterval(inform, 50);
     }
     playerState = state;
-    console.log(playerState);
     inform();
 }
 
 function init() {
-    player = getPlayer('player');
+    var player = getPlayer('player');
     if (!player || !player.attachHandler) {
         setTimeout(init, 100); // Wait for load
     } else {
-        player.attachHandler("progress", "fileLoad");
         player.attachHandler("PLAYER_LOAD", "soundLoad");
         player.attachHandler("PLAYER_BUFFERING", "playerController", "BUFFERING");
         player.attachHandler("PLAYER_PLAYING", "playerController", "PLAYING");
