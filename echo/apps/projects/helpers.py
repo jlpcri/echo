@@ -13,11 +13,8 @@ STATE_NAME = "state name"
 DATE_CHANGED = "date changed"
 
 VUID_HEADER_NAME_SET = {
-    PAGE_NAME,
     PROMPT_NAME,
     PROMPT_TEXT,
-    LANGUAGE,
-    STATE_NAME,
     DATE_CHANGED
 }
 
@@ -116,10 +113,15 @@ def parse_vuid(vuid):
     try:
         prompt_name_i = headers.index(PROMPT_NAME)
         prompt_text_i = headers.index(PROMPT_TEXT)
-        language_i = headers.index(LANGUAGE)
         date_changed_i = headers.index(DATE_CHANGED)
     except ValueError:
         return {"valid": False, "message": "Parser error, invalid headers"}
+
+    no_language = False
+    try:
+        language_i = headers.index(LANGUAGE)
+    except ValueError:
+        no_language = True
 
     v = unicode(ws['A2'].value).strip()
     i = v.find('/')
@@ -128,12 +130,17 @@ def parse_vuid(vuid):
 
     for w in ws.rows[2:]:
         try:
-            if w[language_i].value is not None:
+            if no_language:
+                language = Language.objects.get(project=vuid.project, name=unicode('english'))
+            elif w[language_i].value is not None:
                 language = Language.objects.get(project=vuid.project, name=unicode(w[language_i].value).strip().lower())
             else:
                 language = Language.objects.get(project=vuid.project, name=unicode('english'))
         except Language.DoesNotExist:
-            language = Language(project=vuid.project, name=unicode(w[language_i].value).strip().lower())
+            if no_language:
+                language = Language(project=vuid.project, name=unicode('english'))
+            else:
+                language = Language(project=vuid.project, name=unicode(w[language_i].value).strip().lower())
             language.save()
         except Language.MultipleObjectsReturned:
             return {"valid": False, "message": "Parser error, multiple languages returned"}
@@ -195,6 +202,6 @@ def verify_vuid_headers(vuid):
     if len(ws.rows) >= 2:
         headers = set([i.value.lower() for i in ws.rows[0]])
         i = unicode(ws['A2'].value).strip().find('/')
-        if headers.issubset(VUID_HEADER_NAME_SET) and i != -1:
+        if VUID_HEADER_NAME_SET.issubset(headers) and i != -1:
             return True
     return False
