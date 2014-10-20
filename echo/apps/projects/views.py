@@ -357,15 +357,5 @@ def vuid(request, pid, vid):
 @login_required
 def temp(request):
     if request.method == 'GET':
-        print "request.user_agent:"
-        for d in dir(request.user_agent):
-            print d
-        print "request.user_agent.browser:"
-        for d in dir(request.user_agent.browser):
-            print d
-        print "---------------------------"
-        print request.user_agent.browser
-        print request.user_agent.browser.family
-        print request.user_agent.browser.version_string
         return render(request, "projects/temp.html", contexts.context_temp(request.user_agent.browser))
     return HttpResponseNotFound()
