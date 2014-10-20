@@ -178,13 +178,13 @@ def queue(request, pid):
             slot = slots_out.first()
             if slot.language.pk == lang.pk:
                 slot_file = slot.download()
-                return render(request, "projects/testslot.html", {'slot': slot, 'file': slot_file})
+                return render(request, "projects/testslot.html", contexts.context_queue(request.user_agent.browser, slot, slot_file))
             else:
                 for slot in slots_out:
                     slot.check_in()
         slot = lang.voiceslot_set.filter(status=VoiceSlot.NEW, checked_out=False).first()
         slot_file = slot.download()
-        return render(request, "projects/testslot.html", {'slot': slot, 'file': slot_file})
+        return render(request, "projects/testslot.html", contexts.context_queue(request.user_agent.browser, slot, slot_file))
     elif request.method == 'POST':
         p = get_object_or_404(Project, pk=pid)
         lang = get_object_or_404(Language, project=p, name=request.GET.get('language', '__malformed').lower())
@@ -221,7 +221,7 @@ def queue(request, pid):
 
             slot = lang.voiceslot_set.filter(status=VoiceSlot.NEW, checked_out=False).first()
             slot_file = slot.download()
-            return render(request, "projects/testslot.html", {'slot': slot, 'file': slot_file})
+            return render(request, "projects/testslot.html", contexts.context_queue(request.user_agent.browser, slot, slot_file))
         else:
             return HttpResponseNotFound()
 
@@ -297,7 +297,7 @@ def testslot(request, pid, vsid):
             except pysftp.SSHException:
                 messages.danger(request, "SSH error to server \"{0}\"".format(p.bravo_server.name))
                 return redirect("projects:project", pid)
-            return render(request, "projects/testslot.html", contexts.context_testslot(p, slot, filepath))
+            return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, filepath))
         messages.danger(request, "No server associated with project")
         return redirect("projects:project", pid)
     return submitslot(request, vsid)
@@ -357,7 +357,15 @@ def vuid(request, pid, vid):
 @login_required
 def temp(request):
     if request.method == 'GET':
+        print "request.user_agent:"
+        for d in dir(request.user_agent):
+            print d
+        print "request.user_agent.browser:"
+        for d in dir(request.user_agent.browser):
+            print d
+        print "---------------------------"
         print request.user_agent.browser
         print request.user_agent.browser.family
-        return render(request, "projects/temp.html", {"browser": request.user_agent.browser.family.lower()})
+        print request.user_agent.browser.version_string
+        return render(request, "projects/temp.html", contexts.context_temp(request.user_agent.browser))
     return HttpResponseNotFound()
