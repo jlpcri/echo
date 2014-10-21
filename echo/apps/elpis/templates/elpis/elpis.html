@@ -26,8 +26,9 @@
             });
             $("#run-verify").click( function(event){
                 $.get("{% url 'elpis:verify' project.pk%}").done(function(data){
+                    $("#run-applications-select").html("")
                     $.each(data.apps, function( i, val ) {
-                        $("#run-applications-select").html("")
+
                         $("#run-applications-select").append('<option selected value="' + val + '">' + val + '</option>')
                     });
                     $('#run-applications-modal').modal('show');

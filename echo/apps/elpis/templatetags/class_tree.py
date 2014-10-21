@@ -86,9 +86,14 @@ def file_items_unordered_list(value, autoescape=None):
                 sublist = _helper(sublist_item, tabs+1)
                 sublist = '\n%s<ul>\n%s\n%s</ul>\n%s' % (indent, sublist,
                                                          indent, indent)
-            print "{0} sublist: {1}".format(title, sublist)
-            output.append('%s<li>%s%s</li>' % (indent,
-                    escaper(force_text(title)), sublist))
+            print "{0} sublist: {1}".format(title, len(sublist))
+            if sublist:
+                output.append('%s<li class="folder">%s%s</li>' % (indent,
+                        escaper(force_text(title)), sublist))
+            else:
+                output.append('{0}<li class="{1}">{2} ({1})</li>'.format(indent,
+                                                                   title.payload,
+                                                                   escaper(force_text(title.name))))
             i += 1
         return '\n'.join(output)
     value, converted = convert_old_style_list(value)
