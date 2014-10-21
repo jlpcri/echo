@@ -102,9 +102,46 @@ def verify_file_transfer(request, pid):
                                 file_struct.add(f.filename, ('unexpected-duplicate', ))
                 else:
                     md5s = language.voiceslot_set.filter(name=slot.name).values_list('bravo_checksum', flat=True)
-                    if md5s.count(md5s[0]) == len(md5s):  # If all md5s are equal
-                        what_do_i_call_this = []
-                        
+                    if md5s.count(md5s[0]) == len(md5s):  # If all md5s in VoiceSlots are equal
+                        same_named_files = []
+                        for f in files[lang_name]:
+                            if f.filename.split('/')[-1] == slot_name:
+                                same_named_files.append(f)
+                        if len(set([f.md5sum for f in same_named_files])) == 1: # If all md5s in files are equal
+                            if len(same_named_files) == matching_name_count:
+                                for f in same_named_files:
+                                    file_struct.add(f.filename, ('found', ))
+                            elif len(same_named_files) > matching_name_count:
+                                for f in same_named_files:
+                                    file_struct.add(f.filename, ('unexpected-duplicate', ))
+                            else:
+                                for f in same_named_files:
+                                    file_struct.add(f.filename, ('insufficient-copies', ))
+                                missing_slots.add(slot.filepath())
+                        else:  # All md5s in VoiceSlots match, but not all md5s in files match
+                            for f in same_named_files:
+                                if f.md5sum == md5s[0]:
+                                    file_struct.add(f.filename, ('found', ))
+                                else:
+                                    file_struct.add(f.filename, ('mismatch', ))
+                    else: # VoiceSlots with same name have different md5
+                        same_named_files = []
+                        for f in files[lang_name]:
+                            if f.filename.split('/')[-1] == slot_name:
+                                if file_struct[f.filename] == 'untracked':
+                                    same_named_files.append(f)
+                        for f in same_named_files:
+                            if f.md5sum == slot.bravo_checksum:
+                                file_struct.add(f.filename, ('found', ))
+                            else:
+                                for f in same_named_files:
+                                    file_struct.add(f.filename, ('insufficient-copies'))
+                                for matching_slot in language.voiceslot_set.filter(name=slot.name):
+                                    missing_slots.add(matching_slot.filepath())
+
+
+
+
 
 
 
