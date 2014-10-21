@@ -20,6 +20,10 @@ var soundPosition = 0;
 var last = undefined;
 var timer = undefined;
 
+//function updateProgress(a, b) {
+//    $("#player-progress").css("width", parseInt(getPercent(a, b)) + "%");
+//}
+
 function getPlayer(pid) {
     var obj = document.getElementById(pid);
     if (obj.doPlay) return obj;
@@ -30,20 +34,17 @@ function getPlayer(pid) {
 }
 
 function buttonPlayPauseHandler(fname) {
+    var player = getPlayer('player');
     if (playerState == 'PLAYING') {
-        console.log('pause');
         player.doPause();
     } else if (playerState == 'PAUSED') {
-        console.log('resume');
         player.doResume();
     } else {
-        console.log('play');
         player.doPlay(fname);
     }
 }
 
 function buttonStopHandler() {
-    console.log('stop');
     var player = getPlayer('player');
     player.doStop();
 }
@@ -58,30 +59,29 @@ function getPercent(a, b) {
 }
 
 function fileLoad(bytesLoad, bytesTotal) {
-    console.log('inform()');
     document.getElementById('InfoFile').innerHTML = "Loaded " + bytesLoad + "/" + bytesTotal + " bytes (" + getPercent(bytesLoad, bytesTotal) + "%)";
 }
 
 function soundLoad(secLoad, secTotal) {
-    console.log('inform()');
     soundLength = secTotal;
 }
 
 function inform() {
-    console.log('inform()');
     if (last != undefined) {
         var now = new Date();
         soundPosition += (now.getTime() - last.getTime()) / 1000;
+        console.log(soundPosition);
         last = now;
     }
     playerInfo.innerHTML = playerState;
     playerTime.innerHTML = soundPosition.toFixed(0) + soundLength.toFixed(0);
+//    updateProgress(soundPosition, soundLength);
 }
 
 function playerController(state, position) {
     if (position != undefined) soundPosition = position;
     if (state == "BUFFERING") {
-        console.log('buffering if conditional');
+
     } else if (state == 'STOPPED') {
         $('#button_play').children().first().removeClass('fa-pause').addClass('fa-play');
         clearInterval(timer);
@@ -95,7 +95,6 @@ function playerController(state, position) {
         timer = setInterval(inform, 50);
     }
     playerState = state;
-    console.log(playerState);
     inform();
 }
 

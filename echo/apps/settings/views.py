@@ -81,6 +81,18 @@ def servers(request):
                     return redirect("settings:servers")
                 messages.success(request, "Connecting to server \"{0}\"".format(server.name))
                 return redirect("settings:servers")
+        elif "update_active" in request.POST:
+            sid = request.POST.get('sid', "")
+            servers = Server.objects.all()
+            for server_active in servers:
+                if server_active:
+                    server_active.active = False
+                    server_active.save()
+
+            server = get_object_or_404(Server, pk=sid)
+            server.active = True
+            server.save()
+            return redirect("settings:servers")
     return HttpResponseNotFound()
 
 

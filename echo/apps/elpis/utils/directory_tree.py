@@ -97,15 +97,51 @@ class DirectoryTreeWithPayload(DirectoryTree):
         self.file_list = []
         self.payload_class = payload_class
 
-    def add(self, filename, init=()):
-        if filename in [name for name, payload in self.file_list]:
-            return
-        super.add(filename)
-        self.file_list.append(self.PayloadObject(filename, self.payload_class(*init)))
+    def add(self, filepath, init=()):
+        components = self._path_to_components(filepath)
+        search_scope = self.entries
+        for i, component in enumerate(components):
+            try:
+                j = search_scope.index(component + ('/' if i+1 != len(components)
+                                                    else ''))
+                search_scope = search_scope[j+1]
+            except ValueError:
+                if i+1 != len(components):
+                    search_scope.extend([component+'/', []])
+                    search_scope = search_scope[-1]
+                else:
+                    for entry in search_scope:
+                        if entry.name == component:
+                            search_scope.remove(entry)
+                    search_scope.append(self.PayloadObject(component, self.payload_class(*init)))
+            except IndexError as e:
+                if i+1 == len(components):
+                    pass
+                else:
+                    raise e
+        self.file_list.append(self.PayloadObject(filepath, self.payload_class(*init)))
 
     def __contains__(self, filepath):
         return (filepath in [entry.name for entry in self.file_list])
 
     def __iter__(self):
         return self.file_list.__iter__()
+
+    def __getitem__(self, key):
+        """Return payload class object for given filepath"""
+        for f in self.file_list:
+            if f.name == key:
+                return f.payload
+        return None
+
+    def __setitem__(self, key, value):
+        if key not in self:
+            super.add(key)
+            self.file_list.append(self.PayloadObject(key, value))
+        else:
+            for f in self.file_list:
+                if f.name == key:
+                    f.payload = value
+
+
 
