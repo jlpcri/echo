@@ -1,3 +1,4 @@
+{% load class_tree %}
 <script>
     $(function() {
     // Find list items representing folders and
@@ -9,7 +10,7 @@
         var parent_li = $(this).parent('li');
 
         // Style the list item as folder.
-        parent_li.addClass('folder');
+        // parent_li.addClass('folder');
 
         // Temporarily remove the list from the
         // parent list item, wrap the remaining
@@ -37,5 +38,5 @@
 <hr>
 <div class="row" id="file-struct">
     <h4>Preprod File Structure</h4>
-    <ul>{{file_struct|unordered_list}}</ul>
+    <ul>{{file_struct|file_items_unordered_list}}</ul>
 </div>
