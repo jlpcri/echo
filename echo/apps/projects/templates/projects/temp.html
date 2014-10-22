@@ -8,27 +8,39 @@
     <div class="container">
         <div class="row">
             <div class="col-xs-4">
-                <div class="well" style="background-color:transparent;">
-                    <div class="pull-left">
-                        <button type="button" class="btn btn-default" id="button_play"
-                                onclick="buttonPlayPauseHandler('http://localhost:8000/echo/media/back_in_business.wav');"><i
-                                class="fa fa-play"></i></button>
-                        <button type="button" class="btn btn-default" id="button_stop"
-                                onclick="buttonStopHandler();"><i
-                                class="fa fa-stop"></i></button>
-                    </div>
-                    <div class="pull-right">
-                        <div id="player_panel" class="pull-left" style="width: 100%; background-color: gainsboro;">
-                            <div id="player_info" class="pull-left"></div>
-                            <div id="player_time" class="pull-right"></div>
+                {% if browser != "ie9" %}
+                    <div class="well" style="background-color:transparent;">
+                        <div class="pull-left">
+                            <button type="button" class="btn btn-default" id="button_play"
+                                    onclick="buttonPlayPauseHandler('http://localhost:8000/echo/media/DNISgreet6.wav');">
+                                <i
+                                        class="fa fa-play"></i></button>
+                            <button type="button" class="btn btn-default" id="button_stop"
+                                    onclick="buttonStopHandler();"><i
+                                    class="fa fa-stop"></i></button>
                         </div>
-                        <br>
-                        <label for="volume"><i class="fa fa-volume-down"></i></label>
-                        <input id="volume" type="text" class="span2" value="5" data-slider-tooltip="hide"/>
-                        <label for="volume"><i class="fa fa-volume-up"></i></label>
+                        <div class="pull-right">
+                            <div id="player_panel" class="pull-left" style="width: 100%; background-color: gainsboro;">
+                                <div id="player_info" class="pull-left"></div>
+                                <div id="player_time" class="pull-right">--/-- sec</div>
+                            </div>
+                            <br>
+                            <label for="volume"><i class="fa fa-volume-down"></i></label>
+                            <input id="volume" type="text" class="span2" value="5" data-slider-tooltip="hide"/>
+                            <label for="volume"><i class="fa fa-volume-up"></i></label>
+                        </div>
+                        <div class="clearfix"></div>
                     </div>
-                    <div class="clearfix"></div>
-                </div>
+                {% else %}
+                    <!--[if gte IE 10]> -->
+                    <audio controls src="http://localhost:8000/echo/media/DNISgreet6.wav" type="audio/wav">
+                        IE support pending. Please use Firefox or Chrome.
+                    </audio>
+                    <![endif]-->
+                    <!--[if IE]>
+                    <embed src="http://localhost:8000/echo/media/DNISgreet6.wav"
+                    <!-- <![endif]-->
+                {% endif %}
             </div>
             <div class="col-xs-8">
                 {#                <div id="InfoFile"></div>#}
@@ -36,6 +48,7 @@
                 {#                <div id="InfoState"></div>#}
             </div>
         </div>
+        {% if browser != 'ie9' %}
         <div class="row">
             <div class="col-xs-12">
                 <object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000"
@@ -52,10 +65,12 @@
                 </object>
             </div>
         </div>
+        {% endif %}
     </div>
 {% endblock %}
 {% block endscript %}
     <script type="text/javascript">
+        {% if browser != "ie9" %}
         $('#volume').slider();
         init();
         $('#volume').slider()
@@ -63,5 +78,6 @@
                     var n = ev.value * 0.1;
                     setVolume(n);
                 });
+        {% endif %}
     </script>
 {% endblock %}

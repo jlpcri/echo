@@ -11,7 +11,6 @@ attemptConnect = attemptConnect || (function () {
     };
 })();
 
-var player = undefined;
 var playerInfo = undefined;
 var playerTime = undefined;
 var playerState = "STOPPED";
@@ -19,10 +18,6 @@ var soundLength = 0;
 var soundPosition = 0;
 var last = undefined;
 var timer = undefined;
-
-//function updateProgress(a, b) {
-//    $("#player-progress").css("width", parseInt(getPercent(a, b)) + "%");
-//}
 
 function getPlayer(pid) {
     var obj = document.getElementById(pid);
@@ -58,10 +53,6 @@ function getPercent(a, b) {
     return ((b == 0 ? 0.0 : a / b) * 100).toFixed(2);
 }
 
-function fileLoad(bytesLoad, bytesTotal) {
-    document.getElementById('InfoFile').innerHTML = "Loaded " + bytesLoad + "/" + bytesTotal + " bytes (" + getPercent(bytesLoad, bytesTotal) + "%)";
-}
-
 function soundLoad(secLoad, secTotal) {
     soundLength = secTotal;
 }
@@ -70,18 +61,16 @@ function inform() {
     if (last != undefined) {
         var now = new Date();
         soundPosition += (now.getTime() - last.getTime()) / 1000;
-        console.log(soundPosition);
         last = now;
     }
     playerInfo.innerHTML = playerState;
-    playerTime.innerHTML = soundPosition.toFixed(0) + soundLength.toFixed(0);
-//    updateProgress(soundPosition, soundLength);
+    playerTime.innerHTML = soundPosition.toFixed(0) + '/' + soundLength.toFixed(0) + ' SEC';
 }
 
 function playerController(state, position) {
     if (position != undefined) soundPosition = position;
     if (state == "BUFFERING") {
-
+        // empty
     } else if (state == 'STOPPED') {
         $('#button_play').children().first().removeClass('fa-pause').addClass('fa-play');
         clearInterval(timer);
@@ -99,11 +88,10 @@ function playerController(state, position) {
 }
 
 function init() {
-    player = getPlayer('player');
+    var player = getPlayer('player');
     if (!player || !player.attachHandler) {
         setTimeout(init, 100); // Wait for load
     } else {
-        player.attachHandler("progress", "fileLoad");
         player.attachHandler("PLAYER_LOAD", "soundLoad");
         player.attachHandler("PLAYER_BUFFERING", "playerController", "BUFFERING");
         player.attachHandler("PLAYER_PLAYING", "playerController", "PLAYING");

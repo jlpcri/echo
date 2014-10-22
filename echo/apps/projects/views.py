@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import os
+import uuid
 
 import pysftp
 
@@ -177,13 +178,13 @@ def queue(request, pid):
             slot = slots_out.first()
             if slot.language.pk == lang.pk:
                 slot_file = slot.download()
-                return render(request, "projects/testslot.html", {'slot': slot, 'file': slot_file})
+                return render(request, "projects/testslot.html", contexts.context_queue(request.user_agent.browser, slot, slot_file))
             else:
                 for slot in slots_out:
                     slot.check_in()
         slot = lang.voiceslot_set.filter(status=VoiceSlot.NEW, checked_out=False).first()
         slot_file = slot.download()
-        return render(request, "projects/testslot.html", {'slot': slot, 'file': slot_file})
+        return render(request, "projects/testslot.html", contexts.context_queue(request.user_agent.browser, slot, slot_file))
     elif request.method == 'POST':
         p = get_object_or_404(Project, pk=pid)
         lang = get_object_or_404(Language, project=p, name=request.GET.get('language', '__malformed').lower())
@@ -231,7 +232,7 @@ def queue(request, pid):
                     messages.success(request, "All slots in this language are tested or recently checked out for testing.")
                     return redirect("projects:project", pid=pid)
             slot_file = slot.download()
-            return render(request, "projects/testslot.html", {'slot': slot, 'file': slot_file})
+            return render(request, "projects/testslot.html", contexts.context_queue(request.user_agent.browser, slot, slot_file))
         else:
             return HttpResponseNotFound()
 
@@ -282,15 +283,15 @@ def testslot(request, pid, vsid):
             try:
                 with pysftp.Connection(p.bravo_server.address, username=str(p.bravo_server.account)) as conn:
                     remote_path = "{0}".format(slot.filepath())
-                    local_path = os.path.join(settings.MEDIA_ROOT, "{0}.wav".format(slot.name))
+                    filename = "{0}.wav".format(str(uuid.uuid4()))
+                    local_path = os.path.join(settings.MEDIA_ROOT, filename)
                     conn.get(remote_path, local_path)
-                    filepath = "{0}{1}.wav".format(settings.MEDIA_URL, slot.name)
+                    filepath = "{0}{1}".format(settings.MEDIA_URL, filename)
                     last_modified = int(conn.execute('stat -c %Y {0}'.format(remote_path))[0])
                     slot.check_out(request.user)
                     slot.history = "Downloaded file last modified on {0}\n".format(
                         datetime.fromtimestamp(last_modified).strftime("%b %d %Y, %H:%M")) + slot.history
             except IOError as e:
-                print e
                 messages.danger(request, "File missing on server \"{0}\"".format(p.bravo_server.name))
                 slot.status = VoiceSlot.MISSING
                 slot.history = "Attempted test, slot missing, {0}\n".format(datetime.now()) + slot.history
@@ -307,7 +308,7 @@ def testslot(request, pid, vsid):
             except pysftp.SSHException:
                 messages.danger(request, "SSH error to server \"{0}\"".format(p.bravo_server.name))
                 return redirect("projects:project", pid)
-            return render(request, "projects/testslot.html", contexts.context_testslot(p, slot, filepath))
+            return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, filepath))
         messages.danger(request, "No server associated with project")
         return redirect("projects:project", pid)
     return submitslot(request, vsid)
@@ -367,7 +368,5 @@ def vuid(request, pid, vid):
 @login_required
 def temp(request):
     if request.method == 'GET':
-        print request.user_agent.browser
-        print request.user_agent.browser.family
-        return render(request, "projects/temp.html", {"browser": request.user_agent.browser.family.lower()})
+        return render(request, "projects/temp.html", contexts.context_temp(request.user_agent.browser))
     return HttpResponseNotFound()
