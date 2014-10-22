@@ -232,7 +232,7 @@ def queue(request, pid):
                     messages.success(request, "All slots in this language are tested or recently checked out for testing.")
                     return redirect("projects:project", pid=pid)
             slot_file = slot.download()
-            return render(request, "projects/testslot.html", contexts.context_queue(request.user_agent.browser, slot, slot_file))
+            return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, slot_file))
         else:
             return HttpResponseNotFound()
 
