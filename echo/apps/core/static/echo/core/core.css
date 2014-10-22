@@ -77,26 +77,50 @@ ul {
     margin: 0;
     padding: 0;
 }
+
 #file-struct ul li:before {
 font-family: 'FontAwesome';
 content: '\f016';
 margin:0 5px 0 -15px;
-color: #f00;
+color: blue;
 }
+
 #file-struct ul li {
     position:relative;
     background-position: 0 1px;
     background-repeat: no-repeat;
     padding-left: 20px;
 }
+
 #file-struct ul li.folder {
     position:relative;
 }
+
 #file-struct li.folder:before {
 font-family: 'FontAwesome';
 content: '\f114';
 margin:0 5px 0 -15px;
-color: #f00;
+color: blue;
+}
+
+#file-struct ul li.found {
+    color: green;
+}
+
+#file-struct ul li.insufficient-copies {
+    color: red;
+}
+
+#file-struct ul li.mismatch {
+    color: orange;
+}
+
+#file-struct ul li.unexpected-duplicate {
+    color: purple;
+}
+
+#file-struct ul li.untracked {
+    color: darkgray;
 }
 
 #file-struct a {
@@ -104,6 +128,7 @@ color: #f00;
     cursor: pointer;
     text-decoration: none;
 }
+
 #file-struct a:hover {
     text-decoration: underline;
 }
