@@ -178,13 +178,13 @@ def queue(request, pid):
             slot = slots_out.first()
             if slot.language.pk == lang.pk:
                 slot_file = slot.download()
-                return render(request, "projects/testslot.html", contexts.context_queue(request.user_agent.browser, slot, slot_file))
+                return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, slot_file))
             else:
                 for slot in slots_out:
                     slot.check_in()
         slot = lang.voiceslot_set.filter(status=VoiceSlot.NEW, checked_out=False).first()
         slot_file = slot.download()
-        return render(request, "projects/testslot.html", contexts.context_queue(request.user_agent.browser, slot, slot_file))
+        return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, slot_file))
     elif request.method == 'POST':
         p = get_object_or_404(Project, pk=pid)
         lang = get_object_or_404(Language, project=p, name=request.GET.get('language', '__malformed').lower())
