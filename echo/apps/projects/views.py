@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import uuid
 
@@ -219,7 +219,18 @@ def queue(request, pid):
             if count > 0:
                 messages.success(request, "{0} matching slots updated".format(count))
 
-            slot = lang.voiceslot_set.filter(status=VoiceSlot.NEW, checked_out=False).first()
+            slot_filter = lang.voiceslot_set.filter(status=VoiceSlot.NEW, checked_out=False)
+            if slot_filter.count() > 0:
+                slot = slot_filter.first()
+            else:
+                ten_minutes_ago = datetime.now() - timedelta(minutes=10)
+                slot_filter = lang.voiceslot_set.filter(status=VoiceSlot.NEW, checked_out=True,
+                                                        checked_out_time__lte = ten_minutes_ago)
+                if slot_filter.count() > 0:
+                    slot = slot_filter.first()
+                else:
+                    messages.success(request, "All slots in this language are tested or recently checked out for testing.")
+                    return redirect("projects:project", pid=pid)
             slot_file = slot.download()
             return render(request, "projects/testslot.html", contexts.context_queue(request.user_agent.browser, slot, slot_file))
         else:
