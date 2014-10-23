@@ -27,16 +27,21 @@
     $('ul ul').hide();
 });
 </script>
-<div class="row">
-    <h4>Missing Files</h4>
-    <ul>
-    {% for f in missing_slots %}
-    <li>{{f}}</li>
-    {% endfor %}
-    </ul>
-</div>
-<hr>
-<div class="row" id="file-struct">
-    <h4>Preprod File Structure</h4>
-    <ul>{{file_struct|file_items_unordered_list}}</ul>
+<ul class="nav nav-tabs">
+    <li class="active"><a href="#missing" data-toggle="tab">Missing Files</a></li>
+    <li><a href="#file-struct" data-toggle="tab">Preprod File Structure</a></li>
+</ul>
+<div id="myTabContent" class="tab-content">
+    <div class="tab-pane fade active in" id="missing">
+        <br>
+        <ul style="padding: 0;">
+        {% for f in missing_slots %}
+        <li>{{f}}</li>
+        {% endfor %}
+        </ul>
+    </div>
+    <div class="tab-pane fade" id="file-struct">
+        <br>
+        <ul>{{file_struct|file_items_unordered_list}}</ul>
+    </div>
 </div>

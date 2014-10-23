@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import uuid
 
@@ -24,7 +24,8 @@ def fetch(request, pid):
         p = get_object_or_404(Project, pk=pid)
         if p.bravo_server:
             try:
-                with pysftp.Connection(p.bravo_server.address, username=str(p.bravo_server.account)) as sftp:
+                with pysftp.Connection(p.bravo_server.address, username=p.bravo_server.account,
+                                       private_key=settings.PRIVATE_KEY) as sftp:
                     result = helpers.fetch_slots_from_server(p, sftp)
                     if result['valid']:
                         messages.success(request, result["message"])
@@ -178,13 +179,13 @@ def queue(request, pid):
             slot = slots_out.first()
             if slot.language.pk == lang.pk:
                 slot_file = slot.download()
-                return render(request, "projects/testslot.html", contexts.context_queue(request.user_agent.browser, slot, slot_file))
+                return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, slot_file))
             else:
                 for slot in slots_out:
                     slot.check_in()
         slot = lang.voiceslot_set.filter(status=VoiceSlot.NEW, checked_out=False).first()
         slot_file = slot.download()
-        return render(request, "projects/testslot.html", contexts.context_queue(request.user_agent.browser, slot, slot_file))
+        return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, slot_file))
     elif request.method == 'POST':
         p = get_object_or_404(Project, pk=pid)
         lang = get_object_or_404(Language, project=p, name=request.GET.get('language', '__malformed').lower())
@@ -219,9 +220,20 @@ def queue(request, pid):
             if count > 0:
                 messages.success(request, "{0} matching slots updated".format(count))
 
-            slot = lang.voiceslot_set.filter(status=VoiceSlot.NEW, checked_out=False).first()
+            slot_filter = lang.voiceslot_set.filter(status=VoiceSlot.NEW, checked_out=False)
+            if slot_filter.count() > 0:
+                slot = slot_filter.first()
+            else:
+                ten_minutes_ago = datetime.now() - timedelta(minutes=10)
+                slot_filter = lang.voiceslot_set.filter(status=VoiceSlot.NEW, checked_out=True,
+                                                        checked_out_time__lte = ten_minutes_ago)
+                if slot_filter.count() > 0:
+                    slot = slot_filter.first()
+                else:
+                    messages.success(request, "All slots in this language are tested or recently checked out for testing.")
+                    return redirect("projects:project", pid=pid)
             slot_file = slot.download()
-            return render(request, "projects/testslot.html", contexts.context_queue(request.user_agent.browser, slot, slot_file))
+            return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, slot_file))
         else:
             return HttpResponseNotFound()
 
@@ -270,7 +282,8 @@ def testslot(request, pid, vsid):
         slot = get_object_or_404(VoiceSlot, pk=vsid)
         if p.bravo_server:
             try:
-                with pysftp.Connection(p.bravo_server.address, username=str(p.bravo_server.account)) as conn:
+                with pysftp.Connection(p.bravo_server.address, username=p.bravo_server.account,
+                                       private_key=settings.PRIVATE_KEY) as conn:
                     remote_path = "{0}".format(slot.filepath())
                     filename = "{0}.wav".format(str(uuid.uuid4()))
                     local_path = os.path.join(settings.MEDIA_ROOT, filename)

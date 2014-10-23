@@ -1,13 +1,15 @@
+import pysftp
+
+from django.conf import settings
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
-from echo.apps.core import messages
-from forms import ServerForm, ServerPreprodForm
-from models import Server, PreprodServer
 
-import pysftp
+from echo.apps.core import messages
+from echo.apps.settings.forms import ServerForm, ServerPreprodForm
+from echo.apps.settings.models import Server, PreprodServer
 
 
 def user_is_superuser(user):
@@ -62,7 +64,8 @@ def servers(request):
             if sid:
                 server = get_object_or_404(Server, pk=sid)
                 try:
-                    with pysftp.Connection(server.address, username=str(server.account)) as conn:
+                    with pysftp.Connection(server.address, username=str(server.account),
+                                           private_key=settings.PRIVATE_KEY) as conn:
                         conn.chdir('/')
                 except IOError:
                     messages.danger(request, "Unable to connect to server \"{0}\"".format(server.name))
@@ -177,7 +180,8 @@ def servers_preprod(request):
             if sid:
                 server = get_object_or_404(PreprodServer, pk=sid)
                 try:
-                    with pysftp.Connection(server.address, username=str(server.account)) as conn:
+                    with pysftp.Connection(server.address, username=str(server.account),
+                                           private_key=settings.PRIVATE_KEY) as conn:
                         conn.chdir('/')
                 except IOError:
                     messages.danger(request, "Unable to connect to preprod server \"{0}\"".format(server.name))
