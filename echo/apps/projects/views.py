@@ -24,7 +24,8 @@ def fetch(request, pid):
         p = get_object_or_404(Project, pk=pid)
         if p.bravo_server:
             try:
-                with pysftp.Connection(p.bravo_server.address, username=str(p.bravo_server.account)) as sftp:
+                with pysftp.Connection(p.bravo_server.address, username=p.bravo_server.account,
+                                       private_key=settings.PRIVATE_KEY) as sftp:
                     result = helpers.fetch_slots_from_server(p, sftp)
                     if result['valid']:
                         messages.success(request, result["message"])
@@ -281,7 +282,8 @@ def testslot(request, pid, vsid):
         slot = get_object_or_404(VoiceSlot, pk=vsid)
         if p.bravo_server:
             try:
-                with pysftp.Connection(p.bravo_server.address, username=str(p.bravo_server.account)) as conn:
+                with pysftp.Connection(p.bravo_server.address, username=p.bravo_server.account,
+                                       private_key=settings.PRIVATE_KEY) as conn:
                     remote_path = "{0}".format(slot.filepath())
                     filename = "{0}.wav".format(str(uuid.uuid4()))
                     local_path = os.path.join(settings.MEDIA_ROOT, filename)
