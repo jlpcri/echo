@@ -12,12 +12,12 @@ import echo.settings.base as settings
 admin.autodiscover()
 
 urlpatterns = patterns('',
-    url(r'^echo/', include(coreUrls, namespace="core")),
-    url(r'^echo/projects/', include(projectsUrls, namespace="projects")),
-    url(r'^echo/reports/', include(reportsUrls, namespace="reports")),
-    url(r'^echo/settings/', include(settingsUrls, namespace="settings")),
-    url(r'^echo/elpis/', include(elpisUrls, namespace="elpis")),
+    url(r'^pheme/', include(coreUrls, namespace="core")),
+    url(r'^pheme/projects/', include(projectsUrls, namespace="projects")),
+    url(r'^pheme/reports/', include(reportsUrls, namespace="reports")),
+    url(r'^pheme/settings/', include(settingsUrls, namespace="settings")),
+    url(r'^pheme/elpis/', include(elpisUrls, namespace="elpis")),
 )
 
-urlpatterns += patterns('', (r'^echo/media/(?P<path>.*)$', 'django.views.static.serve',
+urlpatterns += patterns('', (r'^pheme/media/(?P<path>.*)$', 'django.views.static.serve',
                              {'document_root': settings.MEDIA_ROOT}))
