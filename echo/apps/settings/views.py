@@ -42,8 +42,11 @@ def servers(request):
                     messages.success(request, "Added server to list")
                     return redirect("settings:servers")
                 except ValidationError as e:
+                    print e.message_dict
                     if 'name' in e.message_dict:
                         messages.danger(request, e.message_dict.get('name')[0])
+                    elif 'address' in e.message_dict:
+                        messages.danger(request, e.message_dict.get('address')[0])
                     return render(request, "settings/servers.html",
                                   {'servers': Server.objects.all().order_by("name"), 'server_form': form})
             messages.danger(request, "Unable to add server to list")
@@ -156,6 +159,8 @@ def servers_preprod(request):
                 except ValidationError as e:
                     if 'name' in e.message_dict:
                         messages.danger(request, e.message_dict.get('name')[0])
+                    elif 'address' in e.message_dict:
+                        messages.danger(request, e.message_dict.get('address')[0])
                     return render(request, "settings/servers_preprod.html",
                                   {'servers_preprod': PreprodServer.objects.all().order_by("name"),
                                    'server_form_preprod': form})
