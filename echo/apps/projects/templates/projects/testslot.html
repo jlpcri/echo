@@ -18,7 +18,7 @@
 
             <div class="row">
                 <div class="col-xs-6">
-                    <h3>{{ slot.name }}</h3>
+                    <h3 style="word-break: break-all;">{{ slot.name }}</h3>
                 </div>
                 <div class="col-xs-4">
                     {% if browser != "ie9" %}
@@ -55,10 +55,16 @@
                         <!-- <![endif]-->
                     {% endif %}
                 </div>
-                <div class="col-xs-2">
-                    <div class="form-group pull-right">
-                        <input type="checkbox" name="test_result" data-animate="false" data-size="large"
-                               data-on-color="success" data-off-color="danger" data-on-text="Pass" data-off-text="Fail">
+                <div id="passfail" class="col-xs-2">
+                    <div class="form-group pull-right" style="width: 100%;">
+                    <div class="btn-group outcome" data-toggle="buttons" style="width: 100%;">
+                        <label id="label-pass" class="btn btn-default pass" style="width: 50%;">
+                            <input type="radio" id="pass" class="rg" name="slot_status" value="pass">Pass
+                        </label>
+                        <label id="label-fail" class="btn btn-default fail" style="width: 50%;">
+                            <input type="radio" id="fail" class="rg" name="slot_status" value="fail">Fail
+                        </label>
+                    </div>
                     </div>
                 </div>
             </div>
@@ -124,5 +130,18 @@
                     setVolume(n);
                 });
         {% endif %}
+        $(".rg").change(function () {
+            if ($('input[name=slot_status]:checked', '#passfail').val() == 'pass') {
+                $("#label-fail").removeClass('btn-danger');
+                $("#label-fail").addClass('btn-default');
+                $("#label-pass").removeClass('btn-default');
+                $("#label-pass").addClass('btn-success');
+            } else if ($('input[name=slot_status]:checked', '#passfail').val() == 'fail') {
+                $("#label-pass").removeClass('btn-success');
+                $("#label-pass").addClass('btn-default');
+                $("#label-fail").removeClass('btn-default');
+                $("#label-fail").addClass('btn-danger');
+            }
+        });
     </script>
 {% endblock %}
