@@ -37,9 +37,9 @@
                                 {% csrf_token %}
                                 <input type="hidden" name="vsid" value="{{ slot.pk }}">
                                 <td>
-                                    <span class="text-info"><b>{{ slot.name }}</b></span><br>
-                                    <span class="text-default">Path:&nbsp;{{ slot.path }}</span><br>
-                                    <span class="text-default">Lang:&nbsp;{{ slot.language.name }}</span>
+                                    <span class="text-info" style="word-break: break-all;"><b>{{ slot.name }}</b></span><br>
+                                    <span class="text-default" style="word-break: break-all;">Path:&nbsp;{{ slot.path }}</span><br>
+                                    <span class="text-default" style="word-break: break-all;">Lang:&nbsp;{{ slot.language.name }}</span>
                                 </td>
                                 <td class="text-justify">{{ slot.verbiage }}</td>
                                 <td class="text-justify">{% for line in slot.history_list %}{{ line }}<br>{% endfor %}

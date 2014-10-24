@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 import time
-import uuid
 import os
 import uuid
 
@@ -206,7 +205,8 @@ class VoiceSlot(models.Model):
     def download(self):
         """Downloads a file from the remote server and returns the path on the local server"""
         p = self.language.project
-        with pysftp.Connection(p.bravo_server.address, username=str(p.bravo_server.account)) as conn:
+        with pysftp.Connection(p.bravo_server.address, username=p.bravo_server.account,
+                               private_key=settings.PRIVATE_KEY) as conn:
             remote_path = self.filepath()
             filename = "{0}.wav".format(str(uuid.uuid4()))
             local_path = os.path.join(settings.MEDIA_ROOT, filename)

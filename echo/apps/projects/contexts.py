@@ -57,24 +57,11 @@ def context_projects(user):
     }
 
 
-def context_queue(browser, slot, slot_file):
-    browser_type = None
-    if browser:
-        if browser.family and browser.version_string:
-            browser_type = "{0}{1}".format(browser.family.lower(), browser.version_string.lower())
-    return {
-        'browser': browser_type,
-        'slot': slot,
-        'slot_file': slot_file
-    }
-
-
 def context_testslot(browser, project, slot, filepath):
     browser_type = None
     if browser:
         if browser.family and browser.version_string:
             browser_type = "{0}{1}".format(browser.family.lower(), browser.version_string.lower())
-    print browser_type
     return {
         'browser': browser_type,
         'project': project,

@@ -14,3 +14,5 @@ DATABASES = {
         'PORT': '5432'
     }
 }
+
+PRIVATE_KEY = '/home/wicqacip/.ssh/id_rsa'
