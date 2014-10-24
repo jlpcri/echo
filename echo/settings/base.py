@@ -19,9 +19,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 MEDIA_ROOT = os.path.abspath(os.path.join(BASE_DIR, "..", 'media'))
 
-MEDIA_URL = '/echo/media/'
+MEDIA_URL = '/pheme/media/'
 
-LOGIN_URL = '/echo/'
+LOGIN_URL = '/pheme/'
 
 
 # Quick-start development settings - unsuitable for production
@@ -37,8 +37,6 @@ TEMPLATE_DEBUG = True
 
 ALLOWED_HOSTS = []
 
-# AUTHENTICATION
-LOGIN_URL = '/echo/'
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',

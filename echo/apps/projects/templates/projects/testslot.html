@@ -14,34 +14,47 @@
         <hr>
         <form method="post">
             {% csrf_token %}
-            <input type="hidden" name="slot-id" value="{{slot.pk}}">
+            <input type="hidden" name="slot-id" value="{{ slot.pk }}">
+
             <div class="row">
                 <div class="col-xs-6">
                     <h3>{{ slot.name }}</h3>
                 </div>
                 <div class="col-xs-4">
-                <div class="well" style="background-color:transparent;">
-                    <div class="pull-left">
-                        <button type="button" class="btn btn-default" id="button_play"
-                                onclick="buttonPlayPauseHandler('{{ file }}');"><i
-                                class="fa fa-play"></i></button>
-                        <button type="button" class="btn btn-default" id="button_stop"
-                                onclick="buttonStopHandler();"><i
-                                class="fa fa-stop"></i></button>
-                    </div>
-                    <div class="pull-right">
-                        <div id="player_panel" class="pull-left" style="width: 100%; background-color: gainsboro;">
-                            <div id="player_info" class="pull-left"></div>
-                            <div id="player_time" class="pull-right">--/-- sec</div>
+                    {% if browser != "ie9" %}
+                        <div class="well" style="background-color:transparent;">
+                            <div class="pull-left">
+                                <button type="button" class="btn btn-default" id="button_play"
+                                        onclick="buttonPlayPauseHandler('{{ file }}');"><i
+                                        class="fa fa-play"></i></button>
+                                <button type="button" class="btn btn-default" id="button_stop"
+                                        onclick="buttonStopHandler();"><i
+                                        class="fa fa-stop"></i></button>
+                            </div>
+                            <div class="pull-right">
+                                <div id="player_panel" class="pull-left"
+                                     style="width: 100%; background-color: gainsboro;">
+                                    <div id="player_info" class="pull-left"></div>
+                                    <div id="player_time" class="pull-right">--/-- sec</div>
+                                </div>
+                                <br>
+                                <label for="volume"><i class="fa fa-volume-down"></i></label>
+                                <input id="volume" type="text" class="span2" value="5" data-slider-tooltip="hide"/>
+                                <label for="volume"><i class="fa fa-volume-up"></i></label>
+                            </div>
+                            <div class="clearfix"></div>
                         </div>
-                        <br>
-                        <label for="volume"><i class="fa fa-volume-down"></i></label>
-                        <input id="volume" type="text" class="span2" value="5" data-slider-tooltip="hide"/>
-                        <label for="volume"><i class="fa fa-volume-up"></i></label>
-                    </div>
-                    <div class="clearfix"></div>
+                    {% else %}
+                        <!--[if gte IE 10]> -->
+                        <audio controls src="{{ file }}" type="audio/wav">
+                            IE support pending. Please use Firefox or Chrome.
+                        </audio>
+                        <![endif]-->
+                        <!--[if IE]>
+                        <embed src="{{ file }}"
+                        <!-- <![endif]-->
+                    {% endif %}
                 </div>
-            </div>
                 <div class="col-xs-2">
                     <div class="form-group pull-right">
                         <input type="checkbox" name="test_result" data-animate="false" data-size="large"
@@ -82,6 +95,7 @@
                 </div>
             </div>
         </form>
+        {% if browser != "ie9" %}
         <object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000"
                 id="player"
                 name="audio1"
@@ -95,15 +109,13 @@
                    type="application/x-shockwave-flash"
                    pluginspage="http://www.macromedia.com/go/getflashplayer"></embed>
         </object>
+        {% endif %}
     </div>
 {% endblock %}
 {% block endscript %}
     <script type="text/javascript">
         $("[name='test_result']").bootstrapSwitch();
-        {#        document.getElementById('player').addEventListener("ended", function () {#}
-        {#                    this.load();#}
-        {#                }#}
-        {#        );#}
+        {% if browser != "ie9" %}
         $('#volume').slider();
         init();
         $('#volume').slider()
@@ -111,5 +123,6 @@
                     var n = ev.value * 0.1;
                     setVolume(n);
                 });
+        {% endif %}
     </script>
 {% endblock %}

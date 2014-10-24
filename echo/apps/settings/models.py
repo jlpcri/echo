@@ -3,6 +3,7 @@ import os
 
 import pysftp
 
+from django.conf import settings
 from django.db import models
 
 
@@ -35,7 +36,7 @@ class PreprodServer(models.Model):
     def get_clients(self):
         """Fetch list of project/client directories from preprod server file system"""
         if self.application_type == self.PRODUCER:
-            with pysftp.Connection(self.address, username=self.account) as conn:
+            with pysftp.Connection(self.address, username=self.account, private_key=settings.PRIVATE_KEY) as conn:
                 return conn.listdir(remotepath=self.TUVOX_ROOT)
         elif self.application_type == self.NATIVE_VXML:
             return []
@@ -50,7 +51,7 @@ class PreprodServer(models.Model):
     def get_applications_for_client(self, client):
         """Returns a list of application directories for the specified client on this server"""
         if self.application_type == self.PRODUCER:
-            with pysftp.Connection(self.address, username=self.account) as conn:
+            with pysftp.Connection(self.address, username=self.account, private_key=settings.PRIVATE_KEY) as conn:
                 return conn.listdir(remotepath=self.TUVOX_ROOT + client)
         elif self.application_type == self.NATIVE_VXML:
             return []
@@ -64,7 +65,7 @@ class PreprodServer(models.Model):
         WavFile = namedtuple('WavFile', ['md5sum', 'filename'])
         if self.application_type == self.PRODUCER:
             files = defaultdict(list)
-            with pysftp.Connection(self.address, username=self.account) as conn:
+            with pysftp.Connection(self.address, username=self.account, private_key=settings.PRIVATE_KEY) as conn:
                 for app in apps:
                     try:
                         dirs = conn.listdir(remotepath=os.path.join(self.TUVOX_ROOT, client, app))

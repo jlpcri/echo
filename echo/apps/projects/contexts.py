@@ -57,8 +57,13 @@ def context_projects(user):
     }
 
 
-def context_testslot(project, slot, filepath):
+def context_testslot(browser, project, slot, filepath):
+    browser_type = None
+    if browser:
+        if browser.family and browser.version_string:
+            browser_type = "{0}{1}".format(browser.family.lower(), browser.version_string.lower())
     return {
+        'browser': browser_type,
         'project': project,
         'slot': slot,
         'file': filepath
@@ -73,4 +78,17 @@ def context_vuid(vuid):
         'headers': [i.value for i in ws.rows[0]],
         'path': ws['A2'].value,
         'records': [r for r in ws.rows[2:]]
+    }
+
+
+
+
+def context_temp(browser):
+    browser_type = None
+    if browser:
+        if browser.family and browser.version_string:
+            browser_type = "{0}{1}".format(browser.family.lower(), browser.version_string.lower())
+    print browser_type
+    return {
+        'browser': browser_type
     }
