@@ -243,8 +243,11 @@ def submitslot(request, vsid):
         if "submit_test" in request.POST:
             slot = get_object_or_404(VoiceSlot, pk=vsid)
             p = slot.language.project
-            test_result = request.POST.get('test_result', False)
-            if test_result:
+            slot_status = request.POST.get('slot_status', False)
+            if not slot_status:
+                messages.danger(request, "Please enter a pass or fail")
+                return redirect("projects:testslot", pid=p.pk, vsid=vsid)
+            if slot_status == 'pass':
                 slot.status = VoiceSlot.PASS
                 slot.history = "{0}: Test passed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
                                                                         request.POST['notes']) + slot.history
