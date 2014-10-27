@@ -4,10 +4,11 @@ import uuid
 
 import pysftp
 
+from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
-from django.http import HttpResponse, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.conf import settings
 
@@ -206,7 +207,7 @@ def queue(request, pid):
             else:
                 if not request.POST.get('notes', False):
                     messages.danger(request, "Please provide notes on test failure")
-                    return redirect("projects:testslot", pid=p.pk, vsid=tested_slot.pk)
+                    return HttpResponseRedirect(reverse("projects:queue", args=(p.pk, )) + "?language=" + lang.name)
                 tested_slot.status = VoiceSlot.FAIL
                 tested_slot.history = "{0}: Test failed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
                                                                          request.POST['notes']) + tested_slot.history
