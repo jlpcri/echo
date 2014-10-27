@@ -195,8 +195,11 @@ def queue(request, pid):
             tested_slot.check_in(request.user)
             return redirect("projects:project", pid=pid)
         elif "submit_test" in request.POST:
-            test_result = request.POST.get('test_result', False)
-            if test_result:
+            test_result = request.POST.get('slot_status', False)
+            if not test_result:
+                messages.danger(request, "Please enter a pass or fail")
+                return HttpResponseRedirect(reverse("projects:queue", args=(p.pk, )) + "?language=" + lang.name)
+            elif test_result == 'pass':
                 tested_slot.status = VoiceSlot.PASS
                 tested_slot.history = "{0}: Test passed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
                                                                         request.POST['notes']) + tested_slot.history
