@@ -4,10 +4,11 @@ import uuid
 
 import pysftp
 
+from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
-from django.http import HttpResponse, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.conf import settings
 
@@ -194,8 +195,11 @@ def queue(request, pid):
             tested_slot.check_in(request.user)
             return redirect("projects:project", pid=pid)
         elif "submit_test" in request.POST:
-            test_result = request.POST.get('test_result', False)
-            if test_result:
+            test_result = request.POST.get('slot_status', False)
+            if not test_result:
+                messages.danger(request, "Please enter a pass or fail")
+                return HttpResponseRedirect(reverse("projects:queue", args=(p.pk, )) + "?language=" + lang.name)
+            elif test_result == 'pass':
                 tested_slot.status = VoiceSlot.PASS
                 tested_slot.history = "{0}: Test passed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
                                                                         request.POST['notes']) + tested_slot.history
@@ -206,7 +210,7 @@ def queue(request, pid):
             else:
                 if not request.POST.get('notes', False):
                     messages.danger(request, "Please provide notes on test failure")
-                    return redirect("projects:testslot", pid=p.pk, vsid=tested_slot.pk)
+                    return HttpResponseRedirect(reverse("projects:queue", args=(p.pk, )) + "?language=" + lang.name)
                 tested_slot.status = VoiceSlot.FAIL
                 tested_slot.history = "{0}: Test failed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
                                                                          request.POST['notes']) + tested_slot.history
