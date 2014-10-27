@@ -10,7 +10,7 @@ from django.db import models
 class Server(models.Model):
     """Bravo or similar server for hosting .wav files after recording"""
     name = models.TextField(unique=True, blank=False)
-    address = models.TextField(blank=False)
+    address = models.TextField(unique=True, blank=False)
     account = models.TextField(blank=False)
     active = models.BooleanField(default=False)
 
@@ -26,7 +26,7 @@ class PreprodServer(models.Model):
     TUVOX_ROOT = '/usr/local/tuvox/public/Projects/'
 
     name = models.TextField(unique=True, blank=False)
-    address = models.TextField(blank=False)
+    address = models.TextField(unique=True, blank=False)
     account = models.TextField(blank=False)
     application_type = models.PositiveSmallIntegerField(choices=APPLICATION_TYPE_CHOICES)
 
