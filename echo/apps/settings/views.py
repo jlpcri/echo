@@ -85,7 +85,7 @@ def servers(request):
                 except pysftp.SSHException:
                     messages.danger(request, "SSH error to server \"{0}\"".format(server.name))
                     return redirect("settings:servers")
-                messages.success(request, "Connecting to server \"{0}\"".format(server.name))
+                messages.success(request, "Successful connection to server \"{0}\"".format(server.name))
                 return redirect("settings:servers")
         elif "update_active" in request.POST:
             sid = request.POST.get('sid', "")

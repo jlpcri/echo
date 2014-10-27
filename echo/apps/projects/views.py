@@ -4,10 +4,11 @@ import uuid
 
 import pysftp
 
+from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
-from django.http import HttpResponse, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.conf import settings
 
@@ -194,10 +195,13 @@ def queue(request, pid):
             tested_slot.check_in(request.user)
             return redirect("projects:project", pid=pid)
         elif "submit_test" in request.POST:
-            test_result = request.POST.get('test_result', False)
-            if test_result:
+            test_result = request.POST.get('slot_status', False)
+            if not test_result:
+                messages.danger(request, "Please enter a pass or fail")
+                return HttpResponseRedirect(reverse("projects:queue", args=(p.pk, )) + "?language=" + lang.name)
+            elif test_result == 'pass':
                 tested_slot.status = VoiceSlot.PASS
-                tested_slot.history = "{0}: Test passed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
+                tested_slot.history = u"{0}: Test passed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
                                                                         request.POST['notes']) + tested_slot.history
                 tested_slot.check_in(request.user)
                 tested_slot.save()
@@ -206,9 +210,9 @@ def queue(request, pid):
             else:
                 if not request.POST.get('notes', False):
                     messages.danger(request, "Please provide notes on test failure")
-                    return redirect("projects:testslot", pid=p.pk, vsid=tested_slot.pk)
+                    return HttpResponseRedirect(reverse("projects:queue", args=(p.pk, )) + "?language=" + lang.name)
                 tested_slot.status = VoiceSlot.FAIL
-                tested_slot.history = "{0}: Test failed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
+                tested_slot.history = u"{0}: Test failed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
                                                                          request.POST['notes']) + tested_slot.history
                 tested_slot.check_in(request.user)
                 tested_slot.save()
@@ -249,7 +253,7 @@ def submitslot(request, vsid):
                 return redirect("projects:testslot", pid=p.pk, vsid=vsid)
             if slot_status == 'pass':
                 slot.status = VoiceSlot.PASS
-                slot.history = "{0}: Test passed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
+                slot.history = u"{0}: Test passed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
                                                                         request.POST['notes']) + slot.history
                 slot.check_in(request.user)
                 slot.save()
@@ -260,7 +264,7 @@ def submitslot(request, vsid):
                     messages.danger(request, "Please provide notes on test failure")
                     return redirect("projects:testslot", pid=p.pk, vsid=vsid)
                 slot.status = VoiceSlot.FAIL
-                slot.history = "{0}: Test failed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
+                slot.history = u"{0}: Test failed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
                                                                          request.POST['notes']) + slot.history
                 slot.check_in(request.user)
                 slot.save()
@@ -269,7 +273,7 @@ def submitslot(request, vsid):
                 p.failure_count += 1
             p.tests_run += 1
             p.save()
-            messages.success(request, "Tested voice slot \"{0}\", {1} matching slots updated".format(slot.name, count))
+            messages.success(request, u"Tested voice slot \"{0}\", {1} matching slots updated".format(slot.name, count))
             return redirect("projects:project", pid=p.pk)
         elif "cancel_test" in request.POST:
             slot = get_object_or_404(VoiceSlot, pk=vsid)
@@ -287,19 +291,19 @@ def testslot(request, pid, vsid):
             try:
                 with pysftp.Connection(p.bravo_server.address, username=p.bravo_server.account,
                                        private_key=settings.PRIVATE_KEY) as conn:
-                    remote_path = "{0}".format(slot.filepath())
+                    remote_path = slot.filepath()
                     filename = "{0}.wav".format(str(uuid.uuid4()))
                     local_path = os.path.join(settings.MEDIA_ROOT, filename)
                     conn.get(remote_path, local_path)
-                    filepath = "{0}{1}".format(settings.MEDIA_URL, filename)
+                    filepath = settings.MEDIA_URL + filename
                     last_modified = int(conn.execute('stat -c %Y {0}'.format(remote_path))[0])
                     slot.check_out(request.user)
-                    slot.history = "Downloaded file last modified on {0}\n".format(
+                    slot.history = u"Downloaded file last modified on {0}\n".format(
                         datetime.fromtimestamp(last_modified).strftime("%b %d %Y, %H:%M")) + slot.history
             except IOError as e:
                 messages.danger(request, "File missing on server \"{0}\"".format(p.bravo_server.name))
                 slot.status = VoiceSlot.MISSING
-                slot.history = "Attempted test, slot missing, {0}\n".format(datetime.now()) + slot.history
+                slot.history = u"Attempted test, slot missing, {0}\n".format(datetime.now()) + slot.history
                 return redirect("projects:project", pid)
             except pysftp.ConnectionException:
                 messages.danger(request, "Connection error to server \"{0}\"".format(p.bravo_server.name))
