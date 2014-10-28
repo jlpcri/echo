@@ -51,9 +51,11 @@ def context_project(project, upload_form=UploadForm(), server_form=ServerForm(in
 
 
 def context_projects(user):
-    projects = Project.objects.filter(users__pk=user.pk).order_by('name') | Project.objects.all().exclude(users__pk=user.pk).order_by('name')
+    joined_projects = Project.objects.filter(users__pk=user.pk).order_by('name')
+    unjoined_projects = Project.objects.all().exclude(users__pk=user.pk).order_by('name')
     return {
-        'projects': projects
+        'joined_projects': joined_projects,
+        'unjoined_projects': unjoined_projects
     }
 
 
