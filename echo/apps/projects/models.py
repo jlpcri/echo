@@ -89,8 +89,14 @@ class Project(models.Model):
     def slots_total(self):
         return self.voiceslots().count()
 
+    def slots_untested(self):
+        return self.voiceslots().filter(status=VoiceSlot.NEW).count()
+
     def slots_untested_percent(self):
-        return 100 - self.slots_tested()
+        if self.slots_total() != 0:
+            return float(self.slots_untested()) / self.slots_total() * 100
+        else:
+            return 0
 
     def usernames(self):
         return [u.username for u in self.users.all()]
