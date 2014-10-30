@@ -23,14 +23,28 @@
                 <div class="col-xs-6">
                     <h4><a href="{% url "projects:project" project.pk %}">{{ project.name }}</a></h4>
 
+                {% if project.slots_total > 0 %}
                     <div class="progress">
-                        <div class="progress-bar progress-bar-success"
-                             style="width: {{ project.slots_passed_percent }}%">{{ project.slots_passed }}</div>
-                        <div class="progress-bar progress-bar-warning"
-                             style="width: {{ project.slots_failed_percent }}%">{{ project.slots_failed }}</div>
-                        <div class="progress-bar progress-bar-danger"
-                             style="width: {{ project.slots_missing_percent }}%">{{ project.slots_missing }}</div>
+                        {% if project.slots_passed %}
+                        <div id="passed_bar_{{ project.pk }}" class="progress-bar progress-bar-success"
+                             style="width: {{ project.slots_passed_percent }}%; cursor: default;" data-toggle="tooltip" data-placement="top" title="{{ project.slots_passed }} passed">{{ project.slots_passed }}</div>
+                        {% endif %}
+                        {% if project.slots_failed %}
+                        <div id="defective_bar_{{ project.pk }}" class="progress-bar progress-bar-warning"
+                             style="width: {{ project.slots_failed_percent }}%; cursor: default;" data-toggle="tooltip" data-placement="top" title="{{ project.slots_failed }} defective">{{ project.slots_failed }}</div>
+                        {% endif %}
+                        {% if project.slots_missing %}
+                        <div id="missing_bar_{{ project.pk }}" class="progress-bar progress-bar-danger"
+                             style="width: {{ project.slots_missing_percent }}%; cursor: default;" data-toggle="tooltip" data-placement="top" title="{{ project.slots_missing }} missing">{{ project.slots_missing }}</div>
+                        {% endif %}
+                        {% if project.slots_untested %}
+                        <div id="untested_bar_{{ project.pk }}" class="progress-bar progress-bar-info"
+                             style="width: {{ project.slots_untested_percent }}%; cursor: default;" data-toggle="tooltip" data-placement="top" title="{{ project.slots_untested }} untested">{{ project.slots_untested }}</div>
+                        {% endif %}
                     </div>
+                {% else %}
+                    <div id="progress_{{ project.pk }}" class="progress" data-toggle="tooltip" data-placement="top" title="No voiceslots yet"></div>
+                {% endif %}
                 </div>
                 <div class="col-xs-6">
                     <div class="pull-left">
@@ -59,14 +73,28 @@
                 <div class="col-xs-6">
                     <h4><a href="{% url "projects:project" project.pk %}">{{ project.name }}</a></h4>
 
+                {% if project.slots_total > 0 %}
                     <div class="progress">
-                        <div class="progress-bar progress-bar-success"
-                             style="width: {{ project.slots_passed_percent }}%">{{ project.slots_passed }}</div>
-                        <div class="progress-bar progress-bar-warning"
-                             style="width: {{ project.slots_failed_percent }}%">{{ project.slots_failed }}</div>
-                        <div class="progress-bar progress-bar-danger"
-                             style="width: {{ project.slots_missing_percent }}%">{{ project.slots_missing }}</div>
+                        {% if project.slots_passed %}
+                        <div id="passed_bar_{{ project.pk }}" class="progress-bar progress-bar-success"
+                             style="width: {{ project.slots_passed_percent }}%; cursor: default;" data-toggle="tooltip" data-placement="top" title="{{ project.slots_passed }} passed">{{ project.slots_passed }}</div>
+                        {% endif %}
+                        {% if project.slots_failed %}
+                        <div id="defective_bar_{{ project.pk }}" class="progress-bar progress-bar-warning"
+                             style="width: {{ project.slots_failed_percent }}%; cursor: default;" data-toggle="tooltip" data-placement="top" title="{{ project.slots_failed }} defective">{{ project.slots_failed }}</div>
+                        {% endif %}
+                        {% if project.slots_missing %}
+                        <div id="missing_bar_{{ project.pk }}" class="progress-bar progress-bar-danger"
+                             style="width: {{ project.slots_missing_percent }}%; cursor: default;" data-toggle="tooltip" data-placement="top" title="{{ project.slots_missing }} missing">{{ project.slots_missing }}</div>
+                        {% endif %}
+                        {% if project.slots_untested %}
+                        <div id="untested_bar_{{ project.pk }}" class="progress-bar progress-bar-info"
+                             style="width: {{ project.slots_untested_percent }}%; cursor: default;" data-toggle="tooltip" data-placement="top" title="{{ project.slots_untested }} missing">{{ project.slots_untested }}</div>
+                        {% endif %}
                     </div>
+                {% else %}
+                    <div id="progress_{{ project.pk }}" class="progress" data-toggle="tooltip" data-placement="top" title="No voiceslots yet"></div>
+                {% endif %}
                 </div>
                 <div class="col-xs-6">
                     <div class="pull-left">
@@ -94,6 +122,41 @@
 {% endblock %}
 {% block endscript %}
     <script type="text/javascript">
-
+        {% for project in joined_projects %}
+            {% if project.slots_total > 0 %}
+                {% if project.slots_passed %}
+                    $('#passed_bar_{{ project.pk }}').tooltip();
+                {% endif %}
+                {% if project.slots_failed %}
+                    $('#defective_bar_{{ project.pk }}').tooltip();
+                {% endif %}
+                {% if project.slots_missing %}
+                    $('#missing_bar_{{ project.pk }}').tooltip();
+                {% endif %}
+                {% if project.slots_untested %}
+                    $('#untested_bar_{{ project.pk }}').tooltip();
+                {% endif %}
+            {% else %}
+                $('#progress_{{ project.pk }}').tooltip();
+            {% endif %}
+        {% endfor %}
+        {% for project in unjoined_projects %}
+            {% if project.slots_total > 0 %}
+                {% if project.slots_passed %}
+                    $('#passed_bar_{{ project.pk }}').tooltip();
+                {% endif %}
+                {% if project.slots_failed %}
+                    $('#defective_bar_{{ project.pk }}').tooltip();
+                {% endif %}
+                {% if project.slots_missing %}
+                    $('#missing_bar_{{ project.pk }}').tooltip();
+                {% endif %}
+                {% if project.slots_untested %}
+                    $('#untested_bar_{{ project.pk }}').tooltip();
+                {% endif %}
+            {% else %}
+                $('#progress_{{ project.pk }}').tooltip();
+            {% endif %}
+        {% endfor %}
     </script>
 {% endblock %}
