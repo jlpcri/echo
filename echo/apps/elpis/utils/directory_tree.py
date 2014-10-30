@@ -111,8 +111,12 @@ class DirectoryTreeWithPayload(DirectoryTree):
                     search_scope = search_scope[-1]
                 else:
                     for entry in search_scope:
-                        if entry.name == component:
-                            search_scope.remove(entry)
+                        try:
+                            if entry.name == component:
+                                search_scope.remove(entry)
+                        except AttributeError as e:
+                            # Indicates a new subdirectory at a level with files found
+                            pass
                     search_scope.append(self.PayloadObject(component, self.payload_class(*init)))
             except IndexError as e:
                 if i+1 == len(components):

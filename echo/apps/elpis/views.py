@@ -57,7 +57,6 @@ def verify_file_transfer(request, pid):
         # Send list of Producer applications on GET request.
         apps = p.get_applications()
         json_data = json.dumps({'apps': apps})
-        print json_data
         return HttpResponse(json_data, content_type="application/json")
     elif request.method == 'POST':
         apps = request.POST.getlist('applications')
