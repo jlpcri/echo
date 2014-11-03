@@ -87,21 +87,21 @@ class Action(models.Model):
         if scope is None:
             if action_type not in UNIVERSAL_TYPES:
                 raise ValueError('Invalid action type for given scope')
-            sc = Scope.create(scope=Scope.UNIVERSAL, project=None, language=None, voiceslot=None)
+            sc = Scope.objects.create(scope=Scope.UNIVERSAL, project=None, language=None, voiceslot=None)
         elif type(scope) is Project:
             if action_type not in PROJECT_TYPES:
                 raise ValueError('Invalid action type for given scope')
-            sc = Scope.create(scope=Scope.PROJECT, project=scope, language=None, voiceslot=None)
+            sc = Scope.objects.create(scope=Scope.PROJECT, project=scope, language=None, voiceslot=None)
         elif type(scope) is Language:
             if action_type not in LANGUAGE_TYPES:
                 raise ValueError('Invalid action type for given scope')
-            sc = Scope.create(scope=Scope.PROJECT, project=scope.project, language=scope, voiceslot=None)
+            sc = Scope.objects.create(scope=Scope.PROJECT, project=scope.project, language=scope, voiceslot=None)
         elif type(scope) is VoiceSlot:
             if action_type not in SLOT_TYPES:
                 raise ValueError('Invalid action type for given scope')
-            sc = Scope.create(scope=Scope.PROJECT, project=scope.language.project, language=scope.language,
-                              voiceslot=scope)
+            sc = Scope.objects.create(scope=Scope.PROJECT, project=scope.language.project, language=scope.language,
+                                      voiceslot=scope)
         else:
             raise ValueError('Invalid scope object')
-        cls.create(actor=actor, type=action_type, description=description, scope=sc)
+        cls.objects.create(actor=actor, type=action_type, description=description, scope=sc)
 
