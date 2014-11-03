@@ -6,6 +6,7 @@ from echo.apps.projects.models import VoiceSlot, Language, Project
 User = get_user_model()
 
 class Scope(models.Model):
+    """Defines project objects impacted by Actiob"""
     UNIVERSAL = 1
     PROJECT = 2
     LANGUAGE = 3
@@ -23,6 +24,7 @@ class Scope(models.Model):
     voiceslot = models.ForeignKey(VoiceSlot, blank=True, null=True)
 
 class Action(models.Model):
+    """Entry for activity feed"""
     TESTER_PASS_SLOT = 1
     TESTER_FAIL_SLOT = 2
     AUTO_PASS_SLOT = 3
@@ -60,6 +62,7 @@ class Action(models.Model):
 
     @classmethod
     def log(cls, actor, action_type, description, scope=None):
+        """Convenience method to create Action items"""
         SLOT_TYPES = (cls.TESTER_PASS_SLOT, cls.TESTER_FAIL_SLOT, cls.AUTO_PASS_SLOT, cls.AUTO_FAIL_SLOT)
         LANGUAGE_TYPES = (cls.REPORT_GENERATION, )
         PROJECT_TYPES = (cls.UPLOAD_VUID, cls.UPDATE_FILE_STATUSES, cls.CREATE_PROJECT, cls.REPORT_GENERATION,
