@@ -23,6 +23,10 @@ MEDIA_URL = '/pheme/media/'
 
 LOGIN_URL = '/pheme/'
 
+CELERY_RESULT_BACKEND = 'amqp'
+
+CELERY_RESULT_SERIALIZER = 'json'
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
