@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, render
+from django.template import RequestContext
 from echo.apps.projects.models import Project
 import contexts
 
@@ -28,3 +29,19 @@ def reports(request):
     if request.method == 'GET':
         return render(request, "reports/reports.html", contexts.reports())
     return HttpResponseNotFound()
+
+@login_required()
+def report_project(request, pid):
+    if request.method == 'GET':
+        project = get_object_or_404(Project, pk=pid)
+        missing = contexts.missing(project)
+
+        context = RequestContext(request, {
+            'project': project,
+            'missing_slots': missing,
+            'project_defective': '',
+            'project_progress': '',
+            'user_usage': ''
+        })
+
+        return render(request, "reports/report_project.html", context)
