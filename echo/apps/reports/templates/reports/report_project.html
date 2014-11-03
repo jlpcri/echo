@@ -18,20 +18,60 @@
         </div>
         <hr>
         <div class="row">
-            <div class="col-md-12">
-                <div style="font-size:large;">{{ project.slots_total }} attempted uploads</div>
-                <div style="font-size:large;">{{ project.slots_missing }} files missing</div>
-                <br>
-                {% if project.voiceslots_missing %}
-                <b>Missing Files</b>
-                <ul>
-                    {% for f in project.voiceslots_missing %}
-                        <li>{{ f.filepath }}</li>
-                    {% endfor %}
-                </ul>
-                {% else %}
-                <p>No files missing</p>
-                {% endif %}
+            <div class="col-md-8">
+                <div id="missing_slots">
+                    <!--
+                    <div style="font-size:large;">{{ project.slots_total }} attempted uploads</div>
+                    <div style="font-size:large;">{{ project.slots_missing }} files missing</div>
+                    -->
+                    <br>
+                    {% if project.voiceslots_missing %}
+                        <ul class="missing_files_list">
+                            <li class="folder">
+                                <div id="missing_slots_view" class="fa fa-plus-square-o">
+                                    <b>Missing Files</b>
+                                </div>
+                                <ul>
+                                    {% for f in project.voiceslots_missing %}
+                                        <li>{{ f.filepath }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </li>
+                        </ul>
+                    {% else %}
+                        <p>No files missing</p>
+                    {% endif %}
+                </div>
+                <div id="project_defective">
+                    <ul class="project_defective_list">
+                        <li class="folder">
+                            <div id="project_defect_view" class="fa fa-plus-square-o">
+                                <b>Project Defective</b>
+                            </div>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <td class="col-md-3"><strong>VoiceSlot</strong></td>
+                                        <td class="col-md-3"><strong>Test Time</strong></td>
+                                        <td class="col-md-2"><strong>Failure Cause</strong></td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+
+                                </tbody>
+                            </table>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div id="project_progress">
+                    Project Progress
+                </div>
+                <div id="user_usage">
+                    User Usage
+                </div>
+
             </div>
         </div>
     </div>
@@ -39,5 +79,6 @@
 {% block endscript %}
     <script type="text/javascript" src="{% static 'echo/core/core.js' %}"></script>
     <script type="text/javascript">
+        {% include 'reports/reports.js' %}
     </script>
 {% endblock %}
