@@ -5,6 +5,7 @@ from echo.apps.projects.models import VoiceSlot, Language, Project
 
 User = get_user_model()
 
+
 class Scope(models.Model):
     """Defines project objects impacted by Actiob"""
     UNIVERSAL = 1
@@ -22,6 +23,16 @@ class Scope(models.Model):
     project = models.ForeignKey(Project, blank=True, null=True)
     language = models.ForeignKey(Language, blank=True, null=True)
     voiceslot = models.ForeignKey(VoiceSlot, blank=True, null=True)
+
+    def __unicode__(self):
+        if self.scope == self.UNIVERSAL:
+            return u'Universal'
+        elif self.scope == self.PROJECT:
+            return u'Project ' + self.project.name
+        elif self.scope == self.LANGUAGE:
+            return self.language.name + u' ' + self.project.name
+        return u'{0} in {1} {2}'.format(self.voiceslot.name, self.language.name, self.project.name)
+
 
 class Action(models.Model):
     """Entry for activity feed"""
@@ -59,6 +70,9 @@ class Action(models.Model):
     description = models.TextField()
     time = models.DateTimeField(auto_now_add=True)
     scope = models.ForeignKey(Scope)
+
+    def __unicode__(self):
+        return u'{0} on {1}'.format(self.description, self.time.strftime("%c"))
 
     @classmethod
     def log(cls, actor, action_type, description, scope=None):
