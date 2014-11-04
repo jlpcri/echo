@@ -1,8 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 
-from echo.apps.projects.models import VoiceSlot, Language, Project
-
 User = get_user_model()
 
 
@@ -20,9 +18,9 @@ class Scope(models.Model):
     )
 
     scope = models.PositiveSmallIntegerField(choices=SCOPE_CHOICES)
-    project = models.ForeignKey(Project, blank=True, null=True)
-    language = models.ForeignKey(Language, blank=True, null=True)
-    voiceslot = models.ForeignKey(VoiceSlot, blank=True, null=True)
+    project = models.ForeignKey('projects.Project', blank=True, null=True)
+    language = models.ForeignKey('projects.Language', blank=True, null=True)
+    voiceslot = models.ForeignKey('projects.VoiceSlot', blank=True, null=True)
 
     def __unicode__(self):
         if self.scope == self.UNIVERSAL:
@@ -83,6 +81,8 @@ class Action(models.Model):
                          cls.ELPIS_RUN, cls.UPDATE_ROOT_PATH, cls.UPDATE_BRAVO_SERVER, cls.TESTER_JOIN_PROJECT,
                          cls.TESTER_LEAVE_PROJECT)
         UNIVERSAL_TYPES = ()
+
+        from echo.apps.projects.models import VoiceSlot, Language, Project
 
         if scope is None:
             if action_type not in UNIVERSAL_TYPES:
