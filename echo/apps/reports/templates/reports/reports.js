@@ -8,6 +8,7 @@ function makeCollapsible() {
     // style them accordingly.  Also, turn them
     // into links that can expand/collapse the
     // tree leaf.
+    // Missing Files
     $('li > ul').each(function (i) {
         // Find this list's parent list item.
         var parent_li = $(this).parent('li');
@@ -33,8 +34,27 @@ function makeCollapsible() {
         parent_li.append(sub_ul);
     });
 
+    // Project Defective
+    $('li > table').each(function (i) {
+        var parent_li = $(this).parent('li');
+        parent_li.addClass('folder');
+        var sub_table = $(this).remove();
+        parent_li.wrapInner('<a/>').find('a').click(function (){
+            sub_table.toggle();
+            if ($(sub_table).is(":hidden")){
+                $('#project_defect_view').removeClass('fa-minus-square-o');
+                $('#project_defect_view').addClass('fa-plus-square-o');
+            } else {
+                $('#project_defect_view').removeClass('fa-plus-square-o');
+                $('#project_defect_view').addClass('fa-minus-square-o');
+            }
+        });
+        parent_li.append(sub_table);
+    });
+
     // Hide all lists except the outermost.
     $('ul ul').hide();
+    $('ul table').hide();
 }
 
 $(document).ready(function () {
