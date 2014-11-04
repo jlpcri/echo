@@ -25,15 +25,15 @@
                     <div style="font-size:large;">{{ project.slots_missing }} files missing</div>
                     -->
                     <br>
-                    {% if project.voiceslots_missing %}
+                    {% if missing_slots %}
                         <ul class="missing_files_list">
                             <li class="folder">
                                 <div id="missing_slots_view" class="fa fa-plus-square-o">
                                     <b>Missing Files</b>
                                 </div>
                                 <ul>
-                                    {% for f in project.voiceslots_missing %}
-                                        <li>{{ f.filepath }}</li>
+                                    {% for f in missing_slots %}
+                                        <li>{{ f.filepath}}</li>
                                     {% endfor %}
                                 </ul>
                             </li>
@@ -42,8 +42,10 @@
                         <p>No files missing</p>
                     {% endif %}
                 </div>
+
                 <div id="project_defective">
-                    <ul class="project_defective_list">
+                    {% if project_defective %}
+                        <ul class="project_defective_list">
                         <li class="folder">
                             <div id="project_defect_view" class="fa fa-plus-square-o">
                                 <b>Project Defective</b>
@@ -57,11 +59,20 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-
+                                    {% for item in project_defective %}
+                                        <tr>
+                                            <td>{{ item.name }}</td>
+                                            <td>{{ item.test_time }}</td>
+                                            <td>{{ item.fail_note }}</td>
+                                        </tr>
+                                    {% endfor %}
                                 </tbody>
                             </table>
                         </li>
                     </ul>
+                    {% else %}
+                        <p>No Defective Voiceslots</p>
+                    {% endif %}
                 </div>
             </div>
             <div class="col-md-4">

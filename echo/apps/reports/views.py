@@ -34,12 +34,31 @@ def reports(request):
 def report_project(request, pid):
     if request.method == 'GET':
         project = get_object_or_404(Project, pk=pid)
-        missing = contexts.missing(project)
+        missing = []
+        defective = []
+
+        missing_slots = project.voiceslots_missing()
+        for item in missing_slots:
+            temp = {
+                'filepath': item.filepath
+            }
+            missing.append(temp)
+
+        failed_slots = project.voiceslots_failed()
+        for pd in failed_slots:
+            history = pd.history_list()[0].split(',')
+            print pd.name, '-', history[1], '-', history[0]
+            temp = {
+                'name': pd.name,
+                'test_time': history[1],
+                'fail_note': history[0]
+            }
+            defective.append(temp)
 
         context = RequestContext(request, {
             'project': project,
             'missing_slots': missing,
-            'project_defective': '',
+            'project_defective': defective,
             'project_progress': '',
             'user_usage': ''
         })
