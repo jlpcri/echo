@@ -1,10 +1,14 @@
 import json
 
+from celery.result import AsyncResult
+
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 
+from echo.apps.activity.models import Action
 from echo.apps.elpis.tasks import verify_file_transfer as verify_file_transfer_task
+from echo.apps.elpis.models import Status
 from echo.apps.projects.models import Project
 from echo.apps.settings.models import PreprodServer
 
@@ -57,7 +61,25 @@ def verify_file_transfer(request, pid):
         json_data = json.dumps({'apps': apps})
         return HttpResponse(json_data, content_type="application/json")
     elif request.method == 'POST':
+        status = Status.objects.get_or_create(project=p)
+        if status.running:
+            return HttpResponse(json.dumps({'success': False, 'message': 'Task already running'}),
+                                content_type="application/json")
         apps = request.POST.getlist('applications')
         query_item = verify_file_transfer_task.delay(project_id=pid, apps=apps)
+        status.query_id = query_item
+        status.running = True
+        status.save()
+        return HttpResponse(json.dumps({'success': True}), content_type="application/json")
 
-        return HttpResponse(json.dumps(query_item.task_id), content_type="application/json")
+@login_required
+def check_file_transfer(request, pid):
+    p = get_object_or_404(Project, pk=pid)
+    status = Status.objects.get_or_create(project=p)
+    return HttpResponse(json.dumps({'running': status.running}))
+
+@login_required
+def fetch_result(request, pid):
+    p = get_object_or_404(Project, pk=pid)
+    status = get_object_or_404(Status, project=p)
+    return status.response

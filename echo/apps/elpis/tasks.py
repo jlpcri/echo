@@ -2,6 +2,7 @@ from collections import Counter
 
 from django.shortcuts import render_to_response
 
+from echo.apps.elpis.models import Status
 from echo.apps.elpis.utils.compatibility import normalize_language
 from echo.apps.elpis.utils.directory_tree import DirectoryTreeWithPayload
 from echo.apps.projects.models import Project, Language
@@ -84,5 +85,9 @@ def verify_file_transfer(project_id, apps):
                                 file_struct.add(f.filename, ('insufficient-copies', ))
                             for matching_slot in language.voiceslot_set.filter(name=slot.name):
                                 missing_slots.add(matching_slot.filepath())
-    return render_to_response('elpis/verify_results.html', {'missing_slots': missing_slots,
-                                                            'file_struct': file_struct.entries})
+    status = Status.objects.get(project=project)
+    status.running = False
+    status.response = render_to_response('elpis/verify_results.html', {'missing_slots': missing_slots,
+                                                                       'file_struct': file_struct.entries})
+    status.save()
+    return
