@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, render
 from django.template import RequestContext
 from echo.apps.projects.models import Project
 import contexts
-
+from echo.apps.activity.models import Action
 
 @login_required
 def failed(request, pid):
@@ -45,16 +45,17 @@ def report_project(request, pid):
             }
             missing.append(temp)
 
-        failed_slots = project.voiceslots_failed()
-        for pd in failed_slots:
-            history = pd.history_list()[0].split(',')
-            #print pd.name, '-', history[1], '-', history[0]
+        failed_actions = project.actions_failed()
+        for item in failed_actions:
             temp = {
-                'name': pd.name,
-                'test_time': history[1],
-                'fail_note': history[0]
+                'name': item.scope.voiceslot.name,
+                'test_time': item.time,
+                'fail_note': item.description
             }
             defective.append(temp)
+
+        start = request.GET.get('start_time')
+        end = request.GET.get('end_time')
 
         context = RequestContext(request, {
             'project': project,
