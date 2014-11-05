@@ -40,14 +40,15 @@ def report_project(request, pid):
         missing_slots = project.voiceslots_missing()
         for item in missing_slots:
             temp = {
-                'filepath': item.filepath
+                'filepath': item.filepath,
+                'language': item.language.name
             }
             missing.append(temp)
 
         failed_slots = project.voiceslots_failed()
         for pd in failed_slots:
             history = pd.history_list()[0].split(',')
-            print pd.name, '-', history[1], '-', history[0]
+            #print pd.name, '-', history[1], '-', history[0]
             temp = {
                 'name': pd.name,
                 'test_time': history[1],

@@ -33,7 +33,7 @@
                                 </div>
                                 <ul>
                                     {% for f in missing_slots %}
-                                        <li>{{ f.filepath}}</li>
+                                        <li>{{ f.filepath}} - {{ f.language }}</li>
                                     {% endfor %}
                                 </ul>
                             </li>
