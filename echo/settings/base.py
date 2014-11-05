@@ -12,7 +12,8 @@ https://docs.djangoproject.com/en/1.6/ref/settings/
 import os
 
 import ldap
-import socket
+import pytz
+
 from django_auth_ldap.config import LDAPSearch
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -22,11 +23,6 @@ MEDIA_ROOT = os.path.abspath(os.path.join(BASE_DIR, "..", 'media'))
 MEDIA_URL = '/pheme/media/'
 
 LOGIN_URL = '/pheme/'
-
-CELERY_RESULT_BACKEND = 'amqp'
-
-CELERY_RESULT_SERIALIZER = 'json'
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.6/howto/deployment/checklist/
@@ -132,5 +128,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 STATIC_ROOT = ''
 STATIC_URL = '/static/'
-# STATICFILES_DIRS = ()
-STATICFILES_DIRS = ('/home/ewhitcom/Dropbox/Static',)
+
+# Celery config
+CELERY_ACCEPT_CONTENT = ['pickle', 'json', ]
+CELERY_TIMEZONE = pytz.timezone('US/Central')
+CELERY_ENABLE_UTC = False
+CELERY_RESULT_BACKEND = 'amqp'
+CELERY_RESULT_SERIALIZER = 'pickle'
