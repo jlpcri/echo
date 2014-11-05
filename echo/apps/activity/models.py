@@ -52,10 +52,10 @@ class Action(models.Model):
     TYPE_CHOICES = (
         (TESTER_PASS_SLOT, 'Tester passed slot'),
         (TESTER_FAIL_SLOT, 'Tester failed slot'),
-        (AUTO_NEW_SLOT, 'Automatically marked slot for testing')
+        (AUTO_NEW_SLOT, 'Automatically marked slot for testing'),
         (AUTO_PASS_SLOT, 'Automatically passed slot'),
         (AUTO_FAIL_SLOT, 'Automatically failed slot'),
-        (AUTO_MISSING_SLOT, 'Automatically marked slot as missing')
+        (AUTO_MISSING_SLOT, 'Automatically marked slot as missing'),
         (UPLOAD_VUID, 'Prompt list upload'),
         (UPDATE_FILE_STATUSES, 'Ran file status update'),
         (CREATE_PROJECT, 'Project created'),
