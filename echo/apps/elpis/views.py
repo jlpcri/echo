@@ -1,14 +1,13 @@
 import json
 
-from celery.result import AsyncResult
-
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
 
 from echo.apps.activity.models import Action
 from echo.apps.elpis.tasks import verify_file_transfer as verify_file_transfer_task
-from echo.apps.elpis.models import Status
+from echo.apps.elpis.models import ElpisStatus
 from echo.apps.projects.models import Project
 from echo.apps.settings.models import PreprodServer
 
@@ -61,7 +60,7 @@ def verify_file_transfer(request, pid):
         json_data = json.dumps({'apps': apps})
         return HttpResponse(json_data, content_type="application/json")
     elif request.method == 'POST':
-        status = Status.objects.get_or_create(project=p)
+        status = ElpisStatus.objects.get_or_create(project=p)[0]
         if status.running:
             return HttpResponse(json.dumps({'success': False, 'message': 'Task already running'}),
                                 content_type="application/json")
@@ -72,14 +71,16 @@ def verify_file_transfer(request, pid):
         status.save()
         return HttpResponse(json.dumps({'success': True}), content_type="application/json")
 
+@csrf_exempt
 @login_required
 def check_file_transfer(request, pid):
     p = get_object_or_404(Project, pk=pid)
-    status = Status.objects.get_or_create(project=p)
+    status = ElpisStatus.objects.get_or_create(project=p)[0]
     return HttpResponse(json.dumps({'running': status.running}))
 
+@csrf_exempt
 @login_required
 def fetch_result(request, pid):
     p = get_object_or_404(Project, pk=pid)
-    status = get_object_or_404(Status, project=p)
-    return status.response
+    status = get_object_or_404(ElpisStatus, project=p)
+    return HttpResponse(status.response)

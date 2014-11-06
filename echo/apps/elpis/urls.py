@@ -9,6 +9,6 @@ urlpatterns = patterns('',
     url(r'^(?P<pid>\d+)/server$', views.set_preprod_server, name='set_server'),
     url(r'^(?P<pid>\d+)/path$', views.set_preprod_path, name='set_path'),
     url(r'^(?P<pid>\d+)/verify$', views.verify_file_transfer, name='verify'),
-    url(r'^(?P<pid>\d+)/check$', views.check_file_transfer, name='check_status'),
-    url(r'^(?P<pid>\d+)/fetch$', views.fetch_result, name='fetch_results'),
+    url(r'^(?P<pid>\d+)/check$', views.check_file_transfer, name='check'),
+    url(r'^(?P<pid>\d+)/fetch$', views.fetch_result, name='fetch'),
     )
