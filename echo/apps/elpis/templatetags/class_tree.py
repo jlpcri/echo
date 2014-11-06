@@ -90,7 +90,7 @@ def file_items_unordered_list(value, autoescape=None):
                 output.append('%s<li class="folder">%s%s</li>' % (indent,
                         escaper(force_text(title)), sublist))
             else:
-                output.append('{0}<li class="{1}">{2} ({1})</li>'.format(indent,
+                output.append('{0}<li class="{1}">{2}</li>'.format(indent,
                                                                    title.payload,
                                                                    escaper(force_text(title.name))))
             i += 1
