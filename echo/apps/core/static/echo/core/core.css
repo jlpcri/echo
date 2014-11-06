@@ -92,13 +92,24 @@ color: blue;
     padding-left: 20px;
 }
 
-#file-struct ul li.folder {
+#file-struct ul li.closed-folder {
     position:relative;
 }
 
-#file-struct li.folder:before {
+#file-struct li.closed-folder:before {
 font-family: 'FontAwesome';
-content: '\f114';
+content: '\f196';
+margin:0 5px 0 -15px;
+color: blue;
+}
+
+#file-struct ul li.open-folder {
+    position:relative;
+}
+
+#file-struct li.open-folder:before {
+font-family: 'FontAwesome';
+content: '\f147';
 margin:0 5px 0 -15px;
 color: blue;
 }

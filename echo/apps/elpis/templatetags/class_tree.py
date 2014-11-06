@@ -87,7 +87,7 @@ def file_items_unordered_list(value, autoescape=None):
                 sublist = '\n%s<ul>\n%s\n%s</ul>\n%s' % (indent, sublist,
                                                          indent, indent)
             if sublist:
-                output.append('%s<li class="folder">%s%s</li>' % (indent,
+                output.append('%s<li class="closed-folder">%s%s</li>' % (indent,
                         escaper(force_text(title)), sublist))
             else:
                 output.append('{0}<li class="{1}">{2}</li>'.format(indent,
