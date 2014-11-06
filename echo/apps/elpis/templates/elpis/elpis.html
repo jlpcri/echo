@@ -87,13 +87,13 @@
                 <label class="control-label" for="preprod-info">Preprod Information</label>
                 <ul id="preprod-info" class="list-group">
                     <li class="list-group-item">
-                        Bravo server: {{project.bravo_server.name|default:"None"}}
+                        Source: {{project.bravo_server.name|default:"None"}}
                     </li>
                     <li class="list-group-item" id="preprod-server-display">
-                        Preprod server: {{project.preprod_server.name|default:"None"}}
+                        Destination: {{project.preprod_server.name|default:"None"}}
                     </li>
                     <li class="list-group-item" id="preprod-path-display">
-                        Preprod path: {{project.preprod_path|default:"Unknown"}}
+                        Path: {{project.preprod_path|default:"Unknown"}}
                     </li>
                 </ul>
                 <input type="button" data-toggle="modal" data-target="#preprod-modal" value="Update Preprod Information" class="btn btn-primary">
