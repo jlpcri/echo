@@ -74,6 +74,7 @@ def verify_file_transfer(request, pid):
 @csrf_exempt
 @login_required
 def check_file_transfer(request, pid):
+    """View for Ajax polling. Returns JSON result stating if Elpis check for project is running or not."""
     p = get_object_or_404(Project, pk=pid)
     status = ElpisStatus.objects.get_or_create(project=p)[0]
     return HttpResponse(json.dumps({'running': status.running}))
@@ -81,6 +82,7 @@ def check_file_transfer(request, pid):
 @csrf_exempt
 @login_required
 def fetch_result(request, pid):
+    """Returns result of last Elpis run for given project"""
     p = get_object_or_404(Project, pk=pid)
     status = get_object_or_404(ElpisStatus, project=p)
     return HttpResponse(status.response)
