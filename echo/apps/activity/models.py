@@ -36,22 +36,26 @@ class Action(models.Model):
     """Entry for activity feed"""
     TESTER_PASS_SLOT = 1
     TESTER_FAIL_SLOT = 2
-    AUTO_PASS_SLOT = 3
-    AUTO_FAIL_SLOT = 4
-    UPLOAD_VUID = 5
-    UPDATE_FILE_STATUSES = 6
-    CREATE_PROJECT = 7
-    REPORT_GENERATION = 8
-    ELPIS_RUN = 9
-    UPDATE_ROOT_PATH = 10
-    UPDATE_BRAVO_SERVER = 11
-    TESTER_JOIN_PROJECT = 12
-    TESTER_LEAVE_PROJECT = 13
+    AUTO_NEW_SLOT = 3
+    AUTO_PASS_SLOT = 4
+    AUTO_FAIL_SLOT = 5
+    AUTO_MISSING_SLOT = 6
+    UPLOAD_VUID = 7
+    UPDATE_FILE_STATUSES = 8
+    CREATE_PROJECT = 9
+    REPORT_GENERATION = 10
+    ELPIS_RUN = 11
+    UPDATE_ROOT_PATH = 12
+    UPDATE_BRAVO_SERVER = 13
+    TESTER_JOIN_PROJECT = 14
+    TESTER_LEAVE_PROJECT = 15
     TYPE_CHOICES = (
         (TESTER_PASS_SLOT, 'Tester passed slot'),
         (TESTER_FAIL_SLOT, 'Tester failed slot'),
+        (AUTO_NEW_SLOT, 'Automatically marked slot for testing'),
         (AUTO_PASS_SLOT, 'Automatically passed slot'),
         (AUTO_FAIL_SLOT, 'Automatically failed slot'),
+        (AUTO_MISSING_SLOT, 'Automatically marked slot as missing'),
         (UPLOAD_VUID, 'Prompt list upload'),
         (UPDATE_FILE_STATUSES, 'Ran file status update'),
         (CREATE_PROJECT, 'Project created'),
