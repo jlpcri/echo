@@ -54,9 +54,12 @@ def fetch(request, pid):
 def join_project(request, pid):
     if request.method == 'GET':
         p = get_object_or_404(Project, pk=pid)
+        page = request.GET.get('page', '')
         p.users.add(request.user)
         p.save()
         messages.info(request, "You joined the project!")
+        if page:
+            return redirect("projects:projects")
         return redirect("projects:project", pid=pid)
     return HttpResponseNotFound()
 
@@ -65,9 +68,12 @@ def join_project(request, pid):
 def leave_project(request, pid):
     if request.method == 'GET':
         p = get_object_or_404(Project, pk=pid)
+        page = request.GET.get('page', '')
         p.users.remove(request.user)
         p.save()
         messages.info(request, "You left the project")
+        if page:
+            return redirect("projects:projects")
         return redirect("projects:project", pid=pid)
     return HttpResponseNotFound()
 
@@ -165,8 +171,33 @@ def project(request, pid):
 
 @login_required
 def projects(request):
+    tab_types = [
+        'my',
+        'all',
+        'archive'
+    ]
+    sort_types = [
+        'project_name',
+        '-project_name',
+        'created_date',
+        '-created_date',
+        'last_modified',
+        '-last_modified',
+        'total_prompts',
+        '-total_prompts',
+        'user_count',
+        '-user_count'
+    ]
     if request.method == 'GET':
-        return render(request, "projects/projects.html", contexts.context_projects(request.user))
+        # if source and sort are not present, set to empty
+        tab = request.GET.get('tab', '')
+        sort = request.GET.get('sort', '')
+        # if source and sort are empty, set to defaults
+        tab = tab if tab else 'my'
+        sort = sort if sort else 'project_name'
+        # validate source and sort
+        if tab in tab_types and sort in sort_types:
+            return render(request, "projects/projects.html", contexts.context_projects(request.user, tab, sort))
     return HttpResponseNotFound()
 
 
