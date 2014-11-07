@@ -7,6 +7,7 @@ from django.contrib.auth import get_user_model
 from echo.apps.projects.models import Project
 from echo.apps.settings.models import Server, PreprodServer
 from echo.apps.elpis.utils.directory_tree import DirectoryTree, FileNotOnPathError
+from echo.apps.elpis.models import ElpisStatus
 
 User = get_user_model()
 
@@ -80,7 +81,6 @@ class TestSetPathView(test.TestCase):
         self.assertEqual(response_body['path'], Project.objects.first().preprod_path)
 
 
-
 class TestVerifyView(test.TestCase):
     def setUp(self):
         self.client = test.Client()
@@ -99,6 +99,66 @@ class TestVerifyView(test.TestCase):
         self.assertEqual(response.status_code, 200)
         response_body = json.loads(response.content)
         self.assertTrue(response_body['apps'])
+
+
+class TestCheckRunningView(test.TestCase):
+    def setUp(self):
+        self.client = test.Client()
+        User.objects.create_user(username='test_user', password='test')
+        pps = PreprodServer.objects.create(name='linux4095', address='linux4095.wic.west.com', account='wicqacip',
+                                           application_type=PreprodServer.PRODUCER)
+        Project.objects.create(name='Test Project', preprod_server=pps,
+                               preprod_path='/usr/local/tuvox/public/Projects/21cent')
+        self.es = ElpisStatus.objects.create(project=Project.objects.get(pk=1))
+        self.client.login(username='test_user', password='test')
+        self.url = reverse('elpis:check', args=(1,))
+
+    def test_running(self):
+        """If running, return JSON {running: True}"""
+        self.es.running = True
+        self.es.save()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        response_body = json.loads(response.content)
+        self.assertTrue(response_body['running'])
+
+    def test_not_running(self):
+        """If not running, return JSON {running: False}"""
+        self.es.running = False
+        self.es.save()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        response_body = json.loads(response.content)
+        self.assertFalse(response_body['running'])
+
+
+class TestFetchView(test.TestCase):
+    def setUp(self):
+        self.client = test.Client()
+        User.objects.create_user(username='test_user', password='test')
+        pps = PreprodServer.objects.create(name='linux4095', address='linux4095.wic.west.com', account='wicqacip',
+                                           application_type=PreprodServer.PRODUCER)
+        Project.objects.create(name='Test Project', preprod_server=pps,
+                               preprod_path='/usr/local/tuvox/public/Projects/21cent')
+        self.es = ElpisStatus.objects.create(project=Project.objects.get(pk=1))
+        self.client.login(username='test_user', password='test')
+        self.url = reverse('elpis:fetch', args=(1,))
+
+    def test_response_when_not_run(self):
+        """Empty response if no content has been set by a previous run"""
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEquals(response.content, '')
+
+
+    def test_response_when_run(self):
+        """If previously run, return a page view to render"""
+        last_run = "<html>Some stuff here</html>"
+        self.es.response = last_run
+        self.es.save()
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEquals(response.content, last_run)
 
 class TestDirectoryTree(test.TestCase):
     """Test suite for DirectoryTree"""
