@@ -1,33 +1,54 @@
-from django.test import TestCase
+from django.test import Client, TestCase
+from django.core.urlresolvers import resolve, reverse
 
 from django.contrib.auth import get_user_model
 
 from echo.apps.projects.models import Project, Language, VoiceSlot, VUID
 from echo.apps.activity.models import Action
+from echo.apps.reports.views import report_project
 
 User = get_user_model()
 
 
 class ReportsViewsTests(TestCase):
     def setUp(self):
-        User.objects.create_user(username='test_user', password='test')
-        Project.objects.create(name='Test Project')
-        VUID.objects.create(filename='hi.xlsx',
-                            project=Project.objects.first(),
-                            upload_by=User.objects.first()
-                            )
-        Language.objects.create(name='Pig Latin', project=Project.objects.first())
-        VoiceSlot.objects.create(name='greeting.wav', path='/voice/audio/testproject',
-                                 language=Language.objects.first(), vuid=VUID.objects.first())
+        self.client = Client()
+        self.user_accout = {
+            'username': 'test_user',
+            'password': 'test'
+        }
 
-    def test_project_voiceslots_missing(self):
-        user = User.objects.first()
-        Action.log(user, Action.TESTER_PASS_SLOT, u"'sup?", VoiceSlot.objects.first())
-        a = Action.objects.get(description=u"'sup?")
-        print a
-        print a.scope.language.name
-        print a.scope.project.name
-        print a.scope.project.vuid_set.all()[0].upload_date
-        self.assertEqual(a.scope.voiceslot, VoiceSlot.objects.first())
-        self.assertEqual(a.scope.language, Language.objects.first())
-        self.assertEqual(a.scope.project, Project.objects.first())
+        self.user = User.objects.create_user(username=self.user_accout['username'],
+                                             password=self.user_accout['password'])
+        self.client.login(
+            username=self.user_accout['username'],
+            password=self.user_accout['password']
+        )
+        self.project = Project.objects.create(name='Test Project')
+        self.vuid = VUID.objects.create(filename='hi.xlsx',
+                                        project=self.project,
+                                        upload_by=self.user)
+        self.language = Language.objects.create(name='Pig Latin',
+                                                project=self.project)
+        self.voiceslot = VoiceSlot.objects.create(name='greeting.wav',
+                                                  path='/voice/audio/testproject',
+                                                  language=self.language,
+                                                  vuid=self.vuid)
+
+    def test_project_report_url_resolve_to_view(self):
+        found = resolve(reverse('reports:report_project',
+                                args=[self.project.id, ]))
+        self.assertEqual(found.func, report_project)
+
+    def test_project_voiceslots_pass(self):
+        Action.log(self.user,
+                   Action.TESTER_PASS_SLOT,
+                   u"'sup?",
+                   self.voiceslot)
+        self.action = Action.objects.get(actor=self.user)
+
+        response = self.client.get(reverse('reports:report_project',
+                                           args=[self.project.id, ]))
+
+        print response
+        self.assertContains(response, 'pass : 0')

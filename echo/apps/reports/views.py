@@ -79,8 +79,17 @@ def report_project(request, pid):
             voiceslot_pass = 0
             voiceslot_new = 0
             voiceslot_missing = 0
-            start = timezone.now() - timedelta(days=10)
-            end = timezone.now()
+
+            if request.GET.get('start'):
+                start = request.GET.get('start')
+            else:
+                start = timezone.now() - timedelta(days=10)
+
+            if request.GET.get('end'):
+                end = request.GET.get('end')
+            else:
+                end = timezone.now()
+
             days = (end - start).days
             if days == 0:
                 actions = Action.objects.filter(time=start, scope__project=project)
@@ -144,7 +153,7 @@ def report_project(request, pid):
         else:
             progress = None
 
-        print progress
+        #print progress
 
         context = RequestContext(request, {
             'project': project,

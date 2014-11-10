@@ -77,7 +77,10 @@
             </div>
             <div class="col-md-4">
                 <div id="project_progress" style="width: 350px; height: 300px; margin: 0 auto;">
-                    Project Progress
+                    Project Progress</p>
+                    {% for k, v in project_progress.items %}
+                        <li>{{ k }} : {{ v }}</li>
+                    {% endfor %}
                 </div>
                 <div id="user_usage">
                     User Usage
