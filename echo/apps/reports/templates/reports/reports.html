@@ -32,7 +32,7 @@
                 <tbody>
                 {% for project in projects %}
                     <tr>
-                        <td class="text-left">{{ project.name }}</td>
+                        <td class="text-left"><a href="{% url "reports:report_project" project.id %}"> {{ project.name }}</a></td>
                         <td class="text-right">{{ project.slots_passed }}</td>
                         <td class="text-right">{{ project.slots_failed }}</td>
                         <td class="text-right">{{ project.slots_missing }}</td>

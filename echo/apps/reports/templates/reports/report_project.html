@@ -1,0 +1,95 @@
+{% extends "core/base.html" %}
+{% block title %}Report{% endblock %}
+{% load staticfiles %}
+{% block headscript %}
+    <link rel="stylesheet" type="text/css" href="{% static 'echo/core/core.css' %}"/>
+{% endblock %}
+{% block content %}
+    <div class="container">
+        <div class="row">
+            <div class="col-xs-9">
+                <h3>Project Report&nbsp;-&nbsp;{{ project.name }}</h3>
+            </div>
+            <div class="col-xs-3">
+                <a href="{% url "reports:missing" project.pk %}?export=csv" class="btn btn-info btn-sm pull-right" style="width: 100%;">
+                    <i class="fa fa-download fa-fw"></i>&nbsp;Report
+                </a>
+            </div>
+        </div>
+        <hr>
+        <div class="row">
+            <div class="col-md-8">
+                <div id="missing_slots">
+                    <!--
+                    <div style="font-size:large;">{{ project.slots_total }} attempted uploads</div>
+                    <div style="font-size:large;">{{ project.slots_missing }} files missing</div>
+                    -->
+                    <br>
+                    {% if missing_slots %}
+                        <ul class="missing_files_list">
+                            <li class="folder">
+                                <div id="missing_slots_view" class="fa fa-plus-square-o">
+                                    <b>Missing Files</b>
+                                </div>
+                                <ul>
+                                    {% for f in missing_slots %}
+                                        <li>{{ f.filepath}} - {{ f.language }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </li>
+                        </ul>
+                    {% else %}
+                        <p>No files missing</p>
+                    {% endif %}
+                </div>
+
+                <div id="project_defective">
+                    {% if project_defective %}
+                        <ul class="project_defective_list">
+                        <li class="folder">
+                            <div id="project_defect_view" class="fa fa-plus-square-o">
+                                <b>Project Defective</b>
+                            </div>
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <td class="col-md-3"><strong>VoiceSlot</strong></td>
+                                        <td class="col-md-3"><strong>Test Time</strong></td>
+                                        <td class="col-md-2"><strong>Failure Cause</strong></td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in project_defective %}
+                                        <tr>
+                                            <td>{{ item.name }}</td>
+                                            <td>{{ item.test_time }}</td>
+                                            <td>{{ item.fail_note }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </li>
+                    </ul>
+                    {% else %}
+                        <p>No Defective Voiceslots</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div id="project_progress" style="width: 350px; height: 300px; margin: 0 auto;">
+                    Project Progress
+                </div>
+                <div id="user_usage">
+                    User Usage
+                </div>
+
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block endscript %}
+    <script type="text/javascript" src="{% static 'echo/core/core.js' %}"></script>
+    <script type="text/javascript">
+        {% include 'reports/reports.js' %}
+    </script>
+{% endblock %}
