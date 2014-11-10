@@ -3,6 +3,29 @@
 {% load staticfiles %}
 {% block headscript %}
     <script>
+        function fetchLastResult(){
+            $.post("{% url 'elpis:fetch' project.pk %}").done(function(data){
+                if (data.length > 2) {
+                    $("#file-structure-div div").html(data);
+                }
+
+            });
+        }
+        function pollStatus(){
+            $.post("{% url 'elpis:check' project.pk %}").done(function(dataStr) {
+                var data = $.parseJSON(dataStr)
+                if (!data.running) {
+                    if ($("#run-verify").is(':disabled')) {
+                        fetchLastResult();
+                        $("#run-verify").removeAttr("disabled");
+                        $("#run-verify").html("Run");
+                    }
+                }
+                else {
+                    $("#run-verify").attr('disabled', 'disabled').html("Running...")
+                }
+            })
+        }
         $(function() {
             $("#server-select-modal-form").on( "submit", function() {
                 event.preventDefault();
@@ -40,12 +63,12 @@
                 $("#run-verify").attr('disabled', 'disabled').html("Running...")
                 $("#file-structure-div div").html('<i class="fa fa-spin fa-cog fa-2x"></i>');
                 $('#run-applications-modal').modal('hide');
-                $.post("{% url 'elpis:verify' project.pk %}", $("#run-applications-modal-form").serialize()).done(function(data) {
-                    $("#file-structure-div div").html(data);
-                    $("#run-verify").removeAttr("disabled");
-                    $("#run-verify").html("Run");
-                });
+                $.post("{% url 'elpis:verify' project.pk %}", $("#run-applications-modal-form").serialize())
             });
+
+
+            fetchLastResult();
+            window.poll = setInterval(pollStatus, 4000);
         });
     </script>
 {% endblock %}
@@ -64,13 +87,13 @@
                 <label class="control-label" for="preprod-info">Preprod Information</label>
                 <ul id="preprod-info" class="list-group">
                     <li class="list-group-item">
-                        Bravo server: {{project.bravo_server.name|default:"None"}}
+                        Source: {{project.bravo_server.name|default:"None"}}
                     </li>
                     <li class="list-group-item" id="preprod-server-display">
-                        Preprod server: {{project.preprod_server.name|default:"None"}}
+                        Destination: {{project.preprod_server.name|default:"None"}}
                     </li>
                     <li class="list-group-item" id="preprod-path-display">
-                        Preprod path: {{project.preprod_path|default:"Unknown"}}
+                        Path: {{project.preprod_path|default:"Unknown"}}
                     </li>
                 </ul>
                 <input type="button" data-toggle="modal" data-target="#preprod-modal" value="Update Preprod Information" class="btn btn-primary">

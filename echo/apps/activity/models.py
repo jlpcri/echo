@@ -36,9 +36,9 @@ class Action(models.Model):
     """Entry for activity feed"""
     TESTER_PASS_SLOT = 1
     TESTER_FAIL_SLOT = 2
-    AUTO_PASS_SLOT = 3
-    AUTO_FAIL_SLOT = 4
-    AUTO_NEW_SLOT = 5
+    AUTO_NEW_SLOT = 3
+    AUTO_PASS_SLOT = 4
+    AUTO_FAIL_SLOT = 5
     AUTO_MISSING_SLOT = 6
     UPLOAD_VUID = 7
     UPDATE_FILE_STATUSES = 8
@@ -52,10 +52,10 @@ class Action(models.Model):
     TYPE_CHOICES = (
         (TESTER_PASS_SLOT, 'Tester passed slot'),
         (TESTER_FAIL_SLOT, 'Tester failed slot'),
+        (AUTO_NEW_SLOT, 'Automatically marked slot for testing'),
         (AUTO_PASS_SLOT, 'Automatically passed slot'),
         (AUTO_FAIL_SLOT, 'Automatically failed slot'),
-        (AUTO_NEW_SLOT, 'Automatically new slot'),
-        (AUTO_MISSING_SLOT, 'Automatically missing slot'),
+        (AUTO_MISSING_SLOT, 'Automatically marked slot as missing'),
         (UPLOAD_VUID, 'Prompt list upload'),
         (UPDATE_FILE_STATUSES, 'Ran file status update'),
         (CREATE_PROJECT, 'Project created'),
