@@ -9,6 +9,8 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.conf import settings
 
+from echo.apps.activity.models import Action, Scope
+
 User = get_user_model()
 
 
@@ -155,6 +157,15 @@ class Project(models.Model):
 
     def voiceslots_missing(self):
         return self.voiceslots(filter_status=VoiceSlot.MISSING)
+
+    def actions(self, filter_status=None):
+        actions = Action.objects.filter(scope__project=self)
+        if filter_status == VoiceSlot.FAIL:
+            actions = actions.filter(type__in=(Action.TESTER_FAIL_SLOT, Action.AUTO_FAIL_SLOT))
+        return actions
+
+    def actions_failed(self):
+        return self.actions(filter_status=VoiceSlot.FAIL)
 
 
 class VoiceSlot(models.Model):
