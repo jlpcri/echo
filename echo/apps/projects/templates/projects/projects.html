@@ -18,111 +18,207 @@
             </div>
         </div>
         <hr>
-        {% for project in joined_projects %}
-            <div class="row">
-                <div class="col-xs-6">
-                    <h4><a href="{% url "projects:project" project.pk %}">{{ project.name }}</a></h4>
+        <div class="row">
+            <div class="col-xs-6">
+                <ul class="nav nav-pills nav-justified" role="tablist">
+                    <li class="{% if tab == 'my' %}active{% endif %}"><a href="{% url 'projects:projects' %}?tab=my">My Projects</a></li>
+                    <li class="{% if tab == 'all' %}active{% endif %}"><a href="{% url 'projects:projects' %}?tab=all">All Projects</a></li>
+                    <li class="{% if tab == 'archive' %}active{% endif %}"><a href="{% url 'projects:projects' %}?tab=archive">Archive</a></li>
+                </ul>
+            </div>
+            <div class="col-xs-6">
 
-                {% if project.slots_total > 0 %}
-                    <div class="progress">
-                        {% if project.slots_passed %}
-                        <div id="passed_bar_{{ project.pk }}" class="progress-bar progress-bar-success"
-                             style="width: {{ project.slots_passed_percent }}%; cursor: default;" data-toggle="tooltip" data-placement="top" title="{{ project.slots_passed }} passed">{{ project.slots_passed }}</div>
-                        {% endif %}
-                        {% if project.slots_failed %}
-                        <div id="defective_bar_{{ project.pk }}" class="progress-bar progress-bar-warning"
-                             style="width: {{ project.slots_failed_percent }}%; cursor: default;" data-toggle="tooltip" data-placement="top" title="{{ project.slots_failed }} defective">{{ project.slots_failed }}</div>
-                        {% endif %}
-                        {% if project.slots_missing %}
-                        <div id="missing_bar_{{ project.pk }}" class="progress-bar progress-bar-danger"
-                             style="width: {{ project.slots_missing_percent }}%; cursor: default;" data-toggle="tooltip" data-placement="top" title="{{ project.slots_missing }} missing">{{ project.slots_missing }}</div>
-                        {% endif %}
-                        {% if project.slots_untested %}
-                        <div id="untested_bar_{{ project.pk }}" class="progress-bar progress-bar-info"
-                             style="width: {{ project.slots_untested_percent }}%; cursor: default;" data-toggle="tooltip" data-placement="top" title="{{ project.slots_untested }} untested">{{ project.slots_untested }}</div>
-                        {% endif %}
-                    </div>
-                {% else %}
-                    <div id="progress_{{ project.pk }}" class="progress" data-toggle="tooltip" data-placement="top" title="No voiceslots yet"></div>
-                {% endif %}
-                </div>
-                <div class="col-xs-6">
-                    <div class="pull-left">
-                    {% if user.username in project.usernames %}
-                        <b>Start Testing:</b><br>
-                        {% for language in project.languages %}
-                            <a href="{% url "projects:queue" project.pk %}?language={{ language.name|lower }}">
-                                <b>{{ language.name }}</b>
-                            </a><br>
-                        {% endfor %}
+            </div>
+        </div>
+    <br>
+        {% if projects %}
+            <div class="row">
+                <div class="col-xs-12">
+                <table class="table table-striped table-hover">
+                    <thead>
+                    <tr>
+                        <th class="col-xs-3">
+                            {% if sort == 'project_name' %}
+                                <a href="{% url 'projects:projects' %}?tab={{ tab }}&sort=-project_name">
+                                    Project Name</a>&nbsp;<i class="fa fa-sort-asc"></i>
+                            {% elif sort == '-project_name' %}
+                                <a href="{% url 'projects:projects' %}?tab={{ tab }}&sort=project_name">
+                                    Project Name</a>&nbsp;<i class="fa fa-sort-desc"></i>
+                            {% else %}
+                                <a href="{% url 'projects:projects' %}?tab={{ tab }}&sort=project_name">
+                                    Project Name</a>&nbsp;<i class="fa fa-sort"></i>
+                            {% endif %}
+                        </th>
+                        <th class="col-xs-3 text-center">
+                            Progress
+                        </th>
+                        <th class="col-xs-1 text-center">
+                            {% if sort == 'total_prompts' %}
+                                <a href="{% url 'projects:projects' %}?tab={{ tab }}&sort=-total_prompts">
+                                    Total Prompts</a>&nbsp;<i class="fa fa-sort-asc"></i>
+                            {% elif sort == '-total_prompts' %}
+                                <a href="{% url 'projects:projects' %}?tab={{ tab }}&sort=total_prompts">
+                                    Total Prompts</a>&nbsp;<i class="fa fa-sort-desc"></i>
+                            {% else %}
+                                <a href="{% url 'projects:projects' %}?tab={{ tab }}&sort=total_prompts">
+                                    Total Prompts</a>&nbsp;<i class="fa fa-sort"></i>
+                            {% endif %}
+                        </th>
+                        <th class="col-xs-1 text-center">
+                            {% if sort == 'created_date' %}
+                                <a href="{% url 'projects:projects' %}?tab={{ tab }}&sort=-created_date">
+                                    Created Date</a>&nbsp;<i class="fa fa-sort-asc"></i>
+                            {% elif sort == '-created_date' %}
+                                <a href="{% url 'projects:projects' %}?tab={{ tab }}&sort=created_date">
+                                    Created Date</a>&nbsp;<i class="fa fa-sort-desc"></i>
+                            {% else %}
+                                <a href="{% url 'projects:projects' %}?tab={{ tab }}&sort=created_date">
+                                    Created Date</a>&nbsp;<i class="fa fa-sort"></i>
+                            {% endif %}
+                        </th>
+                        <th class="col-xs-1 text-center">
+                            {% if sort == 'last_modified' %}
+                                <a href="{% url 'projects:projects' %}?tab={{ tab }}&sort=-last_modified">
+                                    Last Modified</a>&nbsp;<i class="fa fa-sort-asc"></i>
+                            {% elif sort == '-last_modified' %}
+                                <a href="{% url 'projects:projects' %}?tab={{ tab }}&sort=last_modified">
+                                    Last Modified</a>&nbsp;<i class="fa fa-sort-desc"></i>
+                            {% else %}
+                                <a href="{% url 'projects:projects' %}?tab={{ tab }}&sort=last_modified">
+                                    Last Modified</a>&nbsp;<i class="fa fa-sort"></i>
+                            {% endif %}
+
+                        </th>
+                        <th class="col-xs-1 text-center">
+                            {% if sort == 'user_count' %}
+                                <a href="{% url 'projects:projects' %}?tab={{ tab }}&sort=-user_count">
+                                    Testers</a>&nbsp;<i class="fa fa-sort-asc"></i>
+                            {% elif sort == '-user_count' %}
+                                <a href="{% url 'projects:projects' %}?tab={{ tab }}&sort=user_count">
+                                    Testers</a>&nbsp;<i class="fa fa-sort-desc"></i>
+                            {% else %}
+                                <a href="{% url 'projects:projects' %}?tab={{ tab }}&sort=user_count">
+                                    Testers</a>&nbsp;<i class="fa fa-sort"></i>
+                            {% endif %}
+
+                        </th>
+                        <th class="col-xs-1 text-center">
+                            Test
+                        </th>
+                        <th class="col-xs-1"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+            {% for project in projects %}
+                    <tr>
+                        <td>
+                            <h4><a href="{% url "projects:project" project.pk %}">{{ project.name }}</a></h4>
+                        </td>
+                        <td class="text-center">
+                    {% if project.slots_total > 0 %}
+                        <div id="progress_{{ project.pk }}" class="progress" style="line-height: 20px; margin-bottom: 0px;">
+                            {% if project.slots_passed %}
+                                <div id="passed_bar_{{ project.pk }}" class="progress-bar progress-bar-success"
+                                     style="width: {{ project.slots_passed_percent }}%; cursor: default;"
+                                     data-toggle="tooltip" data-placement="top"
+                                     title="{{ project.slots_passed }} passed">{{ project.slots_passed }}</div>
+                            {% endif %}
+                            {% if project.slots_failed %}
+                                <div id="defective_bar_{{ project.pk }}" class="progress-bar progress-bar-warning"
+                                     style="width: {{ project.slots_failed_percent }}%; cursor: default;"
+                                     data-toggle="tooltip" data-placement="top"
+                                     title="{{ project.slots_failed }} defective">{{ project.slots_failed }}</div>
+                            {% endif %}
+                            {% if project.slots_missing %}
+                                <div id="missing_bar_{{ project.pk }}" class="progress-bar progress-bar-danger"
+                                     style="width: {{ project.slots_missing_percent }}%; cursor: default;"
+                                     data-toggle="tooltip" data-placement="top"
+                                     title="{{ project.slots_missing }} missing">{{ project.slots_missing }}</div>
+                            {% endif %}
+                            {% if project.slots_untested %}
+                                <div id="untested_bar_{{ project.pk }}" class="progress-bar progress-bar-info"
+                                     style="width: {{ project.slots_untested_percent }}%; cursor: default;"
+                                     data-toggle="tooltip" data-placement="top"
+                                     title="{{ project.slots_untested }} untested">{{ project.slots_untested }}</div>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div id="progress_{{ project.pk }}" class="progress" class="progress" style="line-height: 20px; margin-bottom: 0px;"
+                             data-toggle="tooltip" data-placement="top"
+                             title="No voiceslots yet"></div>
                     {% endif %}
-                    </div>
-                    <div class="pull-right">
-                        <b>Reports:</b>&nbsp;
-                        <a href="{% url "reports:failed" project.pk %}"><i class="fa fa-file-text"></i>&nbsp;Failed</a>
-                        &nbsp;&nbsp;|&nbsp;&nbsp;
-                        <a href="{% url "reports:missing" project.pk %}"><i
-                                class="fa fa-file-text"></i>&nbsp;Missing</a>
-                    </div>
+                        </td>
+                        <td class="text-center">
+                            <div id="total_prompts_{{ project.pk }}"><b>{{ project.slots_total }}</b></div>
+                        </td>
+                        <td class="text-center">00/00/0000</td>
+                        <td class="text-center">00/00/0000<br>00:00&nbsp;PM</td>
+                        <td class="text-center"><b>{{ project.users_total }}</b></td>
+                        <td class="text-center">
+                            {% if project.languages %}
+                                {% for language in project.languages %}
+                                    <a href="{% url "projects:queue" project.pk %}?language={{ language.name|lower }}">
+                                        <b>{{ language.name|title }}</b>
+                                    </a><br>
+                                {% endfor %}
+                            {% else %}
+                                None
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if user.username not in project.usernames %}
+                                <a href="{% url "projects:joinproject" project.pk %}?page=projects" class="btn btn-default btn-sm"
+                                   style="width: 100%;">
+                                    <i class="fa fa-link fa-fw"></i>&nbsp;Join
+                                </a>
+                            {% else %}
+                                <a href="{% url "projects:leaveproject" project.pk %}?page=projects" class="btn btn-default btn-sm"
+                                   style="width: 100%;">
+                                    <i class="fa fa-unlink fa-fw"></i>&nbsp;Leave
+                                </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+            {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            </div>
+        {% else %}
+            <div class="row">
+                <div class="col-xs-12 text-center">
+                    <br><br><br>
+                    {% if tab == 'my' %}
+                        <h4>You are not currently joined to any projects.</h4>
+                    {% elif tab == 'all' %}
+                        <h4>There are no active projects currently.</h4>
+                    {% elif tab == 'archive' %}
+                        <h4>There are no archived projects yet.</h4>
+                    {% endif %}
                 </div>
             </div>
-            <hr>
-        {% endfor %}
-        {% for project in unjoined_projects %}
-            <div class="row">
-                <div class="col-xs-6">
-                    <h4><a href="{% url "projects:project" project.pk %}">{{ project.name }}</a></h4>
-
-                {% if project.slots_total > 0 %}
-                    <div class="progress">
-                        {% if project.slots_passed %}
-                        <div id="passed_bar_{{ project.pk }}" class="progress-bar progress-bar-success"
-                             style="width: {{ project.slots_passed_percent }}%; cursor: default;" data-toggle="tooltip" data-placement="top" title="{{ project.slots_passed }} passed">{{ project.slots_passed }}</div>
-                        {% endif %}
-                        {% if project.slots_failed %}
-                        <div id="defective_bar_{{ project.pk }}" class="progress-bar progress-bar-warning"
-                             style="width: {{ project.slots_failed_percent }}%; cursor: default;" data-toggle="tooltip" data-placement="top" title="{{ project.slots_failed }} defective">{{ project.slots_failed }}</div>
-                        {% endif %}
-                        {% if project.slots_missing %}
-                        <div id="missing_bar_{{ project.pk }}" class="progress-bar progress-bar-danger"
-                             style="width: {{ project.slots_missing_percent }}%; cursor: default;" data-toggle="tooltip" data-placement="top" title="{{ project.slots_missing }} missing">{{ project.slots_missing }}</div>
-                        {% endif %}
-                        {% if project.slots_untested %}
-                        <div id="untested_bar_{{ project.pk }}" class="progress-bar progress-bar-info"
-                             style="width: {{ project.slots_untested_percent }}%; cursor: default;" data-toggle="tooltip" data-placement="top" title="{{ project.slots_untested }} missing">{{ project.slots_untested }}</div>
-                        {% endif %}
-                    </div>
-                {% else %}
-                    <div id="progress_{{ project.pk }}" class="progress" data-toggle="tooltip" data-placement="top" title="No voiceslots yet"></div>
-                {% endif %}
-                </div>
-                <div class="col-xs-6">
-                    <div class="pull-left">
-                    {% if user.username in project.usernames %}
-                        <b>Start Testing:</b><br>
-                        {% for language in project.languages %}
-                            <a href="{% url "projects:queue" project.pk %}?language={{ language.name|lower }}">
-                                <b>{{ language.name }}</b>
-                            </a><br>
-                        {% endfor %}
-                    {% endif %}
-                    </div>
-                    <div class="pull-right">
-                        <b>Reports:</b>&nbsp;
-                        <a href="{% url "reports:failed" project.pk %}"><i class="fa fa-file-text"></i>&nbsp;Failed</a>
-                        &nbsp;&nbsp;|&nbsp;&nbsp;
-                        <a href="{% url "reports:missing" project.pk %}"><i
-                                class="fa fa-file-text"></i>&nbsp;Missing</a>
-                    </div>
-                </div>
-            </div>
-            <hr>
-        {% endfor %}
+        {% endif %}
     </div>
 {% endblock %}
 {% block endscript %}
     <script type="text/javascript">
-        {% for project in joined_projects %}
+        var tabType = '{{ tab }}';
+        var sortType = '{{ sort }}';
+
+        function loadRecords(source, sort, page) {
+            var s = (typeof sort === "undefined") ? null : sort;
+            sortField = (s == null) ? ((sortField == null) ? "" : sortField) : sort;
+            var pageNumber = (typeof page === "undefined") ? "" : ((page == null) ? "" : page);
+{#            var url = "{% url 'projects' %}?source=" + source + "sort=" + sortField + "&page=" + pageNumber;#}
+            var url = "{% url 'projects:projects' %}?source=" + source + "&sort=" + sortField;
+            window.location.href = url;
+        }
+
+        function sortHandler(sel) {
+            window.location.href = "{% url 'projects:projects' %}?tab=" + tabType + "&sort=" + sel.value;
+        }
+
+        {% for project in projects %}
             {% if project.slots_total > 0 %}
                 {% if project.slots_passed %}
                     $('#passed_bar_{{ project.pk }}').tooltip();
@@ -140,7 +236,7 @@
                 $('#progress_{{ project.pk }}').tooltip();
             {% endif %}
         {% endfor %}
-        {% for project in unjoined_projects %}
+        {% for project in projects %}
             {% if project.slots_total > 0 %}
                 {% if project.slots_passed %}
                     $('#passed_bar_{{ project.pk }}').tooltip();
@@ -158,5 +254,10 @@
                 $('#progress_{{ project.pk }}').tooltip();
             {% endif %}
         {% endfor %}
+
+{#        $('a[data-toggle="tab"]').on('show.bs.tab', function (e) {#}
+{#            console.log(e.target.getAttribute('data-source'));#}
+{#            loadRecords(e.target.getAttribute('data-source'));#}
+{#        });#}
     </script>
 {% endblock %}

@@ -50,12 +50,41 @@ def context_project(project, upload_form=UploadForm(), server_form=ServerForm(in
     }
 
 
-def context_projects(user):
-    joined_projects = Project.objects.filter(users__pk=user.pk).order_by('name')
-    unjoined_projects = Project.objects.all().exclude(users__pk=user.pk).order_by('name')
+def context_projects(user, tab, sort=None, page=None):
+    if tab == 'my':
+        projects = Project.objects.filter(users__pk=user.pk)
+    elif tab == 'archive':
+        projects = Project.objects.filter(status=Project.CLOSED)
+    else:
+        tab = 'all'
+        projects = Project.objects.all().exclude(users__pk=user.pk)
+
+    if sort:
+        if sort == 'project_name':
+            projects = projects.order_by('name')
+        elif sort == '-project_name':
+            projects = projects.order_by('-name')
+        elif sort == 'created_date':
+            pass
+        elif sort == '-created_date':
+            pass
+        elif sort == 'last_modified':
+            pass
+        elif sort == '-last_modified':
+            pass
+        elif sort == 'total_prompts':
+            projects = sorted(projects, key=lambda p: p.slots_total())
+        elif sort == '-total_prompts':
+            projects = sorted(projects, key=lambda p: p.slots_total(), reverse=True)
+        elif sort == 'user_count':
+            projects = sorted(projects, key=lambda p: p.users_total())
+        elif sort == '-user_count':
+            projects = sorted(projects, key=lambda p: p.users_total(), reverse=True)
+
     return {
-        'joined_projects': joined_projects,
-        'unjoined_projects': unjoined_projects
+        'projects': projects,
+        'tab': tab,
+        'sort': sort
     }
 
 
