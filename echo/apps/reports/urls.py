@@ -8,4 +8,5 @@ urlpatterns = patterns('',
     url(r'^$', views.reports, name='reports'),
     url(r'^failed/(?P<pid>\d+)/?$', views.failed, name='failed'),
     url(r'^missing/(?P<pid>\d+)/?$', views.missing, name='missing'),
+    url(r'^(?P<pid>\d+)/?$', views.report_project, name='report_project')
 )

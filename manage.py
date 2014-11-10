@@ -8,6 +8,8 @@ if __name__ == "__main__":
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "echo.settings.alex_dev")
     elif socket.gethostname() == "qaci01":
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "echo.settings.qaci")
+    elif socket.gethostname() == "linux6436":
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "echo.settings.qa_lab")
     else:
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "echo.settings.base")
 

@@ -19,6 +19,7 @@
         parent_li.wrapInner('<a/>').find('a').click(function() {
             // Make the anchor toggle the leaf display.
             sub_ul.toggle();
+            parent_li.toggleClass("open-folder closed-folder");
         });
         parent_li.append(sub_ul);
     });
