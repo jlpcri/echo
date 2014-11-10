@@ -42,7 +42,7 @@ class ReportsViewsTests(TestCase):
 
     def test_project_voiceslots_pass(self):
         Action.log(self.user,
-                   Action.TESTER_PASS_SLOT,
+                   Action.AUTO_NEW_SLOT,
                    u"'sup?",
                    self.voiceslot)
         self.action = Action.objects.get(actor=self.user)
