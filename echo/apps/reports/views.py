@@ -82,43 +82,56 @@ def report_project(request, pid):
             start = timezone.now() - timedelta(days=10)
             end = timezone.now()
             days = (end - start).days
-            date_range = [end - timedelta(days=x) for x in range(0, days)]
-            for day in date_range:
-                actions = Action.objects.filter(time=day, scope__project=project)
+            if days == 0:
+                actions = Action.objects.filter(time=start, scope__project=project)
+                for action in actions:
+                    if action.type in (Action.TESTER_FAIL_SLOT, Action.AUTO_FAIL_SLOT):
+                            voiceslot_fail += 1
+                    elif action.type in (Action.TESTER_PASS_SLOT, Action.AUTO_PASS_SLOT):
+                        voiceslot_pass += 1
+                    elif action.type == Action.AUTO_NEW_SLOT:
+                        voiceslot_new += 1
+                    elif action.type == Action.AUTO_MISSING_SLOT:
+                        voiceslot_missing += 1
 
-                if actions.count() == 0:
-                    one_day_before = day - timedelta(days=1)
-
-                    # if one_day_before less than vuid upload_date then continue
-                    if one_day_before < vuid_upload_date:
-                        break
+            else:
+                date_range = [end - timedelta(days=x) for x in range(0, days)]
+                for day in date_range:
+                    actions = Action.objects.filter(time=day, scope__project=project)
 
                     results = []
-                    found = False
-                    while found is False:
-                        actions = Action.objects.filter(time=one_day_before, scope__project=project)
-                        if actions.count() > 0:
-                            results = actions
-                            found = True
-                        else:
-                            one_day_before -= timedelta(days=1)
-                            if one_day_before < vuid_upload_date:
-                                break
+                    if actions.count() == 0:
+                        one_day_before = day - timedelta(days=1)
 
-                    if found is False:  # reached vuid upload_date
-                        continue
-                    action = results[0]
-                else:
-                    action = actions[0]
+                        # if one_day_before less than vuid upload_date then continue
+                        if one_day_before < vuid_upload_date:
+                            break
 
-                if action.type in (Action.TESTER_FAIL_SLOT, Action.AUTO_FAIL_SLOT):
-                    voiceslot_fail += 1
-                elif action.type in (Action.TESTER_PASS_SLOT, Action.AUTO_PASS_SLOT):
-                    voiceslot_pass += 1
-                elif action.type == Action.AUTO_NEW_SLOT:
-                    voiceslot_new += 1
-                elif action.type == Action.AUTO_MISSING_SLOT:
-                    voiceslot_missing += 1
+                        found = False
+                        while found is False:
+                            actions = Action.objects.filter(time=one_day_before, scope__project=project)
+                            if actions.count() > 0:
+                                results = actions
+                                found = True
+                            else:
+                                one_day_before -= timedelta(days=1)
+                                if one_day_before < vuid_upload_date:
+                                    break
+
+                        if found is False:  # reached vuid upload_date
+                            continue
+                    else:
+                        results = actions
+
+                    for action in results:
+                        if action.type in (Action.TESTER_FAIL_SLOT, Action.AUTO_FAIL_SLOT):
+                            voiceslot_fail += 1
+                        elif action.type in (Action.TESTER_PASS_SLOT, Action.AUTO_PASS_SLOT):
+                            voiceslot_pass += 1
+                        elif action.type == Action.AUTO_NEW_SLOT:
+                            voiceslot_new += 1
+                        elif action.type == Action.AUTO_MISSING_SLOT:
+                            voiceslot_missing += 1
 
             progress = {
                 'start': start.date(),
@@ -131,7 +144,7 @@ def report_project(request, pid):
         else:
             progress = None
 
-        #print progress
+        print progress
 
         context = RequestContext(request, {
             'project': project,

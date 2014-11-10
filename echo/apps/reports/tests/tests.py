@@ -14,8 +14,8 @@ class ReportsViewsTests(TestCase):
         Project.objects.create(name='Test Project')
         VUID.objects.create(filename='hi.xlsx',
                             project=Project.objects.first(),
-                            upload_by=User.objects.first(),
-                            upload_date='2014-11-05')
+                            upload_by=User.objects.first()
+                            )
         Language.objects.create(name='Pig Latin', project=Project.objects.first())
         VoiceSlot.objects.create(name='greeting.wav', path='/voice/audio/testproject',
                                  language=Language.objects.first(), vuid=VUID.objects.first())
