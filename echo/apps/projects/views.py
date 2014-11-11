@@ -31,6 +31,7 @@ def fetch(request, pid):
                     result = helpers.fetch_slots_from_server(p, sftp, request.user)
                     if result['valid']:
                         messages.success(request, result["message"])
+                        Action.log(request.user, Action.UPDATE_FILE_STATUSES, 'File status update ran', p)
                     else:
                         messages.danger(request, result['message'])
                 return redirect("projects:project", pid)
@@ -58,6 +59,7 @@ def join_project(request, pid):
         page = request.GET.get('page', '')
         p.users.add(request.user)
         p.save()
+        Action.log(request.user, Action.TESTER_JOIN_PROJECT, u'Joined project', p)
         messages.info(request, "You joined the project!")
         if page:
             return redirect("projects:projects")
@@ -72,6 +74,7 @@ def leave_project(request, pid):
         page = request.GET.get('page', '')
         p.users.remove(request.user)
         p.save()
+        Action.log(request.user, Action.TESTER_LEAVE_PROJECT, u'Left project', p)
         messages.info(request, "You left the project")
         if page:
             return redirect("projects:projects")
@@ -112,6 +115,7 @@ def new(request):
                             messages.danger(request, result['message'])
                     elif 'file' in request.FILES:
                         messages.danger(request, "Invalid file type, unable to upload (must be .xlsx)")
+                    Action.log(request.user, Action.CREATE_PROJECT, '{0} created'.format(p.name), p)
                     return redirect("projects:project", pid=p.pk)
                 except ValidationError as e:
                     if 'name' in e.message_dict:
@@ -145,6 +149,10 @@ def project(request, pid):
                             return redirect("projects:project", pid=pid)
                     p.bravo_server = Server.objects.get(name=server)
                     p.save()
+                Action.log(request.user,
+                           Action.UPDATE_BRAVO_SERVER,
+                           u'Bravo server updated to ' + unicode(server),
+                           p)
                 messages.success(request, "Updated server successfully")
                 return redirect("projects:project", pid=pid)
             messages.danger(request, "Unable to update server")

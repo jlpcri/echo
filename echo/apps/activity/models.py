@@ -74,7 +74,8 @@ class Action(models.Model):
     scope = models.ForeignKey(Scope)
 
     def __unicode__(self):
-        return u'{0} on {1}'.format(self.description, self.time.strftime("%c"))
+        return u'({0}) {1}: {2} on {3}'.format(unicode(self.scope), self.actor.username,
+                                               self.description, self.time.strftime("%c"))
 
     @classmethod
     def log(cls, actor, action_type, description, scope=None):

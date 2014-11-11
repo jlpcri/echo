@@ -186,6 +186,7 @@ def upload_vuid(uploaded_file, user, project):
     if not result['valid']:
         vuid.delete()
         return result
+    Action.log(user, Action.UPLOAD_VUID, 'Prompt list {0} uploaded'.format(uploaded_file.name), project)
     return {"valid": True, "message": "File uploaded and parsed successfully"}
 
 
