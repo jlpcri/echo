@@ -174,5 +174,5 @@ def report_project(request, pid):
             'project_defective': defective,
             'project_progress': outputs,
         })
-
+        Action.log(request.user, Action.REPORT_GENERATION, 'Viewed report dashboard', project)
         return render(request, "reports/report_project.html", context)
