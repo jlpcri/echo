@@ -41,8 +41,10 @@
         {% endfor %}
         </ul>
     </div>
-    <div class="tab-pane fade file-icons" id="file-struct">
+    <div class="tab-pane fade" id="file-struct">
         <br>
-        <ul>{{file_struct|file_items_unordered_list}}</ul>
+        <div class="file-icons">
+            <ul>{{file_struct|file_items_unordered_list}}</ul>
+        </div>
     </div>
 </div>
