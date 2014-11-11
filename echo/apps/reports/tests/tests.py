@@ -40,7 +40,7 @@ class ReportsViewsTests(TestCase):
                                 args=[self.project.id, ]))
         self.assertEqual(found.func, report_project)
 
-    def test_project_voiceslots_pass(self):
+    def test_project_voiceslots_auto_pass(self):
         Action.log(self.user,
                    Action.AUTO_PASS_SLOT,
                    u"'sup?",
@@ -54,3 +54,62 @@ class ReportsViewsTests(TestCase):
 
         self.assertContains(response, '%s, Fail: 0, Pass: 1, New: 0, Missing: 0' % self.action.time.date())
 
+    def test_project_voiceslots_tester_pass(self):
+        Action.log(self.user,
+                   Action.TESTER_PASS_SLOT,
+                   u"'sup?",
+                   self.voiceslot)
+        self.action = Action.objects.get(actor=self.user)
+
+        response = self.client.get(reverse('reports:report_project',
+                                           args=[self.project.id, ]),)
+
+        self.assertContains(response, '%s, Fail: 0, Pass: 1, New: 0, Missing: 0' % self.action.time.date())
+
+    def test_project_voiceslots_auto_fail(self):
+        Action.log(self.user,
+                   Action.AUTO_FAIL_SLOT,
+                   u"'sup?",
+                   self.voiceslot)
+        self.action = Action.objects.get(actor=self.user)
+
+        response = self.client.get(reverse('reports:report_project',
+                                           args=[self.project.id, ]),)
+
+        self.assertContains(response, '%s, Fail: 1, Pass: 0, New: 0, Missing: 0' % self.action.time.date())
+
+    def test_project_voiceslots_tester_fail(self):
+        Action.log(self.user,
+                   Action.TESTER_FAIL_SLOT,
+                   u"'sup?",
+                   self.voiceslot)
+        self.action = Action.objects.get(actor=self.user)
+
+        response = self.client.get(reverse('reports:report_project',
+                                           args=[self.project.id, ]),)
+
+        self.assertContains(response, '%s, Fail: 1, Pass: 0, New: 0, Missing: 0' % self.action.time.date())
+
+    def test_project_voiceslots_auto_new(self):
+        Action.log(self.user,
+                   Action.AUTO_NEW_SLOT,
+                   u"'sup?",
+                   self.voiceslot)
+        self.action = Action.objects.get(actor=self.user)
+
+        response = self.client.get(reverse('reports:report_project',
+                                           args=[self.project.id, ]),)
+
+        self.assertContains(response, '%s, Fail: 0, Pass: 0, New: 1, Missing: 0' % self.action.time.date())
+
+    def test_project_voiceslots_auto_missing(self):
+        Action.log(self.user,
+                   Action.AUTO_MISSING_SLOT,
+                   u"'sup?",
+                   self.voiceslot)
+        self.action = Action.objects.get(actor=self.user)
+
+        response = self.client.get(reverse('reports:report_project',
+                                           args=[self.project.id, ]),)
+
+        self.assertContains(response, '%s, Fail: 0, Pass: 0, New: 0, Missing: 1' % self.action.time.date())
