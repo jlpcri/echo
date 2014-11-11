@@ -71,98 +71,92 @@ ul {
     -webkit-border-radius: 5px;
 }
 
-#file-struct ul {
+.file-icons ul {
     position:relative;
     list-style: none;
     margin: 0;
     padding: 0;
 }
 
-/*#file-struct ul li:before {
-font-family: 'FontAwesome';
-content: '\f016';
-margin:0 5px 0 -15px;
-color: blue;
-}*/
 
-#file-struct ul li {
+.file-icons ul li {
     position:relative;
     background-position: 0 1px;
     background-repeat: no-repeat;
     padding-left: 20px;
 }
 
-#file-struct ul li.closed-folder {
+.file-icons ul li.closed-folder {
     position:relative;
 }
 
-#file-struct li.closed-folder:before {
+.file-icons li.closed-folder:before {
 font-family: 'FontAwesome';
 content: '\f196';
 margin:0 5px 0 -15px;
 color: blue;
 }
 
-#file-struct ul li.open-folder {
+.file-icons ul li.open-folder {
     position:relative;
 }
 
-#file-struct li.open-folder:before {
+.file-icons li.open-folder:before {
 font-family: 'FontAwesome';
 content: '\f147';
 margin:0 5px 0 -15px;
 color: blue;
 }
 
-#file-struct ul li.found {
+.file-icons ul li.found {
     color: green;
 }
 
-#file-struct ul li.found:before {
+.file-icons ul li.found:before {
 font-family: 'FontAwesome';
 content: '\f058';
 margin:0 5px 0 -15px;
 color: green;
 }
 
-#file-struct ul li.insufficient-copies {
+.file-icons ul li.insufficient-copies {
     color: red;
 }
 
-#file-struct ul li.insufficient-copies:before {
+.file-icons ul li.insufficient-copies:before {
 font-family: 'FontAwesome';
 content: '\f071';
 margin:0 5px 0 -15px;
 color: red;
 }
 
-#file-struct ul li.mismatch {
+.file-icons ul li.mismatch {
     color: orange;
 }
 
-#file-struct ul li.mismatch:before {
+.file-icons ul li.mismatch:before {
 font-family: 'FontAwesome';
 content: '\f05e';
 margin:0 5px 0 -15px;
 color: orange;
 }
 
-#file-struct ul li.unexpected-duplicate {
+.file-icons ul li.unexpected-duplicate {
     color: purple;
 }
 
-#file-struct ul li.unexpected-duplicate:before {
+.file-icons ul li.unexpected-duplicate:before {
 font-family: 'FontAwesome';
 content: '\f122';
 margin:0 5px 0 -15px;
 color: purple;
 }
 
-#file-struct ul li.untracked {
+.file-icons ul li.untracked {
     color: darkgray;
 }
 
-#file-struct ul li.untracked:before {
+.file-icons ul li.untracked:before {
 font-family: 'FontAwesome';
 content: '\f059';
 margin:0 5px 0 -15px;
@@ -170,12 +164,12 @@ color: darkgray;
 }
 
 
-#file-struct a {
+.file-icons a {
     color: #000000;
     cursor: pointer;
     text-decoration: none;
 }
 
-#file-struct a:hover {
+.file-icons a:hover {
     text-decoration: underline;
 }
