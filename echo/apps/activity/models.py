@@ -79,7 +79,8 @@ class Action(models.Model):
     @classmethod
     def log(cls, actor, action_type, description, scope=None):
         """Convenience method to create Action items"""
-        SLOT_TYPES = (cls.TESTER_PASS_SLOT, cls.TESTER_FAIL_SLOT, cls.AUTO_PASS_SLOT, cls.AUTO_FAIL_SLOT)
+        SLOT_TYPES = (cls.TESTER_PASS_SLOT, cls.TESTER_FAIL_SLOT, cls.AUTO_PASS_SLOT, cls.AUTO_FAIL_SLOT,
+                      cls.AUTO_NEW_SLOT, cls.AUTO_MISSING_SLOT)
         LANGUAGE_TYPES = (cls.REPORT_GENERATION, )
         PROJECT_TYPES = (cls.UPLOAD_VUID, cls.UPDATE_FILE_STATUSES, cls.CREATE_PROJECT, cls.REPORT_GENERATION,
                          cls.ELPIS_RUN, cls.UPDATE_ROOT_PATH, cls.UPDATE_BRAVO_SERVER, cls.TESTER_JOIN_PROJECT,

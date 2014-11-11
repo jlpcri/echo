@@ -1,8 +1,11 @@
 from datetime import datetime
-from django.db import transaction
 from itertools import izip, takewhile
-from models import Language, Project, VoiceSlot, VUID
 from openpyxl import load_workbook
+
+from django.db import transaction
+
+from echo.apps.projects.models import Language, Project, VoiceSlot, VUID
+from echo.apps.activity.models import Action
 
 
 PAGE_NAME = "page name"
@@ -35,7 +38,7 @@ def commonprefix(paths, sep='/'):
     return sep.join(x[0] for x in takewhile(allnamesequal, bydirectorylevels))
 
 @transaction.atomic
-def fetch_slots_from_server(project, sftp):
+def fetch_slots_from_server(project, sftp, user):
     """Contains logic to update file statuses"""
     # get shared path of all distinct paths from voiceslot models in project
     path = commonprefix(project.voiceslots().values_list('path', flat=True).distinct())
@@ -49,8 +52,8 @@ def fetch_slots_from_server(project, sftp):
         slots = project.voiceslots()
         for slot in slots:
             slot.status = VoiceSlot.MISSING
-            slot.history = "Slot missing, {0}\n".format(datetime.now()) + slot.history
             slot.save()
+            Action.log(user, Action.AUTO_MISSING_SLOT, 'Slot found missing during status check', slot)
         return {"valid": False, "message": "All files missing on server, given path \"{0}\"".format(path)}
     elif len(result) == 1 and result[0].startswith('find:'):
         # means error was returned, path does not exist
@@ -74,8 +77,8 @@ def fetch_slots_from_server(project, sftp):
                 if slot.filepath() not in map:
                     # if slot not in map, slot is missing
                     slot.status = VoiceSlot.MISSING
-                    slot.history = "Slot missing, {0}\n".format(datetime.now()) + slot.history
                     slot.save()
+                    Action.log(user, Action.AUTO_MISSING_SLOT, 'Slot found missing during status check', slot)
                 else:
                     # else slot in map, run additional tests
                     fs = map.get(slot.filepath())
@@ -88,12 +91,14 @@ def fetch_slots_from_server(project, sftp):
                         slot.bravo_time = datetime.fromtimestamp(fs.mtime)
                         slot.history = "Slot found, {0}\n".format(datetime.now()) + slot.history
                         slot.save()
+                        Action.log(user, Action.AUTO_NEW_SLOT, 'Slot discovered during status check', slot)
                     elif slot.bravo_time is None or bravo_time < datetime.fromtimestamp(fs.mtime) and slot.bravo_checksum != fs.msum:
                         slot.status = VoiceSlot.NEW
                         slot.bravo_checksum = fs.msum
                         slot.bravo_time = datetime.fromtimestamp(fs.mtime)
                         slot.history = "Slot is new, {0}\n".format(datetime.now()) + slot.history
                         slot.save()
+                        Action.log(user, Action.AUTO_NEW_SLOT, 'Slot discovered during status check', slot)
             return {"valid": True, "message": "Files from Bravo Server have been fetched"}
 
 

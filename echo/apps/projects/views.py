@@ -28,7 +28,7 @@ def fetch(request, pid):
             try:
                 with pysftp.Connection(p.bravo_server.address, username=p.bravo_server.account,
                                        private_key=settings.PRIVATE_KEY) as sftp:
-                    result = helpers.fetch_slots_from_server(p, sftp)
+                    result = helpers.fetch_slots_from_server(p, sftp, request.user)
                     if result['valid']:
                         messages.success(request, result["message"])
                     else:
@@ -327,14 +327,12 @@ def testslot(request, pid, vsid):
                     local_path = os.path.join(settings.MEDIA_ROOT, filename)
                     conn.get(remote_path, local_path)
                     filepath = settings.MEDIA_URL + filename
-                    last_modified = int(conn.execute('stat -c %Y {0}'.format(remote_path))[0])
                     slot.check_out(request.user)
-                    slot.history = u"Downloaded file last modified on {0}\n".format(
-                        datetime.fromtimestamp(last_modified).strftime("%b %d %Y, %H:%M")) + slot.history
             except IOError as e:
                 messages.danger(request, "File missing on server \"{0}\"".format(p.bravo_server.name))
                 slot.status = VoiceSlot.MISSING
-                slot.history = u"Attempted test, slot missing, {0}\n".format(datetime.now()) + slot.history
+                slot.save()
+                Action.log(request.user, Action.AUTO_MISSING_SLOT, 'Slot found missing by individual slot test', slot)
                 return redirect("projects:project", pid)
             except pysftp.ConnectionException:
                 messages.danger(request, "Connection error to server \"{0}\"".format(p.bravo_server.name))
