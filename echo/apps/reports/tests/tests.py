@@ -46,12 +46,11 @@ class ReportsViewsTests(TestCase):
                    u"'sup?",
                    self.voiceslot)
         self.action = Action.objects.get(actor=self.user)
-        print 'test: ', self.action.time.date()
 
         response = self.client.get(reverse('reports:report_project',
                                            args=[self.project.id, ]),)
 
-        #print self.vuid.upload_date
         #print response
 
-        self.assertContains(response, 'pass : 1')
+        self.assertContains(response, '%s, Fail: 0, Pass: 1, New: 0, Missing: 0' % self.action.time.date())
+

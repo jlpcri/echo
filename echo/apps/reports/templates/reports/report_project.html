@@ -78,8 +78,9 @@
             <div class="col-md-4">
                 <div id="project_progress" style="width: 350px; height: 300px; margin: 0 auto;">
                     Project Progress</p>
-                    {% for k, v in project_progress.items %}
-                        <li>{{ k }} : {{ v }}</li>
+                    {% for item in project_progress %}
+                        <li>{{ item.date|date:'Y-m-j' }}, Fail: {{ item.statistics.fail }}, Pass: {{ item.statistics.pass }}, New: {{ item.statistics.new }}, Missing: {{ item.statistics.missing }}
+                        </li>
                     {% endfor %}
                 </div>
                 <div id="user_usage">

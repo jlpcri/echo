@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404, render
 from django.template import RequestContext
 from django.utils import timezone
 import pytz
-from echo.apps.projects.models import Project
+from echo.apps.projects.models import Project, VoiceSlot
 import contexts
 from echo.apps.activity.models import Action
 from django.conf import settings
@@ -78,10 +78,13 @@ def report_project(request, pid):
         if vuid_upload_date:
             # Second check Actions type
             vuid_upload_date = vuid_upload_date.date()
-            voiceslot_fail = 0
-            voiceslot_pass = 0
-            voiceslot_new = 0
-            voiceslot_missing = 0
+            voiceslots_statistics = {
+                    'pass': 0,
+                    'fail': 0,
+                    'new': 0,
+                    'missing': 0
+            }
+            outputs = []
 
             if request.GET.get('start'):
                 start = request.GET.get('start')
@@ -95,7 +98,9 @@ def report_project(request, pid):
 
             days = (end - start).days
             if days == 0:
-                actions = Action.objects.filter(time=start, scope__project=project)
+                actions = Action.objects.filter(time__gt=start,
+                                                time__lt=start+timedelta(days=1),
+                                                scope__project=project)
                 for action in actions:
                     if action.type in (Action.TESTER_FAIL_SLOT, Action.AUTO_FAIL_SLOT):
                             voiceslot_fail += 1
@@ -108,64 +113,66 @@ def report_project(request, pid):
 
             else:
                 date_range = [end - timedelta(days=x) for x in range(0, days + 1)]
+
                 for day in date_range:
-                    actions = Action.objects.filter(time__gt=day,
-                                                    time__lt=day+timedelta(days=1),
-                                                    scope__project=project)
-                    print day, actions.count()
+                    break_flag = False  # flag to check if current day less than vuid upload date
+                    tmp_statistics = voiceslots_statistics.copy()
+                    voiceslots = project.voiceslots()
+                    for vs in voiceslots:
+                        try:
+                            action = Action.objects.get(time__gt=day,
+                                                        time__lt=day+timedelta(days=1),
+                                                        scope__voiceslot=vs)
+                            if action.type in (Action.TESTER_FAIL_SLOT, Action.AUTO_FAIL_SLOT):
+                                tmp_statistics['fail'] += 1
+                            elif action.type in (Action.TESTER_PASS_SLOT, Action.AUTO_PASS_SLOT):
+                                tmp_statistics['pass'] += 1
+                            elif action.type == Action.AUTO_NEW_SLOT:
+                                tmp_statistics['new'] += 1
+                            elif action.type == Action.AUTO_MISSING_SLOT:
+                                tmp_statistics['missing'] += 1
 
-                    results = []
-                    if actions.count() == 0:
-                        one_day_before = day - timedelta(days=1)
+                        except ObjectDoesNotExist:
+                            one_day_before = day - timedelta(days=1)
+                            if one_day_before < vuid_upload_date:
+                                break_flag = True
+                                break
+                            found_flag = False
+                            while found_flag is False:
+                                try:
+                                    action = Action.objects.get(time__gt=one_day_before,
+                                                                time__lt=one_day_before+timedelta(days=1),
+                                                                scope__voiceslot=vs)
+                                    if action.type in (Action.TESTER_FAIL_SLOT, Action.AUTO_FAIL_SLOT):
+                                        tmp_statistics['fail'] += 1
+                                    elif action.type in (Action.TESTER_PASS_SLOT, Action.AUTO_PASS_SLOT):
+                                        tmp_statistics['pass'] += 1
+                                    elif action.type == Action.AUTO_NEW_SLOT:
+                                        tmp_statistics['new'] += 1
+                                    elif action.type == Action.AUTO_MISSING_SLOT:
+                                        tmp_statistics['missing'] += 1
+                                    found_flag = True
+                                except ObjectDoesNotExist:
+                                    one_day_before -= timedelta(days=1)
+                                    if one_day_before < vuid_upload_date:
+                                        break
+                            if found_flag is True:
+                                continue
 
-                        # if one_day_before less than vuid upload_date then continue
-                        if one_day_before < vuid_upload_date:
-                            break
-
-                        found = False
-                        while found is False:
-                            actions = Action.objects.filter(time=one_day_before, scope__project=project)
-                            if actions.count() > 0:
-                                results = actions
-                                found = True
-                            else:
-                                one_day_before -= timedelta(days=1)
-                                if one_day_before < vuid_upload_date:
-                                    break
-
-                        if found is False:  # reached vuid upload_date
-                            continue
-                    else:
-                        results = actions
-
-                    for action in results:
-                        if action.type in (Action.TESTER_FAIL_SLOT, Action.AUTO_FAIL_SLOT):
-                            voiceslot_fail += 1
-                        elif action.type in (Action.TESTER_PASS_SLOT, Action.AUTO_PASS_SLOT):
-                            voiceslot_pass += 1
-                        elif action.type == Action.AUTO_NEW_SLOT:
-                            voiceslot_new += 1
-                        elif action.type == Action.AUTO_MISSING_SLOT:
-                            voiceslot_missing += 1
-
-            progress = {
-                'start': start,
-                'end': end,
-                'pass': voiceslot_pass,
-                'fail': voiceslot_fail,
-                'missing': voiceslot_missing,
-                'new': voiceslot_new
-            }
+                    outputs.append({
+                        'date': day,
+                        'statistics': tmp_statistics
+                    })
+                    if break_flag:
+                        break
         else:
-            progress = None
-
-        #print progress
+            outputs = None
 
         context = RequestContext(request, {
             'project': project,
             'missing_slots': missing,
             'project_defective': defective,
-            'project_progress': progress,
+            'project_progress': outputs,
         })
 
         return render(request, "reports/report_project.html", context)
