@@ -42,13 +42,16 @@ class ReportsViewsTests(TestCase):
 
     def test_project_voiceslots_pass(self):
         Action.log(self.user,
-                   Action.AUTO_NEW_SLOT,
+                   Action.AUTO_PASS_SLOT,
                    u"'sup?",
                    self.voiceslot)
         self.action = Action.objects.get(actor=self.user)
+        print 'test: ', self.action.time.date()
 
         response = self.client.get(reverse('reports:report_project',
-                                           args=[self.project.id, ]))
+                                           args=[self.project.id, ]),)
 
-        print response
-        self.assertContains(response, 'pass : 0')
+        #print self.vuid.upload_date
+        #print response
+
+        self.assertContains(response, 'pass : 1')

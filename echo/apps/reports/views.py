@@ -1,13 +1,15 @@
-from datetime import timedelta
+from datetime import timedelta, date, datetime
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, render
 from django.template import RequestContext
 from django.utils import timezone
+import pytz
 from echo.apps.projects.models import Project
 import contexts
 from echo.apps.activity.models import Action
+from django.conf import settings
 
 @login_required
 def failed(request, pid):
@@ -75,6 +77,7 @@ def report_project(request, pid):
         # First check vuid upload_date
         if vuid_upload_date:
             # Second check Actions type
+            vuid_upload_date = vuid_upload_date.date()
             voiceslot_fail = 0
             voiceslot_pass = 0
             voiceslot_new = 0
@@ -83,12 +86,12 @@ def report_project(request, pid):
             if request.GET.get('start'):
                 start = request.GET.get('start')
             else:
-                start = timezone.now() - timedelta(days=10)
+                start = (timezone.now() - timedelta(days=10)).date()
 
             if request.GET.get('end'):
                 end = request.GET.get('end')
             else:
-                end = timezone.now()
+                end = (timezone.now() + timedelta(days=1)).date()
 
             days = (end - start).days
             if days == 0:
@@ -104,9 +107,12 @@ def report_project(request, pid):
                         voiceslot_missing += 1
 
             else:
-                date_range = [end - timedelta(days=x) for x in range(0, days)]
+                date_range = [end - timedelta(days=x) for x in range(0, days + 1)]
                 for day in date_range:
-                    actions = Action.objects.filter(time=day, scope__project=project)
+                    actions = Action.objects.filter(time__gt=day,
+                                                    time__lt=day+timedelta(days=1),
+                                                    scope__project=project)
+                    print day, actions.count()
 
                     results = []
                     if actions.count() == 0:
@@ -143,8 +149,8 @@ def report_project(request, pid):
                             voiceslot_missing += 1
 
             progress = {
-                'start': start.date(),
-                'end': end.date(),
+                'start': start,
+                'end': end,
                 'pass': voiceslot_pass,
                 'fail': voiceslot_fail,
                 'missing': voiceslot_missing,
