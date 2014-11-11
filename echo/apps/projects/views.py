@@ -11,6 +11,7 @@ from django.core.exceptions import ValidationError
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.conf import settings
+from echo.apps.activity.models import Action
 
 from echo.apps.core import messages
 from echo.apps.settings.models import Server
@@ -288,6 +289,7 @@ def submitslot(request, vsid):
                                                                         request.POST['notes']) + slot.history
                 slot.check_in(request.user)
                 slot.save()
+                Action.log(request.user, Action.TESTER_PASS_SLOT, '{0} passed by manual testing'.format(slot.name), slot)
                 # do updates to files here and get count for p pass
                 count = p.voiceslots_match(slot, request)
             else:
@@ -295,10 +297,9 @@ def submitslot(request, vsid):
                     messages.danger(request, "Please provide notes on test failure")
                     return redirect("projects:testslot", pid=p.pk, vsid=vsid)
                 slot.status = VoiceSlot.FAIL
-                slot.history = u"{0}: Test failed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
-                                                                         request.POST['notes']) + slot.history
                 slot.check_in(request.user)
                 slot.save()
+                Action.log(request.user, Action.TESTER_FAIL_SLOT, request.POST['notes'], slot)
                 # do updates to files here and get count for p failure
                 count = p.voiceslots_match(slot, request)
                 p.failure_count += 1
