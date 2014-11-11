@@ -233,10 +233,12 @@ def queue(request, pid):
                 return HttpResponseRedirect(reverse("projects:queue", args=(p.pk, )) + "?language=" + lang.name)
             elif test_result == 'pass':
                 tested_slot.status = VoiceSlot.PASS
-                tested_slot.history = u"{0}: Test passed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
-                                                                        request.POST['notes']) + tested_slot.history
                 tested_slot.check_in(request.user)
                 tested_slot.save()
+                Action.log(request.user,
+                           Action.TESTER_PASS_SLOT,
+                           '{0} passed in queue testing'.format(tested_slot.name),
+                           tested_slot)
                 # do updates to files here and get count for p pass
                 count = p.voiceslots_match(tested_slot, request)
             else:
@@ -244,10 +246,9 @@ def queue(request, pid):
                     messages.danger(request, "Please provide notes on test failure")
                     return HttpResponseRedirect(reverse("projects:queue", args=(p.pk, )) + "?language=" + lang.name)
                 tested_slot.status = VoiceSlot.FAIL
-                tested_slot.history = u"{0}: Test failed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
-                                                                         request.POST['notes']) + tested_slot.history
                 tested_slot.check_in(request.user)
                 tested_slot.save()
+                Action.log(request.user, Action.TESTER_FAIL_SLOT, request.POST['notes'], tested_slot)
                 # do updates to files here and get count for p failure
                 count = p.voiceslots_match(tested_slot, request)
                 p.failure_count += 1
@@ -285,8 +286,6 @@ def submitslot(request, vsid):
                 return redirect("projects:testslot", pid=p.pk, vsid=vsid)
             if slot_status == 'pass':
                 slot.status = VoiceSlot.PASS
-                slot.history = u"{0}: Test passed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
-                                                                        request.POST['notes']) + slot.history
                 slot.check_in(request.user)
                 slot.save()
                 Action.log(request.user, Action.TESTER_PASS_SLOT, '{0} passed by manual testing'.format(slot.name), slot)
