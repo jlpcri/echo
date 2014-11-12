@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404, render
 from django.template import RequestContext
 from django.utils import timezone
 import pytz
-from echo.apps.projects.models import Project, VoiceSlot
+from echo.apps.projects.models import Project
 import contexts
 from echo.apps.activity.models import Action
 from django.conf import settings
@@ -96,10 +96,11 @@ def report_project(request, pid):
                 voiceslots = project.voiceslots()
                 tmp_statistics = get_voiceslot_statistics(voiceslots,
                                                           start,
-                                                          vuid_upload_date)
+                                                          vuid_upload_date,
+                                                          None)
                 outputs.append({
                     'date': start,
-                    'statistics': tmp_statistics
+                    'statistics': tmp_statistics['statistics']
                 })
 
             else:
@@ -107,16 +108,16 @@ def report_project(request, pid):
 
                 for day in date_range:
                     break_flag = False  # flag to check if current day less than vuid upload date
-                    #tmp_statistics = voiceslots_statistics.copy()
                     voiceslots = project.voiceslots()
                     tmp_statistics = get_voiceslot_statistics(voiceslots,
                                                               day,
-                                                              vuid_upload_date,)
+                                                              vuid_upload_date,
+                                                              break_flag)
                     outputs.append({
                         'date': day,
-                        'statistics': tmp_statistics
+                        'statistics': tmp_statistics['statistics']
                     })
-                    if break_flag:
+                    if tmp_statistics['flag']:
                         break
         else:
             outputs = None
@@ -131,7 +132,7 @@ def report_project(request, pid):
         return render(request, "reports/report_project.html", context)
 
 
-def get_voiceslot_statistics(voiceslots, day, vuid_upload_date):
+def get_voiceslot_statistics(voiceslots, day, vuid_upload_date, break_flag):
     tmp_statistics = settings.VOICESLOTS_METRICS.copy()
     for vs in voiceslots:
         try:
@@ -174,4 +175,7 @@ def get_voiceslot_statistics(voiceslots, day, vuid_upload_date):
             if found_flag is True:
                 continue
 
-    return tmp_statistics
+    return {
+        'flag': break_flag,
+        'statistics': tmp_statistics
+    }
