@@ -5,8 +5,9 @@ from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import get_object_or_404, render
 from django.template import RequestContext
 from django.utils import timezone
+from django.utils.timezone import is_aware, is_naive
 import pytz
-from echo.apps.projects.models import Project, VoiceSlot
+from echo.apps.projects.models import Project
 import contexts
 from echo.apps.activity.models import Action
 from django.conf import settings
@@ -77,29 +78,30 @@ def report_project(request, pid):
         # First check vuid upload_date
         if vuid_upload_date:
             # Second check Actions type
-            vuid_upload_date = vuid_upload_date.date()
+            vuid_upload_date = vuid_upload_date
 
             outputs = []
 
             if request.GET.get('start'):
                 start = request.GET.get('start')
             else:
-                start = (timezone.now() - timedelta(days=10)).date()
+                start = timezone.now() - timedelta(days=10)
 
             if request.GET.get('end'):
                 end = request.GET.get('end')
             else:
-                end = (timezone.now() + timedelta(days=1)).date()
+                end = timezone.now() + timedelta(days=1)
 
             days = (end - start).days
             if days == 0:
                 voiceslots = project.voiceslots()
                 tmp_statistics = get_voiceslot_statistics(voiceslots,
                                                           start,
-                                                          vuid_upload_date)
+                                                          vuid_upload_date,
+                                                          None)
                 outputs.append({
-                    'date': start,
-                    'statistics': tmp_statistics
+                    'date': start.date(),
+                    'statistics': tmp_statistics['statistics']
                 })
 
             else:
@@ -107,16 +109,16 @@ def report_project(request, pid):
 
                 for day in date_range:
                     break_flag = False  # flag to check if current day less than vuid upload date
-                    #tmp_statistics = voiceslots_statistics.copy()
                     voiceslots = project.voiceslots()
                     tmp_statistics = get_voiceslot_statistics(voiceslots,
                                                               day,
-                                                              vuid_upload_date,)
+                                                              vuid_upload_date,
+                                                              break_flag)
                     outputs.append({
-                        'date': day,
-                        'statistics': tmp_statistics
+                        'date': day.date(),
+                        'statistics': tmp_statistics['statistics']
                     })
-                    if break_flag:
+                    if tmp_statistics['flag']:
                         break
         else:
             outputs = None
@@ -131,12 +133,12 @@ def report_project(request, pid):
         return render(request, "reports/report_project.html", context)
 
 
-def get_voiceslot_statistics(voiceslots, day, vuid_upload_date):
+def get_voiceslot_statistics(voiceslots, day, vuid_upload_date, break_flag):
     tmp_statistics = settings.VOICESLOTS_METRICS.copy()
     for vs in voiceslots:
         try:
-            action = Action.objects.get(time__gt=day,
-                                        time__lt=day+timedelta(days=1),
+            action = Action.objects.get(time__gt=get_midninght_of_day(day),
+                                        time__lt=get_midninght_of_day(day)+timedelta(days=1),
                                         scope__voiceslot=vs)
             if action.type in (Action.TESTER_FAIL_SLOT, Action.AUTO_FAIL_SLOT):
                 tmp_statistics['fail'] += 1
@@ -155,8 +157,8 @@ def get_voiceslot_statistics(voiceslots, day, vuid_upload_date):
             found_flag = False
             while found_flag is False:
                 try:
-                    action = Action.objects.get(time__gt=one_day_before,
-                                                time__lt=one_day_before+timedelta(days=1),
+                    action = Action.objects.get(time__gt=get_midninght_of_day(one_day_before),
+                                                time__lt=get_midninght_of_day(one_day_before)+timedelta(days=1),
                                                 scope__voiceslot=vs)
                     if action.type in (Action.TESTER_FAIL_SLOT, Action.AUTO_FAIL_SLOT):
                         tmp_statistics['fail'] += 1
@@ -174,4 +176,11 @@ def get_voiceslot_statistics(voiceslots, day, vuid_upload_date):
             if found_flag is True:
                 continue
 
-    return tmp_statistics
+    return {
+        'flag': break_flag,
+        'statistics': tmp_statistics
+    }
+
+
+def get_midninght_of_day(day):
+    return day.replace(hour=0, minute=0, second=0)
