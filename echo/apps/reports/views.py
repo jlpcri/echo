@@ -137,9 +137,9 @@ def get_voiceslot_statistics(voiceslots, day, vuid_upload_date, break_flag):
     tmp_statistics = settings.VOICESLOTS_METRICS.copy()
     for vs in voiceslots:
         try:
-            action = Action.objects.get(time__gt=get_midninght_of_day(day),
-                                        time__lt=get_midninght_of_day(day)+timedelta(days=1),
-                                        scope__voiceslot=vs)
+            action = Action.objects.filter(time__gt=get_midninght_of_day(day),
+                                           time__lt=get_midninght_of_day(day)+timedelta(days=1),
+                                           scope__voiceslot=vs).latest('time')
             if action.type in (Action.TESTER_FAIL_SLOT, Action.AUTO_FAIL_SLOT):
                 tmp_statistics['fail'] += 1
             elif action.type in (Action.TESTER_PASS_SLOT, Action.AUTO_PASS_SLOT):
@@ -157,9 +157,9 @@ def get_voiceslot_statistics(voiceslots, day, vuid_upload_date, break_flag):
             found_flag = False
             while found_flag is False:
                 try:
-                    action = Action.objects.get(time__gt=get_midninght_of_day(one_day_before),
-                                                time__lt=get_midninght_of_day(one_day_before)+timedelta(days=1),
-                                                scope__voiceslot=vs)
+                    action = Action.objects.filter(time__gt=get_midninght_of_day(one_day_before),
+                                                   time__lt=get_midninght_of_day(one_day_before)+timedelta(days=1),
+                                                   scope__voiceslot=vs).latest('time')
                     if action.type in (Action.TESTER_FAIL_SLOT, Action.AUTO_FAIL_SLOT):
                         tmp_statistics['fail'] += 1
                     elif action.type in (Action.TESTER_PASS_SLOT, Action.AUTO_PASS_SLOT):
