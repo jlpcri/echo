@@ -4,9 +4,25 @@ from openpyxl import load_workbook
 import unicodecsv
 
 
-def context_home(user):
+def context_home(user, sort=None):
+    projects = Project.objects.filter(users__pk=user.pk)
+
+    if sort:
+        if sort == 'project_name':
+            projects = projects.order_by('name')
+        elif sort == '-project_name':
+            projects = projects.order_by('-name')
+        elif sort == 'total_prompts':
+            projects = sorted(projects, key=lambda p: p.slots_total())
+        elif sort == '-total_prompts':
+            projects = sorted(projects, key=lambda p: p.slots_total(), reverse=True)
+        elif sort == 'user_count':
+            projects = sorted(projects, key=lambda p: p.users_total())
+        elif sort == '-user_count':
+            projects = sorted(projects, key=lambda p: p.users_total(), reverse=True)
     return {
-        'projects': Project.objects.filter(users__pk=user.pk).order_by('name')
+        'projects': projects,
+        'sort': sort
     }
 
 

@@ -5,7 +5,7 @@ User = get_user_model()
 
 
 class Scope(models.Model):
-    """Defines project objects impacted by Actiob"""
+    """Defines project objects impacted by Action"""
     UNIVERSAL = 1
     PROJECT = 2
     LANGUAGE = 3

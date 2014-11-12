@@ -2,7 +2,7 @@
 {% block title %}Report{% endblock %}
 {% load staticfiles %}
 {% block headscript %}
-    <link rel="stylesheet" type="text/css" href="{% static 'echo/core/core.css' %}"/>
+
 {% endblock %}
 {% block content %}
     <div class="container">
@@ -18,8 +18,8 @@
         </div>
         <hr>
         <div class="row">
-            <div class="col-md-8">
-                <div id="missing_slots">
+            <div class="col-md-3">
+                <div id="missing_slots" style="overflow: auto;">
                     <!--
                     <div style="font-size:large;">{{ project.slots_total }} attempted uploads</div>
                     <div style="font-size:large;">{{ project.slots_missing }} files missing</div>
@@ -42,7 +42,11 @@
                         <p>No files missing</p>
                     {% endif %}
                 </div>
-
+            </div>
+            <div class="col-xs-6">
+                <div id="project_progress">
+                    Project Progress
+                </div>
                 <div id="project_defective">
                     {% if project_defective %}
                         <ul class="project_defective_list">
@@ -75,21 +79,71 @@
                     {% endif %}
                 </div>
             </div>
-            <div class="col-md-4">
-                <div id="project_progress" style="width: 350px; height: 300px; margin: 0 auto;">
-                    Project Progress
+            <div class="col-xs-3">
+                <div id="activity_feed">
+                    Activity Feed
                 </div>
-                <div id="user_usage">
-                    User Usage
-                </div>
-
             </div>
         </div>
     </div>
 {% endblock %}
 {% block endscript %}
-    <script type="text/javascript" src="{% static 'echo/core/core.js' %}"></script>
+    <script src="{% static 'common/highcharts/3.0.7/js/highcharts.js' %}"></script>
     <script type="text/javascript">
+        $('#project_progress').highcharts({
+        chart: {
+            type: 'area'
+        },
+        title: {
+            text: 'Prompts Breakdown by Date'
+        },
+        xAxis: {
+            categories: ['2014-11-06', '2014-11-07', '2014-11-08', '2014-11-09', '2014-11-10', '2014-11-11', '2014-11-12'],
+            allowDecimals: false,
+            tickmarkPlacement: 'on',
+            title: {
+                text: 'Date'
+            }
+        },
+        yAxis: {
+            title: {
+                text: 'Prompts'
+            },
+            labels: {
+                formatter: function () {
+                    return this.value / 1000;
+                }
+            }
+        },
+        tooltip: {
+            shared: true
+        },
+        plotOptions: {
+            area: {
+                stacking: 'normal',
+                lineColor: '#666666',
+                lineWidth: 1,
+                marker: {
+                    lineWidth: 1,
+                    lineColor: '#666666'
+                }
+            }
+        },
+        series: [{
+            name: 'Untested',
+            data: [502, 635, 809, 947, 1402, 3634, 5268]
+        }, {
+            name: 'Passed',
+            data: [106, 107, 111, 133, 221, 767, 1766]
+        }, {
+            name: 'Defective',
+            data: [163, 203, 276, 408, 547, 729, 628]
+        }, {
+            name: 'Missing',
+            data: [18, 31, 54, 156, 339, 818, 1201]
+        }],
+        credits: false
+    });
         {% include 'reports/reports.js' %}
     </script>
 {% endblock %}
