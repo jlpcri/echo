@@ -236,24 +236,6 @@
                 $('#progress_{{ project.pk }}').tooltip();
             {% endif %}
         {% endfor %}
-        {% for project in projects %}
-            {% if project.slots_total > 0 %}
-                {% if project.slots_passed %}
-                    $('#passed_bar_{{ project.pk }}').tooltip();
-                {% endif %}
-                {% if project.slots_failed %}
-                    $('#defective_bar_{{ project.pk }}').tooltip();
-                {% endif %}
-                {% if project.slots_missing %}
-                    $('#missing_bar_{{ project.pk }}').tooltip();
-                {% endif %}
-                {% if project.slots_untested %}
-                    $('#untested_bar_{{ project.pk }}').tooltip();
-                {% endif %}
-            {% else %}
-                $('#progress_{{ project.pk }}').tooltip();
-            {% endif %}
-        {% endfor %}
 
 {#        $('a[data-toggle="tab"]').on('show.bs.tab', function (e) {#}
 {#            console.log(e.target.getAttribute('data-source'));#}

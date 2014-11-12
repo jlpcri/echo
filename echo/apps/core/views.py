@@ -36,8 +36,19 @@ def signout(request):
 
 @login_required
 def home(request):
+    sort_types = [
+        'project_name',
+        '-project_name',
+        'total_prompts',
+        '-total_prompts',
+        'user_count',
+        '-user_count'
+    ]
     if request.method == 'GET':
-        return render(request, "core/home.html", contexts.context_home(request.user))
+        sort = request.GET.get('sort', '')
+        sort = sort if sort else 'project_name'
+        if sort in sort_types:
+            return render(request, "core/home.html", contexts.context_home(request.user, sort))
     return HttpResponseNotFound()
 
 
