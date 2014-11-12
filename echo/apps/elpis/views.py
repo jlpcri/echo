@@ -69,6 +69,7 @@ def verify_file_transfer(request, pid):
         status.query_id = query_item
         status.running = True
         status.save()
+        Action.log(request.user, Action.ELPIS_RUN, 'Elpis run initiated', p)
         return HttpResponse(json.dumps({'success': True}), content_type="application/json")
 
 @csrf_exempt

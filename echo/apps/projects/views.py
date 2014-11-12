@@ -11,6 +11,7 @@ from django.core.exceptions import ValidationError
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.conf import settings
+from echo.apps.activity.models import Action
 
 from echo.apps.core import messages
 from echo.apps.settings.models import Server
@@ -27,9 +28,10 @@ def fetch(request, pid):
             try:
                 with pysftp.Connection(p.bravo_server.address, username=p.bravo_server.account,
                                        private_key=settings.PRIVATE_KEY) as sftp:
-                    result = helpers.fetch_slots_from_server(p, sftp)
+                    result = helpers.fetch_slots_from_server(p, sftp, request.user)
                     if result['valid']:
                         messages.success(request, result["message"])
+                        Action.log(request.user, Action.UPDATE_FILE_STATUSES, 'File status update ran', p)
                     else:
                         messages.danger(request, result['message'])
                 return redirect("projects:project", pid)
@@ -57,6 +59,7 @@ def join_project(request, pid):
         page = request.GET.get('page', '')
         p.users.add(request.user)
         p.save()
+        Action.log(request.user, Action.TESTER_JOIN_PROJECT, u'Joined project', p)
         messages.info(request, "You joined the project!")
         if page == "home":
             return redirect("core:home")
@@ -73,6 +76,7 @@ def leave_project(request, pid):
         page = request.GET.get('page', '')
         p.users.remove(request.user)
         p.save()
+        Action.log(request.user, Action.TESTER_LEAVE_PROJECT, u'Left project', p)
         messages.info(request, "You left the project")
         if page == "home":
             return redirect("core:home")
@@ -115,6 +119,7 @@ def new(request):
                             messages.danger(request, result['message'])
                     elif 'file' in request.FILES:
                         messages.danger(request, "Invalid file type, unable to upload (must be .xlsx)")
+                    Action.log(request.user, Action.CREATE_PROJECT, '{0} created'.format(p.name), p)
                     return redirect("projects:project", pid=p.pk)
                 except ValidationError as e:
                     if 'name' in e.message_dict:
@@ -148,6 +153,10 @@ def project(request, pid):
                             return redirect("projects:project", pid=pid)
                     p.bravo_server = Server.objects.get(name=server)
                     p.save()
+                Action.log(request.user,
+                           Action.UPDATE_BRAVO_SERVER,
+                           u'Bravo server updated to ' + unicode(server),
+                           p)
                 messages.success(request, "Updated server successfully")
                 return redirect("projects:project", pid=pid)
             messages.danger(request, "Unable to update server")
@@ -236,10 +245,12 @@ def queue(request, pid):
                 return HttpResponseRedirect(reverse("projects:queue", args=(p.pk, )) + "?language=" + lang.name)
             elif test_result == 'pass':
                 tested_slot.status = VoiceSlot.PASS
-                tested_slot.history = u"{0}: Test passed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
-                                                                        request.POST['notes']) + tested_slot.history
                 tested_slot.check_in(request.user)
                 tested_slot.save()
+                Action.log(request.user,
+                           Action.TESTER_PASS_SLOT,
+                           '{0} passed in queue testing'.format(tested_slot.name),
+                           tested_slot)
                 # do updates to files here and get count for p pass
                 count = p.voiceslots_match(tested_slot, request)
             else:
@@ -247,10 +258,9 @@ def queue(request, pid):
                     messages.danger(request, "Please provide notes on test failure")
                     return HttpResponseRedirect(reverse("projects:queue", args=(p.pk, )) + "?language=" + lang.name)
                 tested_slot.status = VoiceSlot.FAIL
-                tested_slot.history = u"{0}: Test failed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
-                                                                         request.POST['notes']) + tested_slot.history
                 tested_slot.check_in(request.user)
                 tested_slot.save()
+                Action.log(request.user, Action.TESTER_FAIL_SLOT, request.POST['notes'], tested_slot)
                 # do updates to files here and get count for p failure
                 count = p.voiceslots_match(tested_slot, request)
                 p.failure_count += 1
@@ -288,10 +298,9 @@ def submitslot(request, vsid):
                 return redirect("projects:testslot", pid=p.pk, vsid=vsid)
             if slot_status == 'pass':
                 slot.status = VoiceSlot.PASS
-                slot.history = u"{0}: Test passed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
-                                                                        request.POST['notes']) + slot.history
                 slot.check_in(request.user)
                 slot.save()
+                Action.log(request.user, Action.TESTER_PASS_SLOT, '{0} passed by manual testing'.format(slot.name), slot)
                 # do updates to files here and get count for p pass
                 count = p.voiceslots_match(slot, request)
             else:
@@ -299,10 +308,9 @@ def submitslot(request, vsid):
                     messages.danger(request, "Please provide notes on test failure")
                     return redirect("projects:testslot", pid=p.pk, vsid=vsid)
                 slot.status = VoiceSlot.FAIL
-                slot.history = u"{0}: Test failed at {1}.\n{2}\n".format(request.user.username, datetime.now(),
-                                                                         request.POST['notes']) + slot.history
                 slot.check_in(request.user)
                 slot.save()
+                Action.log(request.user, Action.TESTER_FAIL_SLOT, request.POST['notes'], slot)
                 # do updates to files here and get count for p failure
                 count = p.voiceslots_match(slot, request)
                 p.failure_count += 1
@@ -331,14 +339,12 @@ def testslot(request, pid, vsid):
                     local_path = os.path.join(settings.MEDIA_ROOT, filename)
                     conn.get(remote_path, local_path)
                     filepath = settings.MEDIA_URL + filename
-                    last_modified = int(conn.execute('stat -c %Y {0}'.format(remote_path))[0])
                     slot.check_out(request.user)
-                    slot.history = u"Downloaded file last modified on {0}\n".format(
-                        datetime.fromtimestamp(last_modified).strftime("%b %d %Y, %H:%M")) + slot.history
             except IOError as e:
                 messages.danger(request, "File missing on server \"{0}\"".format(p.bravo_server.name))
                 slot.status = VoiceSlot.MISSING
-                slot.history = u"Attempted test, slot missing, {0}\n".format(datetime.now()) + slot.history
+                slot.save()
+                Action.log(request.user, Action.AUTO_MISSING_SLOT, 'Slot found missing by individual slot test', slot)
                 return redirect("projects:project", pid)
             except pysftp.ConnectionException:
                 messages.danger(request, "Connection error to server \"{0}\"".format(p.bravo_server.name))
