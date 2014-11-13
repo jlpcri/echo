@@ -151,7 +151,7 @@ def get_voiceslot_statistics(voiceslots, day, vuid_upload_date, break_flag):
 
         except ObjectDoesNotExist:
             one_day_before = day - timedelta(days=1)
-            if one_day_before < vuid_upload_date:
+            if one_day_before < get_midninght_of_day(vuid_upload_date):
                 break_flag = True
                 break
             found_flag = False
@@ -171,7 +171,7 @@ def get_voiceslot_statistics(voiceslots, day, vuid_upload_date, break_flag):
                     found_flag = True
                 except ObjectDoesNotExist:
                     one_day_before -= timedelta(days=1)
-                    if one_day_before < vuid_upload_date:
+                    if one_day_before < get_midninght_of_day(vuid_upload_date):
                         break
             if found_flag is True:
                 continue
