@@ -26,12 +26,12 @@
                     -->
                     <br>
                     {% if missing_slots %}
-                        <ul class="missing_files_list">
+                        <ul class="missing_files">
                             <li class="folder">
                                 <div id="missing_slots_view" class="fa fa-plus-square-o">
                                     <b>Missing Files</b>
                                 </div>
-                                <ul>
+                                <ul class="missing_files_list">
                                     {% for f in missing_slots %}
                                         <li>{{ f.filepath}} - {{ f.language }}</li>
                                     {% endfor %}
@@ -48,10 +48,10 @@
                     Project Progress
                 </div>
                 <div id="project_defective">
-                    {% for item in project_progress %}
-                        <li>{{ item.date|date:'Y-m-j' }}, Fail: {{ item.statistics.fail }}, Pass: {{ item.statistics.pass }}, New: {{ item.statistics.new }}, Missing: {{ item.statistics.missing }}
-                        </li>
+                    {% for k, v in project_progress.items %}
+                        {{ k }}: {{ v }}<br>
                     {% endfor %}
+
                     {% if project_defective %}
                         <ul class="project_defective_list">
                         <li class="folder">
@@ -94,6 +94,8 @@
 {% block endscript %}
     <script src="{% static 'common/highcharts/3.0.7/js/highcharts.js' %}"></script>
     <script type="text/javascript">
+        var data = {{ project_progress | safe }};
+        //console.log(data);
         $('#project_progress').highcharts({
         chart: {
             type: 'area'
@@ -105,7 +107,8 @@
             '#033c73', '#c71c22', '#dd5600', '#73a839'
         ],
         xAxis: {
-            categories: ['2014-11-06', '2014-11-07', '2014-11-08', '2014-11-09', '2014-11-10', '2014-11-11', '2014-11-12'],
+            //categories: ['2014-11-06', '2014-11-07', '2014-11-08', '2014-11-09', '2014-11-10', '2014-11-11', '2014-11-12'],
+            categories: data['date'].reverse(),
             allowDecimals: false,
             tickmarkPlacement: 'on',
             title: {
@@ -133,16 +136,20 @@
         },
         series: [{
             name: 'Untested',
-            data: [0, 0, 7, 6, 4, 4, 4]
+            //data: [0, 0, 7, 6, 4, 4, 4]
+            data: data['new'].reverse()
         }, {
             name: 'Missing',
-            data: [0, 0, 0, 1, 1, 1, 1]
+            //data: [0, 0, 0, 1, 1, 1, 1]
+            data: data['missing'].reverse()
         }, {
             name: 'Defective',
-            data: [0, 0, 0, 0, 1, 1, 1]
+            //data: [0, 0, 0, 0, 1, 1, 1]
+            data: data['fail'].reverse()
         }, {
             name: 'Passed',
-            data: [0, 0, 0, 0, 1, 1, 1]
+            //data: [0, 0, 0, 0, 1, 1, 1]
+            data: data['pass'].reverse()
         }],
         credits: false
     });

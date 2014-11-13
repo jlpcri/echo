@@ -9,7 +9,7 @@ function makeCollapsible() {
     // into links that can expand/collapse the
     // tree leaf.
     // Missing Files
-    $('li > ul').each(function (i) {
+    $('li > ul.missing_files_list').each(function (i) {
         // Find this list's parent list item.
         var parent_li = $(this).parent('li');
 
@@ -53,10 +53,10 @@ function makeCollapsible() {
     });
 
     // Hide all lists except the outermost.
-    $('ul ul').hide();
+    $('ul ul.missing_files_list').hide();
     $('ul table').hide();
 }
 
 $(document).ready(function () {
-//    makeCollapsible();
+    makeCollapsible();
 });
