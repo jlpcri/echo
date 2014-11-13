@@ -95,8 +95,11 @@
             type: 'area'
         },
         title: {
-            text: 'Prompts Breakdown by Date'
+            text: 'Voice Prompts Broke down by Date'
         },
+        colors: [
+            '#033c73', '#c71c22', '#dd5600', '#73a839'
+        ],
         xAxis: {
             categories: ['2014-11-06', '2014-11-07', '2014-11-08', '2014-11-09', '2014-11-10', '2014-11-11', '2014-11-12'],
             allowDecimals: false,
@@ -133,13 +136,13 @@
             name: 'Untested',
             data: [502, 635, 809, 947, 1402, 3634, 5268]
         }, {
-            name: 'Passed',
+            name: 'Missing',
             data: [106, 107, 111, 133, 221, 767, 1766]
         }, {
             name: 'Defective',
             data: [163, 203, 276, 408, 547, 729, 628]
         }, {
-            name: 'Missing',
+            name: 'Passed',
             data: [18, 31, 54, 156, 339, 818, 1201]
         }],
         credits: false
