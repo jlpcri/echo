@@ -58,5 +58,5 @@ function makeCollapsible() {
 }
 
 $(document).ready(function () {
-    makeCollapsible();
+//    makeCollapsible();
 });
