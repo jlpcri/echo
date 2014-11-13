@@ -111,9 +111,11 @@ def report_project(request, pid):
                     outputs[key].append(tmp_statistics['statistics'][key])
 
             else:
-                date_range = [end - timedelta(days=x) for x in range(0, days + 1)]
+                date_range = [start + timedelta(days=x) for x in range(0, days + 1)]
 
                 for day in date_range:
+                    if day < get_midninght_of_day(vuid_upload_date):
+                        continue
                     break_flag = False  # flag to check if current day less than vuid upload date
                     voiceslots = project.voiceslots()
                     tmp_statistics = get_voiceslot_statistics(voiceslots,
