@@ -80,7 +80,13 @@ def report_project(request, pid):
             # Second check Actions type
             vuid_upload_date = vuid_upload_date
 
-            outputs = []
+            outputs = {
+                'date': [],
+                'fail': [],
+                'pass': [],
+                'new': [],
+                'missing': []
+            }
 
             if request.GET.get('start'):
                 start = request.GET.get('start')
@@ -99,10 +105,10 @@ def report_project(request, pid):
                                                           start,
                                                           vuid_upload_date,
                                                           None)
-                outputs.append({
-                    'date': start.date(),
-                    'statistics': tmp_statistics['statistics']
-                })
+
+                outputs['date'].append(start.strftime('%Y-%m-%d'))
+                for key in settings.VOICESLOTS_METRICS.keys():
+                    outputs[key].append(tmp_statistics['statistics'][key])
 
             else:
                 date_range = [end - timedelta(days=x) for x in range(0, days + 1)]
@@ -114,10 +120,11 @@ def report_project(request, pid):
                                                               day,
                                                               vuid_upload_date,
                                                               break_flag)
-                    outputs.append({
-                        'date': day.date(),
-                        'statistics': tmp_statistics['statistics']
-                    })
+
+                    outputs['date'].append(day.strftime('%Y-%m-%d'))
+                    for key in settings.VOICESLOTS_METRICS.keys():
+                        outputs[key].append(tmp_statistics['statistics'][key])
+
                     if tmp_statistics['flag']:
                         break
         else:
