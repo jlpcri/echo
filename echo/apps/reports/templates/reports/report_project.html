@@ -26,12 +26,12 @@
                     -->
                     <br>
                     {% if missing_slots %}
-                        <ul class="missing_files_list">
+                        <ul class="missing_files">
                             <li class="folder">
                                 <div id="missing_slots_view" class="fa fa-plus-square-o">
                                     <b>Missing Files</b>
                                 </div>
-                                <ul>
+                                <ul class="missing_files_list">
                                     {% for f in missing_slots %}
                                         <li>{{ f.filepath}} - {{ f.language }}</li>
                                     {% endfor %}
