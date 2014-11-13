@@ -48,6 +48,10 @@
                     Project Progress
                 </div>
                 <div id="project_defective">
+                    {% for item in project_progress %}
+                        <li>{{ item.date|date:'Y-m-j' }}, Fail: {{ item.statistics.fail }}, Pass: {{ item.statistics.pass }}, New: {{ item.statistics.new }}, Missing: {{ item.statistics.missing }}
+                        </li>
+                    {% endfor %}
                     {% if project_defective %}
                         <ul class="project_defective_list">
                         <li class="folder">
@@ -95,8 +99,11 @@
             type: 'area'
         },
         title: {
-            text: 'Prompts Breakdown by Date'
+            text: 'Voice Prompts Broke down by Date'
         },
+        colors: [
+            '#033c73', '#c71c22', '#dd5600', '#73a839'
+        ],
         xAxis: {
             categories: ['2014-11-06', '2014-11-07', '2014-11-08', '2014-11-09', '2014-11-10', '2014-11-11', '2014-11-12'],
             allowDecimals: false,
@@ -108,11 +115,6 @@
         yAxis: {
             title: {
                 text: 'Prompts'
-            },
-            labels: {
-                formatter: function () {
-                    return this.value / 1000;
-                }
             }
         },
         tooltip: {
@@ -131,16 +133,16 @@
         },
         series: [{
             name: 'Untested',
-            data: [502, 635, 809, 947, 1402, 3634, 5268]
-        }, {
-            name: 'Passed',
-            data: [106, 107, 111, 133, 221, 767, 1766]
-        }, {
-            name: 'Defective',
-            data: [163, 203, 276, 408, 547, 729, 628]
+            data: [0, 0, 7, 6, 4, 4, 4]
         }, {
             name: 'Missing',
-            data: [18, 31, 54, 156, 339, 818, 1201]
+            data: [0, 0, 0, 1, 1, 1, 1]
+        }, {
+            name: 'Defective',
+            data: [0, 0, 0, 0, 1, 1, 1]
+        }, {
+            name: 'Passed',
+            data: [0, 0, 0, 0, 1, 1, 1]
         }],
         credits: false
     });
