@@ -61,7 +61,9 @@ def join_project(request, pid):
         p.save()
         Action.log(request.user, Action.TESTER_JOIN_PROJECT, u'Joined project', p)
         messages.info(request, "You joined the project!")
-        if page:
+        if page == "home":
+            return redirect("core:home")
+        elif page == "projects":
             return redirect("projects:projects")
         return redirect("projects:project", pid=pid)
     return HttpResponseNotFound()
@@ -76,7 +78,9 @@ def leave_project(request, pid):
         p.save()
         Action.log(request.user, Action.TESTER_LEAVE_PROJECT, u'Left project', p)
         messages.info(request, "You left the project")
-        if page:
+        if page == "home":
+            return redirect("core:home")
+        elif page == "projects":
             return redirect("projects:projects")
         return redirect("projects:project", pid=pid)
     return HttpResponseNotFound()
@@ -198,10 +202,10 @@ def projects(request):
         '-user_count'
     ]
     if request.method == 'GET':
-        # if source and sort are not present, set to empty
+        # if tab and sort are not present, set to empty
         tab = request.GET.get('tab', '')
         sort = request.GET.get('sort', '')
-        # if source and sort are empty, set to defaults
+        # if tab and sort are empty, set to defaults
         tab = tab if tab else 'my'
         sort = sort if sort else 'project_name'
         # validate source and sort

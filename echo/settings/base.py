@@ -135,3 +135,10 @@ CELERY_TIMEZONE = pytz.timezone('US/Central')
 CELERY_ENABLE_UTC = False
 CELERY_RESULT_BACKEND = 'amqp'
 CELERY_RESULT_SERIALIZER = 'pickle'
+
+VOICESLOTS_METRICS = {
+    'pass': 0,
+    'fail': 0,
+    'new': 0,
+    'missing': 0
+}
