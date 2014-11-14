@@ -182,6 +182,14 @@ class Project(models.Model):
 
         return upload_date
 
+    def last_modified_date(self):
+        if self.actions().count() > 0:
+            return self.actions().latest('time').time
+        else:
+            return None
+
+
+
 
 class VoiceSlot(models.Model):
     """Represents a .wav file and its associated verbiage, status, and history"""
