@@ -2,100 +2,55 @@
 {% block title %}Report{% endblock %}
 {% load staticfiles %}
 {% block headscript %}
-
+<link href="{% static 'common/bootstrap-daterangepicker/1.2/daterangepicker-bs3.css' %}" rel="stylesheet" type="text/css">
 {% endblock %}
 {% block content %}
     <div class="container">
         <div class="row">
-            <div class="col-xs-9">
-                <h3>Project Report&nbsp;-&nbsp;{{ project.name }}</h3>
-            </div>
-            <div class="col-xs-3">
-                <a href="{% url "reports:missing" project.pk %}?export=csv" class="btn btn-info btn-sm pull-right" style="width: 100%;">
-                    <i class="fa fa-download fa-fw"></i>&nbsp;Report
-                </a>
+            <div class="col-xs-12">
+                <h3>{{ project.name }}&nbsp;Report</h3>
             </div>
         </div>
         <hr>
         <div class="row">
-            <div class="col-md-3">
-                <div id="missing_slots" style="overflow: auto;">
-                    <!--
-                    <div style="font-size:large;">{{ project.slots_total }} attempted uploads</div>
-                    <div style="font-size:large;">{{ project.slots_missing }} files missing</div>
-                    -->
-                    <br>
-                    {% if missing_slots %}
-                        <ul class="missing_files">
-                            <li class="folder">
-                                <div id="missing_slots_view" class="fa fa-plus-square-o">
-                                    <b>Missing Files</b>
-                                </div>
-                                <ul class="missing_files_list">
-                                    {% for f in missing_slots %}
-                                        <li>{{ f.filepath}} - {{ f.language }}</li>
-                                    {% endfor %}
-                                </ul>
-                            </li>
-                        </ul>
-                    {% else %}
-                        <p>No files missing</p>
-                    {% endif %}
-                </div>
+            <div class="col-xs-12">
+                <ul class="nav nav-tabs" style="margin-bottom: 15px;">
+                    <li class="active"><a href="{% url "reports:report_project" project.pk %}">Overview</a></li>
+                    <li><a href="{% url "reports:failed" project.pk %}">Defective Prompts</a></li>
+                    <li><a href="{% url "reports:missing" project.pk %}">Missing Prompts</a></li>
+                </ul>
             </div>
-            <div class="col-xs-6">
-                <div id="project_progress">
-                    Project Progress
-                </div>
-                <div id="project_defective">
-                    {% for k, v in project_progress.items %}
-                        {{ k }}: {{ v }}<br>
-                    {% endfor %}
-
-                    {% if project_defective %}
-                        <ul class="project_defective_list">
-                        <li class="folder">
-                            <div id="project_defect_view" class="fa fa-plus-square-o">
-                                <b>Project Defective</b>
-                            </div>
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <td class="col-md-3"><strong>VoiceSlot</strong></td>
-                                        <td class="col-md-3"><strong>Test Time</strong></td>
-                                        <td class="col-md-2"><strong>Failure Cause</strong></td>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for item in project_defective %}
-                                        <tr>
-                                            <td>{{ item.name }}</td>
-                                            <td>{{ item.test_time }}</td>
-                                            <td>{{ item.fail_note }}</td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </li>
-                    </ul>
-                    {% else %}
-                        <p>No Defective Voiceslots</p>
-                    {% endif %}
-                </div>
-            </div>
-            <div class="col-xs-3">
-                <div id="activity_feed">
-                    Activity Feed
+        </div>
+        <div class="row">
+            <div id="tab_content" class="tab-content">
+                <div class="tab-pane active">
+                    <div class="col-xs-9">
+                        <div id="report-range" class="query-field pull-right">
+                            <i class="fa fa-caret-down"></i>
+                            <i class="fa fa-calendar"></i>
+                            <span id="report-range-display"></span>
+                        </div>
+                        <div id="project_progress">
+                            Project Progress
+                        </div>
+                    </div>
+                    <div class="col-xs-3">
+                        <div id="activity_feed">
+                            Activity Feed
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 {% endblock %}
 {% block endscript %}
+    <script src="{% static 'common/bootstrap-daterangepicker/1.2/moment.min.js' %}"></script>
+    <script src="{% static 'common/momentjs/tz/0.2.4/moment-timezone-with-data-2010-2020.js' %}"></script>
+    <script src="{% static 'common/bootstrap-daterangepicker/1.2/daterangepicker.js' %}"></script>
     <script src="{% static 'common/highcharts/3.0.7/js/highcharts.js' %}"></script>
     <script type="text/javascript">
         var data = {{ project_progress | safe }};
-        //console.log(data);
         $('#project_progress').highcharts({
         chart: {
             type: 'area'
@@ -107,7 +62,6 @@
             '#033c73', '#c71c22', '#dd5600', '#73a839'
         ],
         xAxis: {
-            //categories: ['2014-11-06', '2014-11-07', '2014-11-08', '2014-11-09', '2014-11-10', '2014-11-11', '2014-11-12'],
             categories: data['date'],
             allowDecimals: false,
             tickmarkPlacement: 'on',
@@ -136,23 +90,20 @@
         },
         series: [{
             name: 'Untested',
-            //data: [0, 0, 7, 6, 4, 4, 4]
             data: data['new']
         }, {
             name: 'Missing',
-            //data: [0, 0, 0, 1, 1, 1, 1]
             data: data['missing']
         }, {
             name: 'Defective',
-            //data: [0, 0, 0, 0, 1, 1, 1]
             data: data['fail']
         }, {
             name: 'Passed',
-            //data: [0, 0, 0, 0, 1, 1, 1]
             data: data['pass']
         }],
         credits: false
     });
-        {% include 'reports/reports.js' %}
+    {% include 'reports/reports.js' %}
+    attachDateRangePicker();
     </script>
 {% endblock %}
