@@ -88,25 +88,7 @@
             <div class="col-xs-8">
                 <form action="{% url 'projects:project' project.pk %}" method="post" enctype="multipart/form-data">
                     {% csrf_token %}
-                    <div class="form-group">
-                        <label class="control-label">Bravo Server</label>
 
-                        <div class="input-group">
-                            {{ server_form.server }}
-                            <span class="input-group-btn">
-                                <button type="submit" name="update_server" class="btn btn-primary">
-                                    Update
-                                </button>
-                            </span>
-                        </div>
-                    </div>
-                    <a href="{% url "projects:fetch" project.pk %}" name="update_files" class="btn btn-warning pull-right"
-                       style="width: 50%;">
-                        <i class="fa fa-refresh fa-fw"></i>&nbsp;Update File Statuses
-                    </a>
-
-                    <div class="clearfix"></div>
-                    <hr>
                     <div class="form-group">
                         <label class="control-label">Upload VUID File (.xlsx format)</label>
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -126,8 +108,7 @@
                             </span>
                         </div>
                     </div>
-                </form>
-                <table class="table">
+                    <table class="table">
                     <thead>
                     <tr>
                         <th class="col-xs-5">Filename</th>
@@ -145,6 +126,29 @@
                     {% endfor %}
                     </tbody>
                 </table>
+
+                    <div class="clearfix"></div>
+                    <hr>
+
+                    <div class="form-group">
+                        <label class="control-label">Bravo Server</label>
+
+                        <div class="input-group">
+                            {{ server_form.server }}
+                            <span class="input-group-btn">
+                                <button type="submit" name="update_server" class="btn btn-primary">
+                                    Update
+                                </button>
+                            </span>
+                        </div>
+                    </div>
+                    <a href="{% url "projects:fetch" project.pk %}" name="update_files" class="btn btn-warning pull-right"
+                       style="width: 50%;">
+                        <i class="fa fa-refresh fa-fw"></i>&nbsp;Update File Statuses
+                    </a>
+
+                </form>
+
             </div>
         </div>
     </div>
