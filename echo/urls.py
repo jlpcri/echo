@@ -14,7 +14,7 @@ admin.autodiscover()
 urlpatterns = patterns('',
     url(r'^pheme/', include(coreUrls, namespace="core")),
     url(r'^pheme/', include(projectsUrls, namespace="projects")),
-    url(r'^pheme/reports/', include(reportsUrls, namespace="reports")),
+    url(r'^pheme/', include(reportsUrls, namespace="reports")),
     url(r'^pheme/settings/', include(settingsUrls, namespace="settings")),
     url(r'^pheme/elpis/', include(elpisUrls, namespace="elpis")),
 )
