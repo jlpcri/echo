@@ -115,7 +115,11 @@ def report_project(request, pid):
 
                 for day in date_range:
                     if day < get_midninght_of_day(vuid_upload_date):
+                        outputs['date'].append(start.strftime('%Y-%m-%d'))
+                        for key in settings.VOICESLOTS_METRICS.keys():
+                            outputs[key].append(settings.VOICESLOTS_METRICS[key])
                         continue
+
                     break_flag = False  # flag to check if current day less than vuid upload date
                     voiceslots = project.voiceslots()
                     tmp_statistics = get_voiceslot_statistics(voiceslots,
