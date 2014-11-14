@@ -44,10 +44,6 @@
                 {% if languages %}
                     <label class="control-label" for="language_list">Prompts by Language</label>
                     <ul id="language_list" class="list-group">
-                        <li class="list-group-item">
-                            <span class="badge">{{ project.voiceslot_count }}</span>
-                            <a href="{% url "projects:voiceslots" project.pk %}?language=master"><b>master</b></a>
-                        </li>
                         {% for language in languages %}
                             <li class="list-group-item">
                                 <span class="badge">{{ language.voiceslot_count }}</span>
@@ -61,6 +57,11 @@
                                 {% endif %}
                             </li>
                         {% endfor %}
+
+                        <li class="list-group-item">
+                            <span class="badge">{{ project.voiceslot_count }}</span>
+                            <a href="{% url "projects:voiceslots" project.pk %}?language=master"><b>Total</b></a>
+                        </li>
                     </ul>
                     <br>
                     <label class="control-label" for="action_list">Project Actions</label>
