@@ -115,7 +115,7 @@ def report_project(request, pid):
 
                 for day in date_range:
                     if day < get_midninght_of_day(vuid_upload_date):
-                        outputs['date'].append(start.strftime('%Y-%m-%d'))
+                        outputs['date'].append(day.strftime('%Y-%m-%d'))
                         for key in settings.VOICESLOTS_METRICS.keys():
                             outputs[key].append(settings.VOICESLOTS_METRICS[key])
                         continue
