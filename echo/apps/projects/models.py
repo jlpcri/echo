@@ -178,11 +178,11 @@ class VoiceSlot(models.Model):
     MISSING = 'Missing'
     VOICESLOT_STATUS_CHOICES = ((NEW, 'New'), (PASS, 'Pass'),
                                 (FAIL, 'Fail'), (MISSING, 'Missing'))
-    vuid = models.ForeignKey('VUID')
+    vuid = models.ForeignKey('VUID', on_delete=models.SET_NULL)
     language = models.ForeignKey('Language')
     name = models.TextField()
     path = models.TextField()
-    user = models.ForeignKey(User, blank=True, null=True)
+    user = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
     history = models.TextField(blank=True, null=True, default="")
     status = models.TextField(choices=VOICESLOT_STATUS_CHOICES, default=NEW)
     verbiage = models.TextField(blank=True, null=True)
@@ -243,7 +243,7 @@ class VUID(models.Model):
     filename = models.TextField()
     upload_date = models.DateTimeField(auto_now_add=True)
     file = models.FileField(upload_to=vuid_location)
-    upload_by = models.ForeignKey(User)
+    upload_by = models.ForeignKey(User, on_delete=models.SET_NULL)
 
 
 class Language(models.Model):
