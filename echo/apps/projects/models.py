@@ -188,7 +188,8 @@ class Project(models.Model):
         else:
             return None
 
-
+    def update_file_status_last_time(self):
+        return self.actions().filter(type=Action.UPDATE_FILE_STATUSES).latest('time').time
 
 
 class VoiceSlot(models.Model):
