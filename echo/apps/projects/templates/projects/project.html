@@ -78,6 +78,10 @@
                                 {{ user.username }}
                             </li>
                         {% endfor %}
+                        <li class="list-group-item">
+                            <span class="badge">{{ project.users.all.count }}</span>
+                            <b>Total</b>
+                        </li>
                     </ul>
                 {% endif %}
             </div>
