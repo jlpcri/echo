@@ -67,6 +67,18 @@
                     <label class="control-label" for="action_list">Project Actions</label>
                     <ul id="action_list" class="list-group">
                         <li class="list-group-item"><a href="{% url 'elpis:dashboard' project.pk %}"><b>Verify File Transfer</b></a></li>
+                        <li class="list-group-item">
+                            <a href="#" class="text" onclick="project_update_file_status('{{ project.name }}', {{ project.id }})" title="Update File Statuses">
+                            <b>Update File Statuses</b>
+                            </a>
+                        </li>
+                        <li class="list-group-item">
+                            {% if project.status == 'Testing' %}
+                                <a href="{% url "projects:archive_project" project.pk %}" title="Archive Project"><b>Archive Project</b></a>
+                            {% elif project.status == 'Closed' %}
+                                <a href="{% url "projects:archive_project" project.pk %}" title="Un-Archive Project"><b>Un Archive Project</b></a>
+                            {% endif %}
+                        </li>
                     </ul>
                     <br>
                 {% endif %}
@@ -151,6 +163,26 @@
 
             </div>
         </div>
+
+    <!--Update File Status Confirmation modal -->
+    <div class="modal fade" id="update_file_modal" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h3 id="update_file_title"></h3>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure to update file status from bravo server?</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <a href="#" id="update_file_confirm" data-ttggle="modal" role="button" class="btn btn-success">Update</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     </div>
 {% endblock %}
 {% block endscript %}
@@ -160,6 +192,13 @@
                 $('#throbber').show();
                 $('#upload_file').attr('disabled', 'disabled');
             }, 0);
-        })
+        });
+
+        function project_update_file_status(project_name, project_id) {
+            $('#update_file_title').text('Project: ' + project_name);
+            $('#update_file_confirm').attr('href', '/pheme/projects/' + project_id + '/fetch');
+            $('#update_file_modal').modal('show');
+        }
+
     </script>
 {% endblock %}
