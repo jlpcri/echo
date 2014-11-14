@@ -425,10 +425,15 @@ def temp(request):
 def archive_project(request, pid):
     if request.method == 'GET':
         p = get_object_or_404(Project, pk=pid)
+        action = Action.ARCHIVE_PROJECT
+        note = 'Archive Project.'
         if p.status == Project.TESTING:
             p.status = Project.CLOSED
         elif p.status == Project.CLOSED:
             p.status = Project.TESTING
+            action = Action.UN_ARCHIVE_PROJECT
+            note = 'Un Archive Project.'
         p.save()
+        Action.log(request.user, action, note, p)
 
     return redirect("projects:projects")
