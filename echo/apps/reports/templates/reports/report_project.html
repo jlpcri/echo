@@ -108,7 +108,7 @@
         ],
         xAxis: {
             //categories: ['2014-11-06', '2014-11-07', '2014-11-08', '2014-11-09', '2014-11-10', '2014-11-11', '2014-11-12'],
-            categories: data['date'].reverse(),
+            categories: data['date'],
             allowDecimals: false,
             tickmarkPlacement: 'on',
             title: {
@@ -137,19 +137,19 @@
         series: [{
             name: 'Untested',
             //data: [0, 0, 7, 6, 4, 4, 4]
-            data: data['new'].reverse()
+            data: data['new']
         }, {
             name: 'Missing',
             //data: [0, 0, 0, 1, 1, 1, 1]
-            data: data['missing'].reverse()
+            data: data['missing']
         }, {
             name: 'Defective',
             //data: [0, 0, 0, 0, 1, 1, 1]
-            data: data['fail'].reverse()
+            data: data['fail']
         }, {
             name: 'Passed',
             //data: [0, 0, 0, 0, 1, 1, 1]
-            data: data['pass'].reverse()
+            data: data['pass']
         }],
         credits: false
     });
