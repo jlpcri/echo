@@ -137,7 +137,6 @@ class Project(models.Model):
             s.save()
         return vs.count()
 
-
     def voiceslots_queue(self, checked_out=False, filter_language=None, older_than_ten=False):
         vs = self.voiceslots().filter(checked_out=checked_out, status=VoiceSlot.NEW)
         if filter_language:
@@ -168,6 +167,20 @@ class Project(models.Model):
 
     def actions_failed(self):
         return self.actions(filter_status=VoiceSlot.FAIL)
+
+    def created_date(self):
+        vuids = VUID.objects.filter(project=self)
+        if vuids.count() == 1:
+            upload_date = vuids[0].upload_date
+        elif vuids.count() > 1:
+            upload_date = vuids[0].upload_date
+            for vuid in vuids:
+                if vuid.upload_date < upload_date:
+                    upload_date = vuid.upload_date
+        else:
+            upload_date = None
+
+        return upload_date
 
 
 class VoiceSlot(models.Model):

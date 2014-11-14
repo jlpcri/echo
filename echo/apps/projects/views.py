@@ -420,3 +420,15 @@ def temp(request):
     if request.method == 'GET':
         return render(request, "projects/temp.html", contexts.context_temp(request.user_agent.browser))
     return HttpResponseNotFound()
+
+@login_required
+def archive_project(request, pid):
+    if request.method == 'GET':
+        p = get_object_or_404(Project, pk=pid)
+        if p.status == Project.TESTING:
+            p.status = Project.CLOSED
+        elif p.status == Project.CLOSED:
+            p.status = Project.TESTING
+        p.save()
+
+    return redirect("projects:projects")

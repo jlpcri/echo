@@ -152,7 +152,7 @@
                         <td class="text-center">
                             <div id="total_prompts_{{ project.pk }}"><b>{{ project.slots_total }}</b></div>
                         </td>
-                        <td class="text-center">00/00/0000</td>
+                        <td class="text-center">{{ project.created_date | date:'Y-m-j' }}</td>
                         <td class="text-center">00/00/0000<br>00:00&nbsp;PM</td>
                         <td class="text-center"><b>{{ project.users_total }}</b></td>
                         <td class="text-center">
@@ -182,7 +182,11 @@
                         <td>
                             <a href="{% url "projects:fetch" project.pk %}" title="Update File Statuses"><i class="fa fa-refresh"></i> </a>
                             &nbsp;&nbsp;&nbsp;
-                            <a href="#" title="Archive Project"><i class="fa fa-archive"></i> </a>
+                            {% if project.status == 'Testing' %}
+                                <a href="{% url "projects:archive_project" project.pk %}" title="Archive Project"><i class="fa fa-archive"></i> </a>
+                            {% elif project.status == 'Closed' %}
+                                <a href="{% url "projects:archive_project" project.pk %}" title="Un-Archive Project"><i class="fa fa-file-archive-o"></i> </a>
+                            {% endif %}
                         </td>
                     </tr>
             {% endfor %}
