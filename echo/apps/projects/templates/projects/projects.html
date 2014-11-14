@@ -180,7 +180,7 @@
                             {% endif %}
                         </td>
                         <td>
-                            <a href="{% url "projects:fetch" project.pk %}" title="Update File Statuses"><i class="fa fa-refresh"></i> </a>
+                            <a href="#" class="text" onclick="project_update_file_status('{{ project.name }}', {{ project.id }})" title="Update File Statuses"><i class="fa fa-refresh"></i> </a>
                             &nbsp;&nbsp;&nbsp;
                             {% if project.status == 'Testing' %}
                                 <a href="{% url "projects:archive_project" project.pk %}" title="Archive Project"><i class="fa fa-archive"></i> </a>
@@ -208,6 +208,27 @@
                 </div>
             </div>
         {% endif %}
+
+    <!--Update File Status Confirmation modal -->
+    <div class="modal fade" id="update_file_modal" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h3 id="update_file_title"></h3>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure to update file status from bravo server?</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <a href="#" id="update_file_confirm" data-ttggle="modal" role="button" class="btn btn-success">Update</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
     </div>
 {% endblock %}
 {% block endscript %}
@@ -251,5 +272,10 @@
 {#            console.log(e.target.getAttribute('data-source'));#}
 {#            loadRecords(e.target.getAttribute('data-source'));#}
 {#        });#}
+        function project_update_file_status(project_name, project_id) {
+            $('#update_file_title').text('Project: ' + project_name);
+            $('#update_file_confirm').attr('href', '/pheme/projects/' + project_id + '/fetch');
+            $('#update_file_modal').modal('show');
+        }
     </script>
 {% endblock %}
