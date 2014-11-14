@@ -127,7 +127,8 @@ class Project(models.Model):
         for s in vs:
             s.status = slot.status
             if s.status == VoiceSlot.PASS:
-                Action.log(s.user, Action.AUTO_PASS_SLOT, 'Slot passed as identical to {0}'.format(slot.name), s)
+                a = Action.objects.filter(voiceslot=slot, type=Action.TESTER_PASS_SLOT).order_by('-time')[0]
+                Action.log(a.actor, Action.AUTO_PASS_SLOT, 'Slot passed as identical to {0}'.format(slot.name), s)
             elif s.status == VoiceSlot.FAIL:
                 a = Action.objects.filter(voiceslot=slot, type=Action.TESTER_FAIL_SLOT).order_by('-time')[0]
                 Action.log(a.actor,
