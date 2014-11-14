@@ -34,21 +34,21 @@ def fetch(request, pid):
                         Action.log(request.user, Action.UPDATE_FILE_STATUSES, 'File status update ran', p)
                     else:
                         messages.danger(request, result['message'])
-                return redirect("projects:project", pid)
+                return redirect("projects:projects")
             except pysftp.ConnectionException:
                 messages.danger(request, "Connection error to server \"{0}\"".format(p.bravo_server.name))
-                return redirect("projects:project", pid)
+                return redirect("projects:projects")
             except pysftp.CredentialException:
                 messages.danger(request, "Credentials error to server \"{0}\"".format(p.bravo_server.name))
-                return redirect("projects:project", pid)
+                return redirect("projects:projects")
             except pysftp.AuthenticationException:
                 messages.danger(request, "Authentication error to server \"{0}\"".format(p.bravo_server.name))
-                return redirect("projects:project", pid)
+                return redirect("projects:projects")
             except pysftp.SSHException:
                 messages.danger(request, "SSH error to server \"{0}\"".format(p.bravo_server.name))
-                return redirect("projects:project", pid)
+                return redirect("projects:projects")
         messages.danger(request, "No server associated with project")
-        return redirect("projects:project", pid)
+        return redirect("projects:projects")
     return HttpResponseNotFound()
 
 

@@ -37,7 +37,7 @@
                 <table class="table table-striped table-hover">
                     <thead>
                     <tr>
-                        <th class="col-xs-3">
+                        <th class="col-xs-2">
                             {% if sort == 'project_name' %}
                                 <a href="{% url 'projects:projects' %}?tab={{ tab }}&sort=-project_name">
                                     Project Name</a>&nbsp;<i class="fa fa-sort-asc"></i>
@@ -105,6 +105,7 @@
                         <th class="col-xs-1 text-center">
                             Test
                         </th>
+                        <th class="col-xs-1"></th>
                         <th class="col-xs-1"></th>
                     </tr>
                     </thead>
@@ -177,6 +178,11 @@
                                     <i class="fa fa-unlink fa-fw"></i>&nbsp;Leave
                                 </a>
                             {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url "projects:fetch" project.pk %}" title="Update File Statuses"><i class="fa fa-refresh"></i> </a>
+                            &nbsp;&nbsp;&nbsp;
+                            <a href="#" title="Archive Project"><i class="fa fa-archive"></i> </a>
                         </td>
                     </tr>
             {% endfor %}
