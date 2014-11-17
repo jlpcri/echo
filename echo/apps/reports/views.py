@@ -17,7 +17,27 @@ def failed(request, pid):
     if request.method == 'GET':
         if request.GET.get('export', False) == 'csv':
             return contexts.failed_csv(get_object_or_404(Project, pk=pid), HttpResponse(content_type='text/csv'))
-        return render(request, "reports/failed.html", contexts.failed(get_object_or_404(Project, pk=pid)))
+        
+        #Defective
+        defective = []
+        project = get_object_or_404(Project, pk=pid)
+        failed_actions = project.actions_failed()
+        for item in failed_actions:
+            temp = {
+                'name': item.scope.voiceslot.name,
+                'test_time': item.time,
+                'fail_note': item.description
+            }
+            defective.append(temp)
+
+        context = RequestContext(request, {
+            'project': project,
+            'project_defective': defective
+        })
+
+        Action.log(request.user, Action.REPORT_GENERATION, 'Viewed failed report dashboard', project)
+
+        return render(request, "reports/failed.html", context)
     return HttpResponseNotFound()
 
 
@@ -26,7 +46,26 @@ def missing(request, pid):
     if request.method == 'GET':
         if request.GET.get('export', False) == 'csv':
             return contexts.missing_csv(get_object_or_404(Project, pk=pid), HttpResponse(content_type='text/csv'))
-        return render(request, "reports/missing.html", contexts.missing(get_object_or_404(Project, pk=pid)))
+
+        # Missing
+        missing = []
+        project = get_object_or_404(Project, pk=pid)
+        missing_slots = project.voiceslots_missing()
+        for item in missing_slots:
+            temp = {
+                'filepath': item.filepath,
+                'language': item.language.name
+            }
+            missing.append(temp)
+
+        context = RequestContext(request, {
+            'project': project,
+            'missing_slots': missing
+        })
+
+        Action.log(request.user, Action.REPORT_GENERATION, 'Viewed missing report dashboard', project)
+
+        return render(request, "reports/missing.html", context)
     return HttpResponseNotFound()
 
 
@@ -52,28 +91,6 @@ def report_project(request, pid):
                 if vuid.upload_date < vuid_upload_date:
                     vuid_upload_date = vuid.upload_date
 
-        missing = []
-        defective = []
-
-        # Missing
-        missing_slots = project.voiceslots_missing()
-        for item in missing_slots:
-            temp = {
-                'filepath': item.filepath,
-                'language': item.language.name
-            }
-            missing.append(temp)
-
-        #Defective
-        failed_actions = project.actions_failed()
-        for item in failed_actions:
-            temp = {
-                'name': item.scope.voiceslot.name,
-                'test_time': item.time,
-                'fail_note': item.description
-            }
-            defective.append(temp)
-
         # Progress of porject
         # First check vuid upload_date
         if vuid_upload_date:
@@ -96,7 +113,7 @@ def report_project(request, pid):
             if request.GET.get('end'):
                 end = request.GET.get('end')
             else:
-                end = timezone.now() + timedelta(days=1)
+                end = timezone.now()
 
             days = (end - start).days
             if days == 0:
@@ -138,11 +155,9 @@ def report_project(request, pid):
 
         context = RequestContext(request, {
             'project': project,
-            'missing_slots': missing,
-            'project_defective': defective,
             'project_progress': outputs,
         })
-        Action.log(request.user, Action.REPORT_GENERATION, 'Viewed report dashboard', project)
+        Action.log(request.user, Action.REPORT_GENERATION, 'Viewed progress report dashboard', project)
         return render(request, "reports/report_project.html", context)
 
 
