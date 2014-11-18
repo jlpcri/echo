@@ -79,6 +79,9 @@ class Project(models.Model):
         else:
             return 0
 
+    def slots_passed_and_failed(self):
+        return self.voiceslots().filter(status=VoiceSlot.PASS).count() + self.voiceslots().filter(status=VoiceSlot.FAIL).count()
+
     def slots_tested(self):
         return self.voiceslots().filter(status__in=(VoiceSlot.PASS, VoiceSlot.FAIL)).count()
 
