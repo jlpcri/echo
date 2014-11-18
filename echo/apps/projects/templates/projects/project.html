@@ -210,5 +210,14 @@
             $('#update_file_modal').modal('show');
         }
 
+        window.setInterval(function(){
+            $.ajax({
+                type: 'GET',
+                url: '/pheme/projects/' + {{ project.id }} + '/fetch',
+                success: function() {location.reload();},
+                error: function(){alert('ERROR!');}
+            });
+        }, 5000);
+
     </script>
 {% endblock %}
