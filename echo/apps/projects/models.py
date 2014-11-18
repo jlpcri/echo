@@ -27,8 +27,8 @@ class Project(models.Model):
     users = models.ManyToManyField(User, blank=True)
     tests_run = models.IntegerField(default=0)
     failure_count = models.IntegerField(default=0)
-    bravo_server = models.ForeignKey('settings.Server', blank=True, null=True)
-    preprod_server = models.ForeignKey('settings.PreprodServer', blank=True, null=True)
+    bravo_server = models.ForeignKey('settings.Server', blank=True, null=True, on_delete=models.SET_NULL)
+    preprod_server = models.ForeignKey('settings.PreprodServer', blank=True, null=True, on_delete=models.SET_NULL)
     preprod_path = models.TextField(blank=True, null=True)
     status = models.TextField(choices=PROJECT_STATUS_CHOICES, default=TESTING)
 
@@ -130,16 +130,16 @@ class Project(models.Model):
         for s in vs:
             s.status = slot.status
             if s.status == VoiceSlot.PASS:
-                Action.log(s.user, Action.AUTO_PASS_SLOT, 'Slot passed as identical to {0}'.format(slot.name), s)
+                a = Action.objects.filter(scope__voiceslot=slot, type=Action.TESTER_PASS_SLOT).order_by('-time')[0]
+                Action.log(a.actor, Action.AUTO_PASS_SLOT, 'Slot passed as identical to {0}'.format(slot.name), s)
             elif s.status == VoiceSlot.FAIL:
-                a = Action.objects.filter(voiceslot=slot, type=Action.TESTER_FAIL_SLOT).order_by('-time')[0]
+                a = Action.objects.filter(scope__voiceslot=slot, type=Action.TESTER_FAIL_SLOT).order_by('-time')[0]
                 Action.log(a.actor,
                            Action.AUTO_FAIL_SLOT,
                            u'{0} (duplicate of {1})'.format(a.description, a.voiceslot.name),
                            s)
             s.save()
         return vs.count()
-
 
     def voiceslots_queue(self, checked_out=False, filter_language=None, older_than_ten=False):
         vs = self.voiceslots().filter(checked_out=checked_out, status=VoiceSlot.NEW)
@@ -172,6 +172,29 @@ class Project(models.Model):
     def actions_failed(self):
         return self.actions(filter_status=VoiceSlot.FAIL)
 
+    def created_date(self):
+        vuids = VUID.objects.filter(project=self)
+        if vuids.count() == 1:
+            upload_date = vuids[0].upload_date
+        elif vuids.count() > 1:
+            upload_date = vuids[0].upload_date
+            for vuid in vuids:
+                if vuid.upload_date < upload_date:
+                    upload_date = vuid.upload_date
+        else:
+            upload_date = None
+
+        return upload_date
+
+    def last_modified_date(self):
+        if self.actions().count() > 0:
+            return self.actions().latest('time').time
+        else:
+            return None
+
+    def update_file_status_last_time(self):
+        return self.actions().filter(type=Action.UPDATE_FILE_STATUSES).latest('time').time
+
 
 class VoiceSlot(models.Model):
     """Represents a .wav file and its associated verbiage, status, and history"""
@@ -181,11 +204,11 @@ class VoiceSlot(models.Model):
     MISSING = 'Missing'
     VOICESLOT_STATUS_CHOICES = ((NEW, 'New'), (PASS, 'Pass'),
                                 (FAIL, 'Fail'), (MISSING, 'Missing'))
-    vuid = models.ForeignKey('VUID')
+    vuid = models.ForeignKey('VUID', null=True, on_delete=models.SET_NULL)
     language = models.ForeignKey('Language')
     name = models.TextField()
     path = models.TextField()
-    user = models.ForeignKey(User, blank=True, null=True)
+    user = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
     history = models.TextField(blank=True, null=True, default="")
     status = models.TextField(choices=VOICESLOT_STATUS_CHOICES, default=NEW)
     verbiage = models.TextField(blank=True, null=True)
@@ -246,7 +269,7 @@ class VUID(models.Model):
     filename = models.TextField()
     upload_date = models.DateTimeField(auto_now_add=True)
     file = models.FileField(upload_to=vuid_location)
-    upload_by = models.ForeignKey(User)
+    upload_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
 
 
 class Language(models.Model):

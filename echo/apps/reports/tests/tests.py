@@ -30,17 +30,27 @@ class ReportsViewsTests(TestCase):
                                         upload_by=self.user)
         self.language = Language.objects.create(name='Pig Latin',
                                                 project=self.project)
-        self.voiceslot = VoiceSlot.objects.create(name='greeting.wav',
+        self.voiceslot = VoiceSlot.objects.create(name='greeting',
                                                   path='/voice/audio/testproject',
                                                   language=self.language,
                                                   vuid=self.vuid)
+        self.voiceslot_missing = VoiceSlot.objects.create(name='missing',
+                                                          path='/voice/audio/testproject',
+                                                          language=self.language,
+                                                          vuid=self.vuid,
+                                                          status=VoiceSlot.MISSING)
+        self.voiceslot_fail = VoiceSlot.objects.create(name='fail',
+                                                       path='/voice/audio/testproject',
+                                                       language=self.language,
+                                                       vuid=self.vuid,
+                                                       status=VoiceSlot.FAIL)
 
     def test_project_report_url_resolve_to_view(self):
         found = resolve(reverse('reports:report_project',
                                 args=[self.project.id, ]))
         self.assertEqual(found.func, report_project)
 
-    def test_project_voiceslots_auto_pass(self):
+    def test_project_progress_voiceslots_auto_pass(self):
         Action.log(self.user,
                    Action.AUTO_PASS_SLOT,
                    u"'sup?",
@@ -52,9 +62,10 @@ class ReportsViewsTests(TestCase):
 
         #print response
 
-        self.assertContains(response, '%s, Fail: 0, Pass: 1, New: 0, Missing: 0' % self.action.time.date())
+        self.assertContains(response, self.action.time.date())
+        self.assertContains(response, 'pass: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]')
 
-    def test_project_voiceslots_tester_pass(self):
+    def test_project_progress_voiceslots_tester_pass(self):
         Action.log(self.user,
                    Action.TESTER_PASS_SLOT,
                    u"'sup?",
@@ -64,9 +75,10 @@ class ReportsViewsTests(TestCase):
         response = self.client.get(reverse('reports:report_project',
                                            args=[self.project.id, ]),)
 
-        self.assertContains(response, '%s, Fail: 0, Pass: 1, New: 0, Missing: 0' % self.action.time.date())
+        self.assertContains(response, self.action.time.date())
+        self.assertContains(response, 'pass: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]')
 
-    def test_project_voiceslots_auto_fail(self):
+    def test_project_progress_voiceslots_auto_fail(self):
         Action.log(self.user,
                    Action.AUTO_FAIL_SLOT,
                    u"'sup?",
@@ -76,9 +88,10 @@ class ReportsViewsTests(TestCase):
         response = self.client.get(reverse('reports:report_project',
                                            args=[self.project.id, ]),)
 
-        self.assertContains(response, '%s, Fail: 1, Pass: 0, New: 0, Missing: 0' % self.action.time.date())
+        self.assertContains(response, self.action.time.date())
+        self.assertContains(response, 'fail: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]')
 
-    def test_project_voiceslots_tester_fail(self):
+    def test_project_progress_voiceslots_tester_fail(self):
         Action.log(self.user,
                    Action.TESTER_FAIL_SLOT,
                    u"'sup?",
@@ -88,9 +101,10 @@ class ReportsViewsTests(TestCase):
         response = self.client.get(reverse('reports:report_project',
                                            args=[self.project.id, ]),)
 
-        self.assertContains(response, '%s, Fail: 1, Pass: 0, New: 0, Missing: 0' % self.action.time.date())
+        self.assertContains(response, self.action.time.date())
+        self.assertContains(response, 'fail: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]')
 
-    def test_project_voiceslots_auto_new(self):
+    def test_project_progress_voiceslots_auto_new(self):
         Action.log(self.user,
                    Action.AUTO_NEW_SLOT,
                    u"'sup?",
@@ -100,9 +114,10 @@ class ReportsViewsTests(TestCase):
         response = self.client.get(reverse('reports:report_project',
                                            args=[self.project.id, ]),)
 
-        self.assertContains(response, '%s, Fail: 0, Pass: 0, New: 1, Missing: 0' % self.action.time.date())
+        self.assertContains(response, self.action.time.date())
+        self.assertContains(response, 'new: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]')
 
-    def test_project_voiceslots_auto_missing(self):
+    def test_project_progress_voiceslots_auto_missing(self):
         Action.log(self.user,
                    Action.AUTO_MISSING_SLOT,
                    u"'sup?",
@@ -112,4 +127,18 @@ class ReportsViewsTests(TestCase):
         response = self.client.get(reverse('reports:report_project',
                                            args=[self.project.id, ]),)
 
-        self.assertContains(response, '%s, Fail: 0, Pass: 0, New: 0, Missing: 1' % self.action.time.date())
+        self.assertContains(response, self.action.time.date())
+        self.assertContains(response, 'missing: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]')
+
+    def test_project_voiceslots_missing(self):
+        response = self.client.get(reverse('reports:report_project',
+                                           args=[self.project.id, ]), )
+
+        self.assertContains(response, self.voiceslot_missing.path + '/' + self.voiceslot_missing.name)
+
+    def test_project_voiceslots_fail(self):
+        response = self.client.get(reverse('reports:report_project',
+                                           args=[self.project.id, ]), )
+
+        self.assertContains(response, self.voiceslot_fail.path + '/' + self.voiceslot_missing.name)
+

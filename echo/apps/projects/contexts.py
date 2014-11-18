@@ -68,7 +68,7 @@ def context_project(project, upload_form=UploadForm(), server_form=ServerForm(in
 
 def context_projects(user, tab, sort=None, page=None):
     if tab == 'my':
-        projects = Project.objects.filter(users__pk=user.pk)
+        projects = Project.objects.filter(users__pk=user.pk, status=Project.TESTING)
     elif tab == 'archive':
         projects = Project.objects.filter(status=Project.CLOSED)
     else:

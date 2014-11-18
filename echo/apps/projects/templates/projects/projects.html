@@ -151,8 +151,8 @@
                         <td class="text-center">
                             <div id="total_prompts_{{ project.pk }}"><b>{{ project.slots_total }}</b></div>
                         </td>
-                        <td class="text-center">00/00/0000</td>
-                        <td class="text-center">00/00/0000<br>00:00&nbsp;PM</td>
+                        <td class="text-center">{{ project.created_date | date:'Y-m-j H:i:s' }}</td>
+                        <td class="text-center">{{ project.last_modified_date | date:'Y-m-j H:i:s' }}</td>
                         <td class="text-center"><b>{{ project.users_total }}</b></td>
                         <td class="text-center">
                             {% if project.languages %}
@@ -198,6 +198,7 @@
                 </div>
             </div>
         {% endif %}
+
     </div>
 {% endblock %}
 {% block endscript %}
@@ -241,5 +242,6 @@
 {#            console.log(e.target.getAttribute('data-source'));#}
 {#            loadRecords(e.target.getAttribute('data-source'));#}
 {#        });#}
+
     </script>
 {% endblock %}
