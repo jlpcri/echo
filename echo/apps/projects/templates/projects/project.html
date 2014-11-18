@@ -48,7 +48,7 @@
                             <li class="list-group-item">
                                 <span class="badge">{{ language.voiceslot_count }}</span>
                                 <a href="{% url "projects:voiceslots" project.pk %}?language={{ language.name|lower }}">
-                                    <b>{{ language.name }}</b>
+                                    <b>{{ language.name|capfirst }}</b>
                                 </a>
 
                             </li>
@@ -62,13 +62,20 @@
                     <br>
                     <label class="control-label" for="action_list">Project Actions</label>
                     <ul id="action_list" class="list-group">
+                        {% if user.username in project.usernames %}
                         <li class="list-group-item">
-                            {% if user.username in project.usernames %}
-                                <a href="{% url "projects:queue" project.pk %}?language={{ language.name|lower }}">
-                                    <b>Start Testing</b>
-                                </a>
-                            {% endif %}
+                            <b>Start Testing</b>
+                            <ul>
+                                {% for language in languages %}
+                                    <li>
+                                        <i class="fa fa-hand-o-right"></i> <a href="{% url "projects:queue" project.pk %}?language={{ language.name|lower }}">
+                                            <b>{{ language.name | capfirst }}</b>
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
                         </li>
+                        {% endif %}
                         <li class="list-group-item"><a href="{% url 'elpis:dashboard' project.pk %}"><b>Verify File Transfer</b></a></li>
                         <li class="list-group-item">
                             <a href="#" class="text" onclick="project_update_file_status('{{ project.name }}', {{ project.id }})" title="Update File Statuses">
