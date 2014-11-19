@@ -1,12 +1,12 @@
-from forms import ProjectForm, ServerForm, UploadForm
-from models import Project, Language, VUID
+from echo.apps.activity.models import Action
+from echo.apps.projects.forms import ProjectForm, ServerForm, UploadForm
+from echo.apps.projects.models import Project, Language, VUID
 from openpyxl import load_workbook
 import unicodecsv
 
 
 def context_home(user, sort=None):
     projects = Project.objects.filter(users__pk=user.pk)
-
     if sort:
         if sort == 'project_name':
             projects = projects.order_by('name')
@@ -21,6 +21,15 @@ def context_home(user, sort=None):
         elif sort == '-user_count':
             projects = sorted(projects, key=lambda p: p.users_total(), reverse=True)
     return {
+        'feed': Action.objects.filter(
+            scope__project=projects,
+            type__in=[
+                Action.ARCHIVE_PROJECT,
+                Action.CREATE_PROJECT,
+                Action.TESTER_JOIN_PROJECT,
+                Action.TESTER_LEAVE_PROJECT,
+                Action.UPLOAD_VUID]
+        ).order_by('-time')[0:10],
         'projects': projects,
         'sort': sort
     }

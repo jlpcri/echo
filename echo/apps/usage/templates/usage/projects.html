@@ -53,15 +53,15 @@
                                 {% endif %}
                                 </th>
                                 <th class="col-xs-1 text-center">
-                                {% if sort == 'pass' %}
-                                    <a href="{% url 'usage:projects' %}?sort=-pass">
-                                        Pass</a>&nbsp;<i class="fa fa-sort-asc"></i>
-                                {% elif sort == '-pass' %}
-                                    <a href="{% url 'usage:projects' %}?sort=pass">
-                                        Pass</a>&nbsp;<i class="fa fa-sort-desc"></i>
+                                {% if sort == 'passed' %}
+                                    <a href="{% url 'usage:projects' %}?sort=-passed">
+                                        Passed</a>&nbsp;<i class="fa fa-sort-asc"></i>
+                                {% elif sort == '-passed' %}
+                                    <a href="{% url 'usage:projects' %}?sort=passed">
+                                        Passed</a>&nbsp;<i class="fa fa-sort-desc"></i>
                                 {% else %}
-                                    <a href="{% url 'usage:projects' %}?sort=pass">
-                                        Pass</a>&nbsp;<i class="fa fa-sort"></i>
+                                    <a href="{% url 'usage:projects' %}?sort=passed">
+                                        Passed</a>&nbsp;<i class="fa fa-sort"></i>
                                 {% endif %}
                                 </th>
                                 <th class="col-xs-1 text-center">
@@ -89,15 +89,15 @@
                                 {% endif %}
                                 </th>
                                 <th class="col-xs-1 text-center">
-                                {% if sort == 'auto_pass' %}
-                                    <a href="{% url 'usage:projects' %}?sort=-auto_pass">
-                                        Auto Pass</a>&nbsp;<i class="fa fa-sort-asc"></i>
-                                {% elif sort == '-auto_pass' %}
-                                    <a href="{% url 'usage:projects' %}?sort=auto_pass">
-                                        Auto Pass</a>&nbsp;<i class="fa fa-sort-desc"></i>
+                                {% if sort == 'auto_passed' %}
+                                    <a href="{% url 'usage:projects' %}?sort=-auto_passed">
+                                        Auto Passed</a>&nbsp;<i class="fa fa-sort-asc"></i>
+                                {% elif sort == '-auto_passed' %}
+                                    <a href="{% url 'usage:projects' %}?sort=auto_passed">
+                                        Auto Passed</a>&nbsp;<i class="fa fa-sort-desc"></i>
                                 {% else %}
-                                    <a href="{% url 'usage:projects' %}?sort=auto_pass">
-                                        Auto Pass</a>&nbsp;<i class="fa fa-sort"></i>
+                                    <a href="{% url 'usage:projects' %}?sort=auto_passed">
+                                        Auto Passed</a>&nbsp;<i class="fa fa-sort"></i>
                                 {% endif %}
                                 </th>
                                 <th class="col-xs-1 text-center">
@@ -113,47 +113,60 @@
                                 {% endif %}
                                 </th>
                                 <th class="col-xs-1 text-center">
-                                {% if sort == 'rework_pct' %}
-                                    <a href="{% url 'usage:projects' %}?sort=-rework_pct">
-                                        Rework %</a>&nbsp;<i class="fa fa-sort-asc"></i>
-                                {% elif sort == '-rework_pct' %}
-                                    <a href="{% url 'usage:projects' %}?sort=rework_pct">
-                                        Rework %</a>&nbsp;<i class="fa fa-sort-desc"></i>
+                                {% if sort == 'auto_missing' %}
+                                    <a href="{% url 'usage:projects' %}?sort=-auto_missing">
+                                        Auto Missing</a>&nbsp;<i class="fa fa-sort-asc"></i>
+                                {% elif sort == '-auto_missing' %}
+                                    <a href="{% url 'usage:projects' %}?sort=auto_missing">
+                                        Auto Missing</a>&nbsp;<i class="fa fa-sort-desc"></i>
                                 {% else %}
-                                    <a href="{% url 'usage:projects' %}?sort=rework_pct">
-                                        Rework %</a>&nbsp;<i class="fa fa-sort"></i>
+                                    <a href="{% url 'usage:projects' %}?sort=auto_missing">
+                                        Auto Missing</a>&nbsp;<i class="fa fa-sort"></i>
                                 {% endif %}
                                 </th>
                                 <th class="col-xs-1 text-center">
-                                {% if sort == 'auto_pct' %}
-                                    <a href="{% url 'usage:projects' %}?sort=-auto_pct">
-                                        Auto %</a>&nbsp;<i class="fa fa-sort-asc"></i>
-                                {% elif sort == '-auto_pct' %}
-                                    <a href="{% url 'usage:projects' %}?sort=auto_pct">
-                                        Auto %</a>&nbsp;<i class="fa fa-sort-desc"></i>
+                                {% if sort == 'rework_ratio' %}
+                                    <a href="{% url 'usage:projects' %}?sort=-rework_ratio">
+                                        Rework Ratio</a>&nbsp;<i class="fa fa-sort-asc"></i>
+                                {% elif sort == '-rework_ratio' %}
+                                    <a href="{% url 'usage:projects' %}?sort=rework_ratio">
+                                        Rework Ratio</a>&nbsp;<i class="fa fa-sort-desc"></i>
                                 {% else %}
-                                    <a href="{% url 'usage:projects' %}?sort=auto_pct">
-                                        Auto %</a>&nbsp;<i class="fa fa-sort"></i>
+                                    <a href="{% url 'usage:projects' %}?sort=rework_ratio">
+                                        Rework Ratio</a>&nbsp;<i class="fa fa-sort"></i>
+                                {% endif %}
+                                </th>
+                                <th class="col-xs-1 text-center">
+                                {% if sort == 'auto_ratio' %}
+                                    <a href="{% url 'usage:projects' %}?sort=-auto_ratio">
+                                        Auto Ratio</a>&nbsp;<i class="fa fa-sort-asc"></i>
+                                {% elif sort == '-auto_ratio' %}
+                                    <a href="{% url 'usage:projects' %}?sort=auto_ratio">
+                                        Auto Ratio</a>&nbsp;<i class="fa fa-sort-desc"></i>
+                                {% else %}
+                                    <a href="{% url 'usage:projects' %}?sort=auto_ratio">
+                                        Auto Ratio</a>&nbsp;<i class="fa fa-sort"></i>
                                 {% endif %}
                                 </th>
                             </tr>
                             </thead>
                             <tbody>
-                            {% for project in projects %}
+                            {% for p in projects %}
                             <tr>
                                 <td class="text-left">
-                                    <button class="btn-link" data-toggle="modal" data-target="#modal_project" data-url="{% url 'usage:project' project.pk %}">
-                                        {{ project.name }}
+                                    <button class="btn-link" data-toggle="modal" data-target="#modal_project" data-url="{% url 'usage:project' p.project.pk %}">
+                                        {{ p.project.name }}
                                     </button>
                                 </td>
-                                <td class="text-center">{{ project.slots_passed_and_failed }}</td>
-                                <td class="text-center">{{ project.slots_passed }}</td>
-                                <td class="text-center">{{ project.slots_failed }}</td>
-                                <td class="text-center">0</td>
-                                <td class="text-center">0</td>
-                                <td class="text-center">0</td>
-                                <td class="text-center">0%</td>
-                                <td class="text-center">0%</td>
+                                <td class="text-center">{{ p.total }}</td>
+                                <td class="text-center">{{ p.passed }}</td>
+                                <td class="text-center">{{ p.defective }}</td>
+                                <td class="text-center">{{ p.auto_total }}</td>
+                                <td class="text-center">{{ p.auto_passed }}</td>
+                                <td class="text-center">{{ p.auto_defective }}</td>
+                                <td class="text-center">{{ p.auto_missing }}</td>
+                                <td class="text-center">{{ p.rework_ratio|floatformat:2 }}</td>
+                                <td class="text-center">{{ p.auto_ratio|floatformat:2 }}</td>
                             </tr>
                             {% endfor %}
                             </tbody>

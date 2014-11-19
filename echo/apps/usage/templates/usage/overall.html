@@ -9,25 +9,27 @@
                 <thead>
                 <tr>
                     <th class="col-xs-1 text-center">Total</th>
-                    <th class="col-xs-1 text-center">Pass</th>
+                    <th class="col-xs-1 text-center">Passed</th>
                     <th class="col-xs-1 text-center">Defective</th>
                     <th class="col-xs-1 text-center">Auto Total</th>
-                    <th class="col-xs-1 text-center">Auto Pass</th>
+                    <th class="col-xs-1 text-center">Auto Passed</th>
                     <th class="col-xs-1 text-center">Auto Defective</th>
-                    <th class="col-xs-1 text-center">Rework %</th>
-                    <th class="col-xs-1 text-center">Auto %</th>
+                    <th class="col-xs-1 text-center">Auto Missing</th>
+                    <th class="col-xs-1 text-center">Rework Ratio</th>
+                    <th class="col-xs-1 text-center">Auto Ratio</th>
                 </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td class="text-center">0</td>
-                        <td class="text-center">0</td>
-                        <td class="text-center">0</td>
-                        <td class="text-center">0</td>
-                        <td class="text-center">0</td>
-                        <td class="text-center">0</td>
-                        <td class="text-center">0%</td>
-                        <td class="text-center">0%</td>
+                        <td class="text-center">{{ overall.total }}</td>
+                        <td class="text-center">{{ overall.passed }}</td>
+                        <td class="text-center">{{ overall.defective }}</td>
+                        <td class="text-center">{{ overall.auto_total }}</td>
+                        <td class="text-center">{{ overall.auto_passed }}</td>
+                        <td class="text-center">{{ overall.auto_defective }}</td>
+                        <td class="text-center">{{ overall.auto_missing }}</td>
+                        <td class="text-center">{{ overall.rework_ratio|floatformat:2 }}</td>
+                        <td class="text-center">{{ overall.auto_ratio|floatformat:2 }}</td>
                     </tr>
                 </tbody>
             </table>

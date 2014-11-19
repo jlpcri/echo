@@ -31,10 +31,10 @@
                                 <th class="col-xs-2 text-left">
                                     {% if sort == 'username' %}
                                         <a href="{% url 'usage:users' %}?sort=-username">
-                                            Username</a>&nbsp;<i class="fa fa-sort"></i>
+                                            Username</a>&nbsp;<i class="fa fa-sort-asc"></i>
                                     {% elif sort == '-username' %}
                                         <a href="{% url 'usage:users' %}?sort=username">
-                                            Username</a>&nbsp;<i class="fa fa-sort"></i>
+                                            Username</a>&nbsp;<i class="fa fa-sort-desc"></i>
                                     {% else %}
                                         <a href="{% url 'usage:users' %}?sort=username">
                                             Username</a>&nbsp;<i class="fa fa-sort"></i>
@@ -43,34 +43,34 @@
                                 <th class="col-xs-1 text-center">
                                     {% if sort == 'total' %}
                                         <a href="{% url 'usage:users' %}?sort=-total">
-                                            Total</a>&nbsp;<i class="fa fa-sort"></i>
+                                            Total</a>&nbsp;<i class="fa fa-sort-asc"></i>
                                     {% elif sort == '-total' %}
                                         <a href="{% url 'usage:users' %}?sort=total">
-                                            Total</a>&nbsp;<i class="fa fa-sort"></i>
+                                            Total</a>&nbsp;<i class="fa fa-sort-desc"></i>
                                     {% else %}
                                         <a href="{% url 'usage:users' %}?sort=total">
                                             Total</a>&nbsp;<i class="fa fa-sort"></i>
                                     {% endif %}
                                 </th>
                                 <th class="col-xs-1 text-center">
-                                    {% if sort == 'pass' %}
-                                        <a href="{% url 'usage:users' %}?sort=-pass">
-                                            Pass</a>&nbsp;<i class="fa fa-sort"></i>
-                                    {% elif sort == '-pass' %}
-                                        <a href="{% url 'usage:users' %}?sort=pass">
-                                            Pass</a>&nbsp;<i class="fa fa-sort"></i>
+                                    {% if sort == 'passed' %}
+                                        <a href="{% url 'usage:users' %}?sort=-passed">
+                                            Passed</a>&nbsp;<i class="fa fa-sort-asc"></i>
+                                    {% elif sort == '-passed' %}
+                                        <a href="{% url 'usage:users' %}?sort=passed">
+                                            Passed</a>&nbsp;<i class="fa fa-sort-desc"></i>
                                     {% else %}
-                                        <a href="{% url 'usage:users' %}?sort=pass">
-                                            Pass</a>&nbsp;<i class="fa fa-sort"></i>
+                                        <a href="{% url 'usage:users' %}?sort=passed">
+                                            Passed</a>&nbsp;<i class="fa fa-sort"></i>
                                     {% endif %}
                                 </th>
                                 <th class="col-xs-1 text-center">
                                     {% if sort == 'defective' %}
                                         <a href="{% url 'usage:users' %}?sort=-defective">
-                                            Defective</a>&nbsp;<i class="fa fa-sort"></i>
+                                            Defective</a>&nbsp;<i class="fa fa-sort-asc"></i>
                                     {% elif sort == '-defective' %}
                                         <a href="{% url 'usage:users' %}?sort=defective">
-                                            Defective</a>&nbsp;<i class="fa fa-sort"></i>
+                                            Defective</a>&nbsp;<i class="fa fa-sort-desc"></i>
                                     {% else %}
                                         <a href="{% url 'usage:users' %}?sort=defective">
                                             Defective</a>&nbsp;<i class="fa fa-sort"></i>
@@ -79,10 +79,10 @@
                                 <th class="col-xs-1 text-center">
                                     {% if sort == 'reports' %}
                                         <a href="{% url 'usage:users' %}?sort=-reports">
-                                            Reports Run</a>&nbsp;<i class="fa fa-sort"></i>
+                                            Reports Run</a>&nbsp;<i class="fa fa-sort-asc"></i>
                                     {% elif sort == '-reports' %}
                                         <a href="{% url 'usage:users' %}?sort=reports">
-                                            Reports Run</a>&nbsp;<i class="fa fa-sort"></i>
+                                            Reports Run</a>&nbsp;<i class="fa fa-sort-desc"></i>
                                     {% else %}
                                         <a href="{% url 'usage:users' %}?sort=reports">
                                             Reports Run</a>&nbsp;<i class="fa fa-sort"></i>
@@ -91,10 +91,10 @@
                                 <th class="col-xs-1 text-center">
                                     {% if sort == 'uploads' %}
                                         <a href="{% url 'usage:users' %}?sort=-uploads">
-                                            Uploads</a>&nbsp;<i class="fa fa-sort"></i>
+                                            Uploads</a>&nbsp;<i class="fa fa-sort-asc"></i>
                                     {% elif sort == '-uploads' %}
                                         <a href="{% url 'usage:users' %}?sort=uploads">
-                                            Uploads</a>&nbsp;<i class="fa fa-sort"></i>
+                                            Uploads</a>&nbsp;<i class="fa fa-sort-desc"></i>
                                     {% else %}
                                         <a href="{% url 'usage:users' %}?sort=uploads">
                                             Uploads</a>&nbsp;<i class="fa fa-sort"></i>
@@ -103,10 +103,10 @@
                                 <th class="col-xs-1 text-center">
                                     {% if sort == 'projects' %}
                                         <a href="{% url 'usage:users' %}?sort=-projects">
-                                            Projects Created</a>&nbsp;<i class="fa fa-sort"></i>
+                                            Projects Created</a>&nbsp;<i class="fa fa-sort-asc"></i>
                                     {% elif sort == '-projects' %}
                                         <a href="{% url 'usage:users' %}?sort=projects">
-                                            Projects Created</a>&nbsp;<i class="fa fa-sort"></i>
+                                            Projects Created</a>&nbsp;<i class="fa fa-sort-desc"></i>
                                     {% else %}
                                         <a href="{% url 'usage:users' %}?sort=projects">
                                             Projects Created</a>&nbsp;<i class="fa fa-sort"></i>
@@ -115,19 +115,19 @@
                             </tr>
                             </thead>
                             <tbody>
-                            {% for user in users %}
+                            {% for u in users %}
                             <tr>
                                 <td class="text-left">
-                                    <button class="btn-link" data-toggle="modal" data-target="#modal_user" data-url="{% url 'usage:user' user.pk %}">
-                                        {{ user.username }}
+                                    <button class="btn-link" data-toggle="modal" data-target="#modal_user" data-url="{% url 'usage:user' u.user.pk %}">
+                                        {{ u.user.username }}
                                     </button>
                                 </td>
-                                <td class="text-center">0</td>
-                                <td class="text-center">0</td>
-                                <td class="text-center">0</td>
-                                <td class="text-center">0</td>
-                                <td class="text-center">0</td>
-                                <td class="text-center">0</td>
+                                <td class="text-center">{{ u.total }}</td>
+                                <td class="text-center">{{ u.passed }}</td>
+                                <td class="text-center">{{ u.defective }}</td>
+                                <td class="text-center">{{ u.reports }}</td>
+                                <td class="text-center">{{ u.uploads }}</td>
+                                <td class="text-center">{{ u.projects }}</td>
                             </tr>
                             {% endfor %}
                             </tbody>
