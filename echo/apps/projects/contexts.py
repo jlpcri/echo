@@ -90,13 +90,13 @@ def context_projects(user, tab, sort=None, page=None):
         elif sort == '-project_name':
             projects = projects.order_by('-name')
         elif sort == 'created_date':
-            pass
+            projects = sorted(projects, key=lambda p: p.created_date())
         elif sort == '-created_date':
-            pass
+            projects = sorted(projects, key=lambda p: p.created_date(), reverse=True)
         elif sort == 'last_modified':
-            pass
+            projects = sorted(projects, key=lambda p: p.last_modified_date())
         elif sort == '-last_modified':
-            pass
+            projects = sorted(projects, key=lambda p: p.last_modified_date(), reverse=True)
         elif sort == 'total_prompts':
             projects = sorted(projects, key=lambda p: p.slots_total())
         elif sort == '-total_prompts':
