@@ -211,6 +211,16 @@
         }
 
 
+        window.setInterval(function() {
+            $.getJSON('{% url 'projects:project_progress' project.id %}', function(data){
+                $('#bar_passed').css('width', data['passed_percent'] + '%');
+                $('#bar_passed').html(data['passed']);
+                $('#bar_failed').css('width', data['failed_percent'] + '%');
+                $('#bar_failed').html(data['failed']);
+                $('#bar_missing').css('width', data['missing_percent'] + '%');
+                $('#bar_missing').html(data['missing']);
+            })
+        }, 5000);
 
     </script>
 {% endblock %}
