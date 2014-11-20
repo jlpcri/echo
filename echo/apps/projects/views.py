@@ -199,31 +199,31 @@ def project_progress(request, pid):
 
 @login_required
 def projects(request):
-    tab_types = [
-        'my',
-        'all',
-        'archive'
-    ]
-    sort_types = [
-        'project_name',
-        '-project_name',
-        'created_date',
-        '-created_date',
-        'last_modified',
-        '-last_modified',
-        'total_prompts',
-        '-total_prompts',
-        'user_count',
-        '-user_count'
-    ]
     if request.method == 'GET':
+        tab_types = [
+            'my',
+            'all',
+            'archive'
+        ]
+        sort_types = [
+            'project_name',
+            '-project_name',
+            'created_date',
+            '-created_date',
+            'last_modified',
+            '-last_modified',
+            'total_prompts',
+            '-total_prompts',
+            'user_count',
+            '-user_count'
+        ]
         # if tab and sort are not present, set to empty
         tab = request.GET.get('tab', '')
         sort = request.GET.get('sort', '')
         # if tab and sort are empty, set to defaults
         tab = tab if tab else 'my'
         sort = sort if sort else 'project_name'
-        # validate source and sort
+        # validate tab and sort
         if tab in tab_types and sort in sort_types:
             return render(request, "projects/projects.html", contexts.context_projects(request.user, tab, sort))
     return HttpResponseNotFound()
