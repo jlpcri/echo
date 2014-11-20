@@ -105,6 +105,9 @@ def new(request):
 
                 n = form.cleaned_data['name']
                 root_path = form.cleaned_data['root_path']
+                if not os.path.isabs(root_path):
+                    messages.danger(request, 'Bravo Server Root Path Incorrect')
+                    return render(request, 'projects/new.html', contexts.context_new(form))
                 p = Project(name=n)
                 try:
                     p.full_clean()
@@ -186,6 +189,9 @@ def project(request, pid):
             p = get_object_or_404(Project, pk=pid)
             if form.is_valid():
                 root_path = form.cleaned_data['root_path']
+                if not os.path.isabs(root_path):
+                    messages.danger(request, 'Bravo Server Root Path Incorrect')
+                    return redirect('projects:project', pid=pid)
                 p.root_path = root_path
                 p.save()
                 Action.log(request.user,
