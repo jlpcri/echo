@@ -5,7 +5,7 @@ from echo.apps.settings.models import Server
 class ProjectForm(forms.Form):
     name = forms.CharField(max_length=50, required=True,
                            widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Project Name'}))
-    bravo_path = forms.CharField(max_length=50, required=False,
+    root_path = forms.CharField(max_length=50, required=False,
                                  widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Bravo Server Path'}))
     file = forms.FileField(max_length=100, required=False)
 
@@ -19,6 +19,6 @@ class ServerForm(forms.Form):
                                widget=forms.Select(attrs={'class': 'form-control'}))
 
 
-class ProjectBravoPathForm(forms.Form):
-    bravo_path = forms.CharField(max_length=50, required=False,
+class ProjectRootPathForm(forms.Form):
+    root_path = forms.CharField(max_length=50, required=False,
                                  widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Bravo Server Path'}))

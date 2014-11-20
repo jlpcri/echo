@@ -16,7 +16,7 @@ from echo.apps.activity.models import Action
 
 from echo.apps.core import messages
 from echo.apps.settings.models import Server
-from echo.apps.projects.forms import ProjectForm, ServerForm, UploadForm, ProjectBravoPathForm
+from echo.apps.projects.forms import ProjectForm, ServerForm, UploadForm, ProjectRootPathForm
 from echo.apps.projects.models import Language, Project, VoiceSlot, VUID
 from echo.apps.projects import contexts, helpers
 
@@ -104,12 +104,14 @@ def new(request):
                     return render(request, "projects/new.html", contexts.context_new(form))
 
                 n = form.cleaned_data['name']
+                root_path = form.cleaned_data['root_path']
                 p = Project(name=n)
                 try:
                     p.full_clean()
                     p.save()
                     p.users.add(request.user)
                     p.bravo_server = bravo_server  # set default bravo server
+                    p.root_path = root_path
                     p.save()
                     messages.success(request, "Created project")
                     if 'file' in request.FILES and request.FILES['file'].name.endswith('.xlsx'):
@@ -179,13 +181,17 @@ def project(request, pid):
             return render(request, "projects/project.html", contexts.context_project(p, upload_form=form,
                                                                                      server_form=ServerForm(initial={
                                                                                          'server': p.current_server_pk()})))
-        elif "update_bravo_path" in request.POST:
-            form = ProjectBravoPathForm(request.POST)
+        elif "update_root_path" in request.POST:
+            form = ProjectRootPathForm(request.POST)
             p = get_object_or_404(Project, pk=pid)
             if form.is_valid():
-                bravo_path = form.cleaned_data['bravo_path']
-                p.bravo_path = bravo_path
+                root_path = form.cleaned_data['root_path']
+                p.root_path = root_path
                 p.save()
+                Action.log(request.user,
+                           Action.UPDATE_ROOT_PATH,
+                           u'Bravo server root path updated to ' + unicode(root_path),
+                           p)
                 messages.success(request, 'Updated Bravo Server Path Successfully')
                 return redirect('projects:project', pid=pid)
         return redirect("projects:project", pid=pid)

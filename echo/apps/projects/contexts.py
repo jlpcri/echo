@@ -1,5 +1,5 @@
 from echo.apps.activity.models import Action
-from echo.apps.projects.forms import ProjectForm, ServerForm, UploadForm, ProjectBravoPathForm
+from echo.apps.projects.forms import ProjectForm, ServerForm, UploadForm, ProjectRootPathForm
 from echo.apps.projects.models import Project, Language, VUID
 from openpyxl import load_workbook
 import unicodecsv
@@ -66,14 +66,14 @@ def context_new(project_form=ProjectForm()):
 
 
 def context_project(project, upload_form=UploadForm(), server_form=ServerForm(initial={'server': 0})):
-    bravo_path_form = ProjectBravoPathForm(initial={'bravo_path': project.bravo_path})
+    root_path_form = ProjectRootPathForm(initial={'root_path': project.root_path})
     return {
         'project': project,
         'languages': Language.objects.filter(project=project),
         'vuids': VUID.objects.filter(project=project),
         'upload_form': upload_form,
         'server_form': server_form,
-        'bravo_path_form': bravo_path_form
+        'root_path_form': root_path_form
     }
 
 
