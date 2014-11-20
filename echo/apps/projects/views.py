@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import json
 import os
 import uuid
 
@@ -180,6 +181,20 @@ def project(request, pid):
                                                                                          'server': p.current_server_pk()})))
         return redirect("projects:project", pid=pid)
     return HttpResponseNotFound()
+
+@login_required
+def project_progress(request, pid):
+    if request.method == 'GET':
+        p = get_object_or_404(Project, pk=pid)
+        data = {
+            'passed': p.slots_passed(),
+            'passed_percent': p.slots_passed_percent(),
+            'failed': p.slots_failed(),
+            'failed_percent': p.slots_failed_percent(),
+            'missing': p.slots_missing(),
+            'missing_percent': p.slots_missing_percent()
+        }
+        return HttpResponse(json.dumps(data), content_type="application/json")
 
 
 @login_required
