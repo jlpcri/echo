@@ -41,7 +41,8 @@ def commonprefix(paths, sep='/'):
 def fetch_slots_from_server(project, sftp, user):
     """Contains logic to update file statuses"""
     # get shared path of all distinct paths from voiceslot models in project
-    path = commonprefix(project.voiceslots().values_list('path', flat=True).distinct())
+    #path = commonprefix(project.voiceslots().values_list('path', flat=True).distinct())
+    path = project.root_path
     try:
         result = sftp.execute('find {0}/ -name "*.wav"'.format(path) + ' -exec md5sum {} \; -exec stat -c"%Y" {} \;')
     except IOError:
@@ -199,7 +200,7 @@ def verify_vuid(vuid):
         if not verify_vuid_headers(vuid):
             message = "Invalid file headers, unable to upload"
         elif not verify_root_path(vuid, ws):
-            message = "Invalid root path, unable to upload"
+            message = "Invalid vuid path, unable to upload"
         else:
             valid = True
             message = "Uploaded file successfully"

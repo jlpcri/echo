@@ -106,7 +106,7 @@ def new(request):
                 n = form.cleaned_data['name']
                 root_path = form.cleaned_data['root_path']
                 if root_path and not os.path.isabs(root_path):
-                    messages.danger(request, 'Bravo Server Root Path Incorrect')
+                    messages.danger(request, 'Bravo Server Root Path Format Incorrect')
                     return render(request, 'projects/new.html', contexts.context_new(form))
                 p = Project(name=n)
                 try:
@@ -190,7 +190,7 @@ def project(request, pid):
             if form.is_valid():
                 root_path = form.cleaned_data['root_path']
                 if not os.path.isabs(root_path):
-                    messages.danger(request, 'Bravo Server Root Path Incorrect')
+                    messages.danger(request, 'Bravo Server Root Path Format Incorrect')
                     return redirect('projects:project', pid=pid)
                 p.root_path = root_path
                 p.save()
