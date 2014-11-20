@@ -16,7 +16,7 @@ from echo.apps.activity.models import Action
 
 from echo.apps.core import messages
 from echo.apps.settings.models import Server
-from echo.apps.projects.forms import ProjectForm, ServerForm, UploadForm
+from echo.apps.projects.forms import ProjectForm, ServerForm, UploadForm, ProjectBravoPathForm
 from echo.apps.projects.models import Language, Project, VoiceSlot, VUID
 from echo.apps.projects import contexts, helpers
 
@@ -179,6 +179,15 @@ def project(request, pid):
             return render(request, "projects/project.html", contexts.context_project(p, upload_form=form,
                                                                                      server_form=ServerForm(initial={
                                                                                          'server': p.current_server_pk()})))
+        elif "update_bravo_path" in request.POST:
+            form = ProjectBravoPathForm(request.POST)
+            p = get_object_or_404(Project, pk=pid)
+            if form.is_valid():
+                bravo_path = form.cleaned_data['bravo_path']
+                p.bravo_path = bravo_path
+                p.save()
+                messages.success(request, 'Updated Bravo Server Path Successfully')
+                return redirect('projects:project', pid=pid)
         return redirect("projects:project", pid=pid)
     return HttpResponseNotFound()
 

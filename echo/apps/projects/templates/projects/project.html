@@ -131,30 +131,29 @@
                         </div>
                     </div>
                     <table class="table">
-                    <thead>
-                    <tr>
-                        <th class="col-xs-5">Filename</th>
-                        <th class="col-xs-5">Upload Date</th>
-                        <th class="col-xs-2">Upload By</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for vuid in vuids %}
-                        <tr>
-                            <td><a href="{% url "projects:vuid" project.pk vuid.pk %}">{{ vuid.filename }}</a></td>
-                            <td>{{ vuid.upload_date }}</td>
-                            <td>{{ vuid.upload_by.username }}</td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
+                        <thead>
+                            <tr>
+                                <th class="col-xs-5">Filename</th>
+                                <th class="col-xs-5">Upload Date</th>
+                                <th class="col-xs-2">Upload By</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for vuid in vuids %}
+                                <tr>
+                                    <td><a href="{% url "projects:vuid" project.pk vuid.pk %}">{{ vuid.filename }}</a></td>
+                                    <td>{{ vuid.upload_date }}</td>
+                                    <td>{{ vuid.upload_by.username }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
 
                     <div class="clearfix"></div>
                     <hr>
 
                     <div class="form-group">
                         <label class="control-label">Bravo Server</label>
-
                         <div class="input-group">
                             {{ server_form.server }}
                             <span class="input-group-btn">
@@ -168,9 +167,19 @@
                         <b>Last update file status time:</b> {{ project.update_file_status_last_time | date:'Y-m-j H:i:s'}}
                     </div>
 
-
+                    <hr>
+                    <div class="form-group">
+                        <label class="content-label">Bravo Server Path</label>
+                        <div class="input-group">
+                            {{ bravo_path_form.bravo_path }}
+                            <span class="input-group-btn">
+                                <button type="submit" name="update_bravo_path" class="btn btn-primary">
+                                    Update
+                                </button>
+                            </span>
+                        </div>
+                    </div>
                 </form>
-
             </div>
         </div>
 
