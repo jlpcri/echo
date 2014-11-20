@@ -6,12 +6,10 @@ import uuid
 import pysftp
 
 from django.db import models
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
 from django.conf import settings
 
-from echo.apps.activity.models import Action, Scope
-
-User = get_user_model()
+from echo.apps.activity.models import Action
 
 
 def vuid_location(instance, filename):
