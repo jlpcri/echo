@@ -161,9 +161,20 @@
                 </div>
             {% endif %}
             </div>
-            <div class="col-xs-3 text-center">
+            <div class="col-xs-3">
+                {% if feed %}
+                {% for f in feed %}
+                    <h6><div class="text-right">{{ f.time }}</div></h6>
+                    <h5 class="pull-left text-left" style="width: 48%;">{{ f.scope.project.name }}</h5>
+                    <h6 class="pull-right text-right" style="width: 48%;">{{ f.actor.username }}</h6>
+                    <div class="clearfix"></div>
+                    <p>{{ f.description }}</p>
+                    <hr style="margin-top: 5px; margin-bottom: 5px">
+                {% endfor %}
+                {% else %}
                 <br><br>
-                <h5>No recent activity</h5>
+                <h5 class="text-center">No recent activity</h5>
+                {% endif %}
             </div>
         </div>
     </div>
