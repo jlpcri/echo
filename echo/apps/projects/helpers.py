@@ -193,13 +193,20 @@ def upload_vuid(uploaded_file, user, project):
 def verify_vuid(vuid):
     wb = load_workbook(vuid.file.path)
     ws = wb.active
+    valid = False
+    message = "Invalid file structure, unable to upload"
     if len(ws.rows) > 2:
-        if verify_vuid_headers(vuid):
-            return {"valid": True, "message": "Uploaded file successfully"}
+        if not verify_vuid_headers(vuid):
+            message = "Invalid file headers, unable to upload"
+        elif not verify_root_path(vuid, ws):
+            message = "Invalid root path, unable to upload"
+        else:
+            valid = True
+            message = "Uploaded file successfully"
     elif len(ws.rows) == 2:
         if verify_vuid_headers(vuid):
-            return {"valid": False, "message": "No records in file, unable to upload"}
-    return {"valid": False, "message": "Invalid file structure, unable to upload"}
+            message = "No records in file, unable to upload"
+    return {"valid": valid, "message": message}
 
 
 def verify_vuid_headers(vuid):
@@ -211,3 +218,13 @@ def verify_vuid_headers(vuid):
         if VUID_HEADER_NAME_SET.issubset(headers) and i != -1:
             return True
     return False
+
+
+def verify_root_path(vuid, ws):
+    index = unicode(ws['A2'].value).strip().find('/')
+    vuid_path = ws['A2'].value.strip()[index:]
+    #print vuid_path, '-', vuid.project.root_path
+    if vuid_path.startswith(vuid.project.root_path):
+        return True
+    else:
+        return False
