@@ -134,7 +134,7 @@ class Project(models.Model):
                 a = Action.objects.filter(scope__voiceslot=slot, type=Action.TESTER_FAIL_SLOT).order_by('-time')[0]
                 Action.log(a.actor,
                            Action.AUTO_FAIL_SLOT,
-                           u'{0} (duplicate of {1})'.format(a.description, a.voiceslot.name),
+                           u'{0} (duplicate of {1})'.format(a.description, a.scope.voiceslot.name),
                            s)
             s.save()
         return vs.count()
