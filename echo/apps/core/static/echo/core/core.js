@@ -18,6 +18,7 @@ var soundLength = 0;
 var soundPosition = 0;
 var last = undefined;
 var timer = undefined;
+var listened = false;
 
 function getPlayer(pid) {
     var obj = document.getElementById(pid);
@@ -61,9 +62,10 @@ function inform() {
     if (last != undefined) {
         var now = new Date();
         t = now.getTime() - last.getTime();
-        console.log("t = " + t);
         soundPosition += t / 1000;
-        console.log(soundPosition);
+        if (soundPosition > soundLength) {
+            listened = true;
+        }
         last = now;
     }
     playerInfo.innerHTML = playerState;
@@ -73,23 +75,18 @@ function inform() {
 function playerController(state, position) {
     if (position != undefined) soundPosition = position;
     if (state == "BUFFERING") {
-        console.log('buffering');
         // empty
     } else if (state == 'STOPPED') {
-        console.log('stopped');
         $('#button_play').children().first().removeClass('fa-pause').addClass('fa-play');
         clearInterval(timer);
         last = undefined;
         timer = undefined;
     } else if (state == "PAUSED") {
-        console.log('paused');
         $('#button_play').children().first().removeClass('fa-pause').addClass('fa-play');
         clearInterval(timer);
         timer = undefined
     } else if (state == "PLAYING") {
-        console.log('playing');
         $('#button_play').children().first().removeClass('fa-play').addClass('fa-pause');
-        console.log(soundLength);
         last = new Date();
         timer = setInterval(inform, 10);
     }
