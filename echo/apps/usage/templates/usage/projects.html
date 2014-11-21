@@ -154,7 +154,7 @@
                             {% for p in projects %}
                             <tr>
                                 <td class="text-left">
-                                    <button class="btn-link" data-toggle="modal" data-target="#modal_project" data-url="{% url 'usage:project' p.project.pk %}">
+                                    <button class="btn-link show-project" data-target="#modal_project" data-url="{% url 'usage:project' p.project.pk %}">
                                         {{ p.project.name }}
                                     </button>
                                 </td>
@@ -181,6 +181,35 @@
 {% endblock %}
 {% block endscript %}
     <script type="text/javascript">
-        {% include 'usage/usage.js' %}
+        $('.show-project').on('click', function (event) {
+            var button = $(this);
+            var url = button.data('url');
+            var modal = $(button.data('target'));
+            $.get(url, function() {
+
+            })
+            .done(function(data) {
+                modal.find('.modal-title').text(data.project_name);
+                contents = '<h5 class="text-center">Activity Feed</h5><hr style="margin-top: 5px; margin-bottom: 5px">';
+                for (i = 0; i < data.actions.length; i++) {
+                    contents += '<h6 class="text-right">' + data.actions[i].time + '</h6>';
+                    contents += '<h6 class="text-right">' + data.actions[i].username + '</h6>';
+                    contents += '<p>' + data.actions[i].description + '</p>';
+                    contents += '<hr style="margin-top: 5px; margin-bottom: 5px">';
+                }
+                modal.find('.modal-body').html(contents);
+                modal.modal('show');
+            })
+            .fail(function() {
+                modal.find('.modal-title').text('Error');
+                modal.find('.modal-body').text('Unable to get data from server');
+                modal.modal('show');
+            });
+        });
+        $('#modal_project').on('hidden.bs.modal', function (event) {
+            var modal = $(this);
+            modal.find('.modal-title').text('');
+            modal.find('.modal-body').text('');
+        });
     </script>
 {% endblock %}

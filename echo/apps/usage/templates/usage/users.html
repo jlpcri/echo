@@ -118,7 +118,7 @@
                             {% for u in users %}
                             <tr>
                                 <td class="text-left">
-                                    <button class="btn-link" data-toggle="modal" data-target="#modal_user" data-url="{% url 'usage:user' u.user.pk %}">
+                                    <button class="btn-link show-user" data-target="#modal_user" data-url="{% url 'usage:user' u.user.pk %}">
                                         {{ u.user.username }}
                                     </button>
                                 </td>
@@ -142,6 +142,36 @@
 {% endblock %}
 {% block endscript %}
     <script type="text/javascript">
-        {% include 'usage/usage.js' %}
+        $('.show-user').on('click', function (event) {
+            var button = $(this);
+            var url = button.data('url');
+            var modal = $(button.data('target'));
+            $.get(url, function() {
+
+            })
+            .done(function(data) {
+                modal.find('.modal-title').text(data.username);
+                contents = '<h5 class="text-center">Activity Feed</h5><hr style="margin-top: 5px; margin-bottom: 5px">';
+                for (i = 0; i < data.actions.length; i++) {
+                    contents += '<h5 class="pull-left text-left" style="width: 48%;">' + data.actions[i].project_name + '</h5>';
+                    contents += '<h6 class="pull-right text-right" style="width: 48%;">' + data.actions[i].time + '</h6>';
+                    contents += '<div class="clearfix"></div>';
+                    contents += '<p>' + data.actions[i].description + '</p>';
+                    contents += '<hr style="margin-top: 5px; margin-bottom: 5px">';
+                }
+                modal.find('.modal-body').html(contents);
+                modal.modal('show');
+            })
+            .fail(function() {
+                modal.find('.modal-title').text('Error');
+                modal.find('.modal-body').text('Unable to get data from server');
+                modal.modal('show');
+            });
+        });
+        $('#modal_user').on('hidden.bs.modal', function (event) {
+            var modal = $(this);
+            modal.find('.modal-title').text('');
+            modal.find('.modal-body').text('');
+        });
     </script>
 {% endblock %}

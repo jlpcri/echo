@@ -1,7 +1,9 @@
+import json
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
-from django.http import HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import redirect, render, get_object_or_404
+from echo.apps.activity.models import Action
 from echo.apps.projects.models import Project
 from echo.apps.usage import contexts
 
@@ -14,7 +16,18 @@ def user_is_staff(user):
 def project(request, pid):
     if request.method == 'GET':
         p = get_object_or_404(Project, pk=pid)
-        return render(request, "usage/projects.html", {})
+        q = Action.objects.filter(scope__project=p).order_by('-time')[0:20]
+        actions = []
+        for a in q:
+            actions.append(
+                {
+                    'username': a.actor.username,
+                    'description': a.description,
+                    'time': a.time.strftime('%c')
+                }
+            )
+        json_data = json.dumps({'project_name': p.name, 'actions': actions})
+        return HttpResponse(json_data, content_type="application/json")
     return HttpResponseNotFound()
 
 
@@ -66,8 +79,19 @@ def usage(request):
 @user_passes_test(user_is_staff)
 def user(request, uid):
     if request.method == 'GET':
-        user = get_object_or_404(User, pk=uid)
-        return render(request, "usage/users.html", {})
+        u = get_object_or_404(User, pk=uid)
+        q = Action.objects.filter(actor=u).order_by('-time')[0:20]
+        actions = []
+        for a in q:
+            actions.append(
+                {
+                    'project_name': a.scope.project.name,
+                    'description': a.description,
+                    'time': a.time.strftime('%c')
+                }
+            )
+        json_data = json.dumps({'username': u.username, 'actions': actions})
+        return HttpResponse(json_data, content_type="application/json")
     return HttpResponseNotFound()
 
 
