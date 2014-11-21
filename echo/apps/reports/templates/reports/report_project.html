@@ -79,7 +79,7 @@
             '#033c73', '#c71c22', '#dd5600', '#73a839'
         ],
         xAxis: {
-            categories: data['date'].reverse(),
+            categories: data['date'],
             allowDecimals: false,
             tickmarkPlacement: 'on',
             title: {
@@ -107,16 +107,16 @@
         },
         series: [{
             name: 'Untested',
-            data: data['new'].reverse()
+            data: data['new']
         }, {
             name: 'Missing',
-            data: data['missing'].reverse()
+            data: data['missing']
         }, {
             name: 'Defective',
-            data: data['fail'].reverse()
+            data: data['fail']
         }, {
             name: 'Passed',
-            data: data['pass'].reverse()
+            data: data['pass']
         }],
         credits: false
         });

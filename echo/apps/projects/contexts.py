@@ -10,19 +10,25 @@ def context_home(user, sort=None):
     if sort:
         if sort == 'project_name':
             projects = projects.order_by('name')
+            print type(projects)
         elif sort == '-project_name':
             projects = projects.order_by('-name')
+            print type(projects)
         elif sort == 'total_prompts':
             projects = sorted(projects, key=lambda p: p.slots_total())
+            print type(projects)
         elif sort == '-total_prompts':
             projects = sorted(projects, key=lambda p: p.slots_total(), reverse=True)
+            print type(projects)
         elif sort == 'user_count':
             projects = sorted(projects, key=lambda p: p.users_total())
+            print type(projects)
         elif sort == '-user_count':
             projects = sorted(projects, key=lambda p: p.users_total(), reverse=True)
+            print type(projects)
     return {
         'feed': Action.objects.filter(
-            scope__project=projects,
+            scope__project__in=projects,
             type__in=[
                 Action.ARCHIVE_PROJECT,
                 Action.CREATE_PROJECT,
