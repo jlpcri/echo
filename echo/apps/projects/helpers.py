@@ -179,8 +179,17 @@ def parse_vuid(vuid):
 
 
 def upload_vuid(uploaded_file, user, project):
+    # check if project root path is set
+    if not project.root_path:
+        return {"valid": False, "message": "Please set root path, unable to upload"}
+
     vuid = VUID(filename=uploaded_file.name, file=uploaded_file, project=project, upload_by=user)
     vuid.save()
+
+    # check conflict between root path and vuid path
+    if not verify_root_path(vuid):
+        return {"valid": False, "message": "Invalid vuid path, unable to upload"}
+
     result = verify_vuid(vuid)
     if not result['valid']:
         vuid.delete()
@@ -201,7 +210,7 @@ def verify_vuid(vuid):
     if len(ws.rows) > 2:
         if not verify_vuid_headers(vuid):
             message = "Invalid file headers, unable to upload"
-        elif not verify_root_path(vuid, ws):
+        elif not verify_root_path(vuid):
             message = "Invalid vuid path, unable to upload"
         else:
             valid = True
@@ -223,7 +232,9 @@ def verify_vuid_headers(vuid):
     return False
 
 
-def verify_root_path(vuid, ws):
+def verify_root_path(vuid):
+    wb = load_workbook(vuid.file.path)
+    ws = wb.active
     index = unicode(ws['A2'].value).strip().find('/')
     vuid_path = ws['A2'].value.strip()[index:]
     #print vuid_path, '-', vuid.project.root_path
