@@ -8,7 +8,7 @@
     <div class="container">
         <div class="row">
             <div class="col-xs-12">
-                <h3>{{ slot.language.project.name }}&nbsp;-&nbsp;<i>({{ slot.language.name }})</i></h3>
+                <h3>{{ slot.language.project.name }}&nbsp;{{ slot.language.name|title }}</h3>
             </div>
         </div>
         <hr>
@@ -22,27 +22,23 @@
                 </div>
                 <div class="col-xs-4">
                     {% if browser != "ie9" %}
+                        <div style="width: 160px;">
                         <div class="well" style="background-color:transparent;">
                             <div class="pull-left">
-                                <button type="button" class="btn btn-default" id="button_play"
-                                        onclick="buttonPlayPauseHandler('{{ file }}');"><i
-                                        class="fa fa-play"></i></button>
-                                <button type="button" class="btn btn-default" id="button_stop"
-                                        onclick="buttonStopHandler();"><i
-                                        class="fa fa-stop"></i></button>
-                            </div>
-                            <div class="pull-right">
-                                <div id="player_panel" class="pull-left"
-                                     style="width: 100%; background-color: gainsboro;">
-                                    <div id="player_info" class="pull-left"></div>
-                                    <div id="player_time" class="pull-right">--/-- sec</div>
+                                <div class="pull-control">
+                                    <button type="button" class="btn btn-default" id="button_play"
+                                            onclick="buttonPlayPauseHandler('{{ file }}');"><i
+                                            class="fa fa-play"></i></button>
                                 </div>
-                                <br>
-                                <label for="volume"><i class="fa fa-volume-down"></i></label>
-                                <input id="volume" type="text" class="span2" value="5" data-slider-tooltip="hide"/>
-                                <label for="volume"><i class="fa fa-volume-up"></i></label>
+                            </div>
+                            <div class="pull-left" style="margin-left: 10px;">
+                                <div id="player_panel" style="height: 38px; background-color: gainsboro; padding-left: 5px; padding-right: 5px;">
+                                    <div id="player_info" class="text-right" style="font-size: smaller"></div>
+                                    <div id="player_time" class="text-right" style="font-size: smaller"></div>
+                                </div>
                             </div>
                             <div class="clearfix"></div>
+                        </div>
                         </div>
                     {% else %}
                         <!--[if gte IE 10]> -->
@@ -92,7 +88,7 @@
                     </div>
                 </div>
                 <div class="col-xs-3">
-                    <button type="submit" name="submit_test" class="btn btn-primary" style="width: 100%;">Submit
+                    <button type="submit" name="submit_test" class="btn btn-primary" style="width: 100%;">Save
                     </button>
                 </div>
                 <div class="col-xs-3">
@@ -109,6 +105,8 @@
             <param name="quality" value="high"/>
             <embed src="{% static 'common/flash-wav-player/wavplayer.swf' %}?gui=none"
                    bgcolor="#ffffff"
+                   width="1000"
+                   height="1000"
                    name="player"
                    quality="high"
                    allowScriptAccess="always"
@@ -141,6 +139,19 @@
                 $("#label-pass").addClass('btn-default');
                 $("#label-fail").removeClass('btn-default');
                 $("#label-fail").addClass('btn-danger');
+            }
+        });
+        $('button[name=submit_test]').on('click', function (event) {
+            if (listened == false) {
+                event.preventDefault();
+
+                msg = '<div class="container">';
+                msg += '<div class="alert alert-dismissable alert-danger">';
+                msg += '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>';
+                msg += 'Cannot save until entire file has played';
+                msg += '</div>';
+                msg += '</div>';
+                $('#wrapper').prepend(msg);
             }
         });
     </script>

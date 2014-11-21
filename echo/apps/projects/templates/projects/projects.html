@@ -149,11 +149,11 @@
                     {% endif %}
                         </td>
                         <td class="text-center">
-                            <div id="total_prompts_{{ project.pk }}"><b>{{ project.slots_total }}</b></div>
+                            <div id="total_prompts_{{ project.pk }}">{{ project.slots_total }}</div>
                         </td>
                         <td class="text-center">{{ project.created_date | date:'Y-m-j H:i:s' }}</td>
                         <td class="text-center">{{ project.last_modified_date | date:'Y-m-j H:i:s' }}</td>
-                        <td class="text-center"><b>{{ project.users_total }}</b></td>
+                        <td class="text-center">{{ project.users_total }}</td>
                         <td class="text-center">
                             {% if project.languages %}
                                 {% for language in project.languages %}
