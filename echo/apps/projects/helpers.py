@@ -189,6 +189,7 @@ def upload_vuid(uploaded_file, user, project):
 
     # check conflict between root path and vuid path
     if not verify_root_path(vuid):
+        vuid.delete()
         return {"valid": False, "message": "Invalid vuid path, unable to upload"}
 
     result = verify_vuid(vuid)
