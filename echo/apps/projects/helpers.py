@@ -1,6 +1,7 @@
 from datetime import datetime
 from itertools import izip, takewhile
 from django.conf import settings
+from django.utils import timezone
 from openpyxl import load_workbook
 
 from django.db import transaction
@@ -91,14 +92,14 @@ def fetch_slots_from_server(project, sftp, user):
                     if slot.status == VoiceSlot.MISSING:
                         slot.status = VoiceSlot.NEW
                         slot.bravo_checksum = fs.msum
-                        slot.bravo_time = datetime.fromtimestamp(fs.mtime)
+                        slot.bravo_time = timezone.make_aware(datetime.fromtimestamp(fs.mtime), timezone.get_current_timezone())
                         slot.history = "Slot found, {0}\n".format(datetime.now()) + slot.history
                         slot.save()
                         Action.log(user, Action.AUTO_NEW_SLOT, 'Slot discovered during status check', slot)
                     elif slot.bravo_time is None or bravo_time < datetime.fromtimestamp(fs.mtime) and slot.bravo_checksum != fs.msum:
                         slot.status = VoiceSlot.NEW
                         slot.bravo_checksum = fs.msum
-                        slot.bravo_time = datetime.fromtimestamp(fs.mtime)
+                        slot.bravo_time = timezone.make_aware(datetime.fromtimestamp(fs.mtime), timezone.get_current_timezone())
                         slot.history = "Slot is new, {0}\n".format(datetime.now()) + slot.history
                         slot.save()
                         Action.log(user, Action.AUTO_NEW_SLOT, 'Slot discovered during status check', slot)
