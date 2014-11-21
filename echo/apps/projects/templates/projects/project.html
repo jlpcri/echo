@@ -192,14 +192,15 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <button id="update_file_close" type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                     <h3 id="update_file_title"></h3>
                 </div>
                 <div class="modal-body">
-                    <p>Are you sure to update file status from bravo server?</p>
+                    <div class="col-md-10">Are you sure to update file status from bravo server?</div>
+                    <div class="col-md-2" hidden id="update_file_throbber"><i class="fa fa-spinner fa-2x fa-spin"></i></div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <button id="update_file_cancel" class="btn btn-default" data-dismiss="modal">Cancel</button>
                     <a href="#" id="update_file_confirm" data-ttggle="modal" role="button" class="btn btn-success">Update</a>
                 </div>
             </div>
@@ -210,17 +211,19 @@
 {% endblock %}
 {% block endscript %}
     <script type="text/javascript">
-        $('#upload_file').click(function () {
+        $('#update_file_confirm').click(function () {
             setTimeout(function () {
-                $('#throbber').show();
-                $('#upload_file').attr('disabled', 'disabled');
+                $('#update_file_throbber').show();
+                $('#update_file_confirm').attr('disabled', 'disabled');
+                $('#update_file_cancel').attr('disabled', 'disabled');
+                $('#update_file_close').attr('disabled', 'disabled');
             }, 0);
         });
 
         function project_update_file_status(project_name, project_id) {
             $('#update_file_title').text('Project: ' + project_name);
             $('#update_file_confirm').attr('href', '/pheme/projects/' + project_id + '/fetch');
-            $('#update_file_modal').modal('show');
+            $('#update_file_modal').modal({backdrop: 'static'});
         }
 
 
