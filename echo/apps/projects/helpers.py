@@ -1,8 +1,10 @@
 from datetime import datetime
 from itertools import izip, takewhile
+from django.conf import settings
 from openpyxl import load_workbook
 
 from django.db import transaction
+import pysftp
 
 from echo.apps.projects.models import Language, Project, VoiceSlot, VUID
 from echo.apps.activity.models import Action
@@ -228,4 +230,25 @@ def verify_root_path(vuid, ws):
     if vuid_path.startswith(vuid.project.root_path):
         return True
     else:
+        return False
+
+
+def verify_update_root_path(project, new_path):
+    old_path = project.root_path
+    if old_path.startswith(new_path):  # go up level, allowed
+        try:
+            with pysftp.Connection(project.bravo_server.address,
+                                   username=project.bravo_server.account,
+                                   private_key=settings.PRIVATE_KEY) as sftp:
+                wc = sftp.execute('ls {0} -Rf | wc --l'.format(new_path))
+                if int(wc[0]) > 15000:  # word count > 15k not allowed
+                    return False
+                else:
+                    return True
+        except (pysftp.ConnectionException,
+                pysftp.CredentialException,
+                pysftp.AuthenticationException,
+                pysftp.SSHException):
+            return False
+    else:  # go deep level, not allowed
         return False

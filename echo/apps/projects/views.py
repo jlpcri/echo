@@ -192,6 +192,11 @@ def project(request, pid):
                 if not os.path.isabs(root_path):
                     messages.danger(request, 'Bravo Server Root Path Format Incorrect')
                     return redirect('projects:project', pid=pid)
+
+                if not helpers.verify_update_root_path(p, root_path):
+                    messages.danger(request, 'New root path not allowed')
+                    return redirect('projects:project', pid=pid)
+
                 p.root_path = root_path
                 p.save()
                 Action.log(request.user,
