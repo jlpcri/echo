@@ -26,6 +26,7 @@ class Project(models.Model):
     tests_run = models.IntegerField(default=0)
     failure_count = models.IntegerField(default=0)
     bravo_server = models.ForeignKey('settings.Server', blank=True, null=True, on_delete=models.SET_NULL)
+    root_path = models.TextField(blank=True, null=True)
     preprod_server = models.ForeignKey('settings.PreprodServer', blank=True, null=True, on_delete=models.SET_NULL)
     preprod_path = models.TextField(blank=True, null=True)
     status = models.TextField(choices=PROJECT_STATUS_CHOICES, default=TESTING)
