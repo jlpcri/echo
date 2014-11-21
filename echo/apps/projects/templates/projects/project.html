@@ -103,7 +103,7 @@
                         {% endif %}
                         <li class="list-group-item"><a href="{% url 'elpis:dashboard' project.pk %}"><b>Verify File Transfer</b></a></li>
                         <li class="list-group-item">
-                            <a href="#" class="text" onclick="project_update_file_status('{{ project.name }}', {{ project.id }})" title="Update File Statuses">
+                            <a href="#" class="text" id="fileUpdateLink" title="Update File Statuses">
                             <b>Update File Statuses</b>
                             </a>
                         </li>
@@ -259,17 +259,18 @@
                 $('#update_file_cancel').attr('disabled', 'disabled');
                 $('#update_file_close').attr('disabled', 'disabled');
             }, 0);
-        });
 
-        function project_update_file_status(project_name, project_id) {
-            $('#update_file_title').text('Project: ' + project_name);
-            $('#update_file_confirm').attr('href', '/pheme/projects/' + project_id + '/fetch');
+        function project_update_file_status() {
+            $('#update_file_title').text('Project: {{project.name}}');
+            $('#update_file_confirm').attr('href', '/pheme/projects/' + {{project.id}} + '/fetch');
             $('#update_file_modal').modal({backdrop: 'static'});
-        }
+        };
+
+        $("#fileUpdateLink").click(project_update_file_status)
 
 
         window.setInterval(function() {
-            $.getJSON('{% url 'projects:project_progress' project.id %}', function(data){
+            $.getJSON('{% url "projects:project_progress" project.id %}', function(data){
                 $('#bar_passed').css('width', data['passed_percent'] + '%');
                 $('#bar_passed').html(data['passed']);
                 $('#bar_failed').css('width', data['failed_percent'] + '%');
