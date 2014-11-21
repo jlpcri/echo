@@ -245,6 +245,10 @@ def verify_root_path(vuid):
 
 
 def verify_update_root_path(project, new_path):
+    # if no vuids allow update root path
+    if project.vuid_set.all().count() == 0:
+        return True
+
     old_path = project.root_path
     if old_path.startswith(new_path):  # go up level, allowed
         try:
