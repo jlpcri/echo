@@ -44,7 +44,7 @@
                                 <tr>
                                     <form method="POST" action="{% url "settings:users" %}">
                                         {% csrf_token %}
-                                        <input type="hidden" name="uid" value="{{ user.pk }}">
+                                        <input type="hidden" name="uid" value="{{ u.pk }}">
                                         <td>{{ u.username }}</td>
                                         <td>{{ u.first_name }}</td>
                                         <td>{{ u.last_name }}</td>
