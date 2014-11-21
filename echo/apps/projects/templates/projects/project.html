@@ -253,6 +253,7 @@
             $('#progress_{{ project.pk }}').tooltip();
         {% endif %}
 
+        $('#update_file_confirm').click(function () {
             setTimeout(function () {
                 $('#update_file_throbber').show();
                 $('#update_file_confirm').attr('disabled', 'disabled');
