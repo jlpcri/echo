@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
 
 
 class Scope(models.Model):
@@ -69,7 +69,7 @@ class Action(models.Model):
         (UN_ARCHIVE_PROJECT, 'Un archive project')
     )
 
-    actor = models.ForeignKey(get_user_model())
+    actor = models.ForeignKey(User)
     type = models.PositiveSmallIntegerField(choices=TYPE_CHOICES, blank=False, null=False)
     description = models.TextField()
     time = models.DateTimeField(auto_now_add=True)

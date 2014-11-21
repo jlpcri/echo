@@ -29,14 +29,39 @@
         <hr>
         <div class="row">
             <div class="col-xs-12">
-                <div class="progress" id="progress_bar">
-                    <div class="progress-bar progress-bar-success" id="bar_passed"
-                         style="width: {{ project.slots_passed_percent }}%">{{ project.slots_passed }}</div>
-                    <div class="progress-bar progress-bar-warning" id="bar_failed"
-                         style="width: {{ project.slots_failed_percent }}%">{{ project.slots_failed }}</div>
-                    <div class="progress-bar progress-bar-danger" id="bar_missing"
-                         style="width: {{ project.slots_missing_percent }}%">{{ project.slots_missing }}</div>
-                </div>
+                {% if project.slots_total > 0 %}
+                    <div id="progress_{{ project.pk }}" class="progress" style="line-height: 20px;">
+                        {% if project.slots_passed %}
+                            <div id="passed_bar_{{ project.pk }}" class="progress-bar progress-bar-success"
+                                 style="width: {{ project.slots_passed_percent }}%; cursor: default;"
+                                 data-toggle="tooltip" data-placement="top"
+                                 title="{{ project.slots_passed }} passed">{{ project.slots_passed }}</div>
+                        {% endif %}
+                        {% if project.slots_failed %}
+                            <div id="defective_bar_{{ project.pk }}" class="progress-bar progress-bar-warning"
+                                 style="width: {{ project.slots_failed_percent }}%; cursor: default;"
+                                 data-toggle="tooltip" data-placement="top"
+                                 title="{{ project.slots_failed }} defective">{{ project.slots_failed }}</div>
+                        {% endif %}
+                        {% if project.slots_missing %}
+                            <div id="missing_bar_{{ project.pk }}" class="progress-bar progress-bar-danger"
+                                 style="width: {{ project.slots_missing_percent }}%; cursor: default;"
+                                 data-toggle="tooltip" data-placement="top"
+                                 title="{{ project.slots_missing }} missing">{{ project.slots_missing }}</div>
+                        {% endif %}
+                        {% if project.slots_untested %}
+                            <div id="untested_bar_{{ project.pk }}" class="progress-bar progress-bar-info"
+                                 style="width: {{ project.slots_untested_percent }}%; cursor: default;"
+                                 data-toggle="tooltip" data-placement="top"
+                                 title="{{ project.slots_untested }} untested">{{ project.slots_untested }}</div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div id="progress_{{ project.pk }}" class="progress" class="progress"
+                         style="line-height: 20px; margin-bottom: 0px;"
+                         data-toggle="tooltip" data-placement="top"
+                         title="No voiceslots yet"></div>
+                {% endif %}
             </div>
         </div>
         <div class="row">
@@ -211,6 +236,23 @@
 {% endblock %}
 {% block endscript %}
     <script type="text/javascript">
+        {% if project.slots_total > 0 %}
+            {% if project.slots_passed %}
+                $('#passed_bar_{{ project.pk }}').tooltip();
+            {% endif %}
+            {% if project.slots_failed %}
+                $('#defective_bar_{{ project.pk }}').tooltip();
+            {% endif %}
+            {% if project.slots_missing %}
+                $('#missing_bar_{{ project.pk }}').tooltip();
+            {% endif %}
+            {% if project.slots_untested %}
+                $('#untested_bar_{{ project.pk }}').tooltip();
+            {% endif %}
+        {% else %}
+            $('#progress_{{ project.pk }}').tooltip();
+        {% endif %}
+
         $('#update_file_confirm').click(function () {
             setTimeout(function () {
                 $('#update_file_throbber').show();
