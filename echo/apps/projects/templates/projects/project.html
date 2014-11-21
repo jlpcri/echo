@@ -253,12 +253,14 @@
             $('#progress_{{ project.pk }}').tooltip();
         {% endif %}
 
+        $('#update_file_confirm').click(function () {
             setTimeout(function () {
                 $('#update_file_throbber').show();
                 $('#update_file_confirm').attr('disabled', 'disabled');
                 $('#update_file_cancel').attr('disabled', 'disabled');
                 $('#update_file_close').attr('disabled', 'disabled');
             }, 0);
+        });
 
         function project_update_file_status() {
             $('#update_file_title').text('Project: {{project.name}}');
