@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import json
 import os
 import uuid
 
@@ -15,7 +16,7 @@ from echo.apps.activity.models import Action
 
 from echo.apps.core import messages
 from echo.apps.settings.models import Server
-from echo.apps.projects.forms import ProjectForm, ServerForm, UploadForm
+from echo.apps.projects.forms import ProjectForm, ServerForm, UploadForm, ProjectRootPathForm
 from echo.apps.projects.models import Language, Project, VoiceSlot, VUID
 from echo.apps.projects import contexts, helpers
 
@@ -103,12 +104,17 @@ def new(request):
                     return render(request, "projects/new.html", contexts.context_new(form))
 
                 n = form.cleaned_data['name']
+                root_path = form.cleaned_data['root_path']
+                if root_path and not os.path.isabs(root_path):
+                    messages.danger(request, 'Bravo Server Root Path Format Incorrect')
+                    return render(request, 'projects/new.html', contexts.context_new(form))
                 p = Project(name=n)
                 try:
                     p.full_clean()
                     p.save()
                     p.users.add(request.user)
                     p.bravo_server = bravo_server  # set default bravo server
+                    p.root_path = root_path
                     p.save()
                     messages.success(request, "Created project")
                     if 'file' in request.FILES and request.FILES['file'].name.endswith('.xlsx'):
@@ -178,37 +184,72 @@ def project(request, pid):
             return render(request, "projects/project.html", contexts.context_project(p, upload_form=form,
                                                                                      server_form=ServerForm(initial={
                                                                                          'server': p.current_server_pk()})))
+        elif "update_root_path" in request.POST:
+            form = ProjectRootPathForm(request.POST)
+            p = get_object_or_404(Project, pk=pid)
+            if form.is_valid():
+                root_path = form.cleaned_data['root_path']
+                if not os.path.isabs(root_path):
+                    messages.danger(request, 'Bravo Server Root Path Format Incorrect')
+                    return redirect('projects:project', pid=pid)
+
+                if p.root_path and not helpers.verify_update_root_path(p, root_path):
+                    messages.danger(request, 'New root path not allowed')
+                    return redirect('projects:project', pid=pid)
+
+                p.root_path = root_path
+                p.save()
+                Action.log(request.user,
+                           Action.UPDATE_ROOT_PATH,
+                           u'Bravo server root path updated to ' + unicode(root_path),
+                           p)
+                messages.success(request, 'Updated Bravo Server Path Successfully')
+                return redirect('projects:project', pid=pid)
         return redirect("projects:project", pid=pid)
     return HttpResponseNotFound()
+
+@login_required
+def project_progress(request, pid):
+    if request.method == 'GET':
+        p = get_object_or_404(Project, pk=pid)
+        data = {
+            'passed': p.slots_passed(),
+            'passed_percent': p.slots_passed_percent(),
+            'failed': p.slots_failed(),
+            'failed_percent': p.slots_failed_percent(),
+            'missing': p.slots_missing(),
+            'missing_percent': p.slots_missing_percent()
+        }
+        return HttpResponse(json.dumps(data), content_type="application/json")
 
 
 @login_required
 def projects(request):
-    tab_types = [
-        'my',
-        'all',
-        'archive'
-    ]
-    sort_types = [
-        'project_name',
-        '-project_name',
-        'created_date',
-        '-created_date',
-        'last_modified',
-        '-last_modified',
-        'total_prompts',
-        '-total_prompts',
-        'user_count',
-        '-user_count'
-    ]
     if request.method == 'GET':
+        tab_types = [
+            'my',
+            'all',
+            'archive'
+        ]
+        sort_types = [
+            'project_name',
+            '-project_name',
+            'created_date',
+            '-created_date',
+            'last_modified',
+            '-last_modified',
+            'total_prompts',
+            '-total_prompts',
+            'user_count',
+            '-user_count'
+        ]
         # if tab and sort are not present, set to empty
         tab = request.GET.get('tab', '')
         sort = request.GET.get('sort', '')
         # if tab and sort are empty, set to defaults
         tab = tab if tab else 'my'
         sort = sort if sort else 'project_name'
-        # validate source and sort
+        # validate tab and sort
         if tab in tab_types and sort in sort_types:
             return render(request, "projects/projects.html", contexts.context_projects(request.user, tab, sort))
     return HttpResponseNotFound()
@@ -420,3 +461,20 @@ def temp(request):
     if request.method == 'GET':
         return render(request, "projects/temp.html", contexts.context_temp(request.user_agent.browser))
     return HttpResponseNotFound()
+
+@login_required
+def archive_project(request, pid):
+    if request.method == 'GET':
+        p = get_object_or_404(Project, pk=pid)
+        action = Action.ARCHIVE_PROJECT
+        note = 'Archive Project.'
+        if p.status == Project.TESTING:
+            p.status = Project.CLOSED
+        elif p.status == Project.CLOSED:
+            p.status = Project.TESTING
+            action = Action.UN_ARCHIVE_PROJECT
+            note = 'Un Archive Project.'
+        p.save()
+        Action.log(request.user, action, note, p)
+
+    return redirect("projects:project", pid)

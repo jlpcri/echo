@@ -1,7 +1,5 @@
 from django.db import models
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
+from django.contrib.auth.models import User
 
 
 class Scope(models.Model):
@@ -49,6 +47,8 @@ class Action(models.Model):
     UPDATE_BRAVO_SERVER = 13
     TESTER_JOIN_PROJECT = 14
     TESTER_LEAVE_PROJECT = 15
+    ARCHIVE_PROJECT = 16
+    UN_ARCHIVE_PROJECT = 17
     TYPE_CHOICES = (
         (TESTER_PASS_SLOT, 'Tester passed slot'),
         (TESTER_FAIL_SLOT, 'Tester failed slot'),
@@ -64,7 +64,9 @@ class Action(models.Model):
         (UPDATE_ROOT_PATH, 'Project root path updated'),
         (UPDATE_BRAVO_SERVER, 'Bravo server changed'),
         (TESTER_JOIN_PROJECT, 'Tester joined project'),
-        (TESTER_LEAVE_PROJECT, 'Tester left project')
+        (TESTER_LEAVE_PROJECT, 'Tester left project'),
+        (ARCHIVE_PROJECT, 'Archive project'),
+        (UN_ARCHIVE_PROJECT, 'Un archive project')
     )
 
     actor = models.ForeignKey(User)
@@ -88,7 +90,7 @@ class Action(models.Model):
         LANGUAGE_TYPES = (cls.REPORT_GENERATION, )
         PROJECT_TYPES = (cls.UPLOAD_VUID, cls.UPDATE_FILE_STATUSES, cls.CREATE_PROJECT, cls.REPORT_GENERATION,
                          cls.ELPIS_RUN, cls.UPDATE_ROOT_PATH, cls.UPDATE_BRAVO_SERVER, cls.TESTER_JOIN_PROJECT,
-                         cls.TESTER_LEAVE_PROJECT)
+                         cls.TESTER_LEAVE_PROJECT, cls.ARCHIVE_PROJECT, cls.UN_ARCHIVE_PROJECT)
         UNIVERSAL_TYPES = ()
 
         from echo.apps.projects.models import VoiceSlot, Language, Project

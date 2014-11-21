@@ -1,8 +1,10 @@
 from datetime import datetime
 from itertools import izip, takewhile
+from django.conf import settings
 from openpyxl import load_workbook
 
 from django.db import transaction
+import pysftp
 
 from echo.apps.projects.models import Language, Project, VoiceSlot, VUID
 from echo.apps.activity.models import Action
@@ -41,7 +43,8 @@ def commonprefix(paths, sep='/'):
 def fetch_slots_from_server(project, sftp, user):
     """Contains logic to update file statuses"""
     # get shared path of all distinct paths from voiceslot models in project
-    path = commonprefix(project.voiceslots().values_list('path', flat=True).distinct())
+    #path = commonprefix(project.voiceslots().values_list('path', flat=True).distinct())
+    path = project.root_path
     try:
         result = sftp.execute('find {0}/ -name "*.wav"'.format(path) + ' -exec md5sum {} \; -exec stat -c"%Y" {} \;')
     except IOError:
@@ -176,8 +179,17 @@ def parse_vuid(vuid):
 
 
 def upload_vuid(uploaded_file, user, project):
+    # check if project root path is set
+    if not project.root_path:
+        return {"valid": False, "message": "Please set root path, unable to upload"}
+
     vuid = VUID(filename=uploaded_file.name, file=uploaded_file, project=project, upload_by=user)
     vuid.save()
+
+    # check conflict between root path and vuid path
+    if not verify_root_path(vuid):
+        return {"valid": False, "message": "Invalid vuid path, unable to upload"}
+
     result = verify_vuid(vuid)
     if not result['valid']:
         vuid.delete()
@@ -193,13 +205,20 @@ def upload_vuid(uploaded_file, user, project):
 def verify_vuid(vuid):
     wb = load_workbook(vuid.file.path)
     ws = wb.active
+    valid = False
+    message = "Invalid file structure, unable to upload"
     if len(ws.rows) > 2:
-        if verify_vuid_headers(vuid):
-            return {"valid": True, "message": "Uploaded file successfully"}
+        if not verify_vuid_headers(vuid):
+            message = "Invalid file headers, unable to upload"
+        elif not verify_root_path(vuid):
+            message = "Invalid vuid path, unable to upload"
+        else:
+            valid = True
+            message = "Uploaded file successfully"
     elif len(ws.rows) == 2:
         if verify_vuid_headers(vuid):
-            return {"valid": False, "message": "No records in file, unable to upload"}
-    return {"valid": False, "message": "Invalid file structure, unable to upload"}
+            message = "No records in file, unable to upload"
+    return {"valid": valid, "message": message}
 
 
 def verify_vuid_headers(vuid):
@@ -211,3 +230,40 @@ def verify_vuid_headers(vuid):
         if VUID_HEADER_NAME_SET.issubset(headers) and i != -1:
             return True
     return False
+
+
+def verify_root_path(vuid):
+    wb = load_workbook(vuid.file.path)
+    ws = wb.active
+    index = unicode(ws['A2'].value).strip().find('/')
+    vuid_path = ws['A2'].value.strip()[index:]
+    #print vuid_path, '-', vuid.project.root_path
+    if vuid_path.startswith(vuid.project.root_path):
+        return True
+    else:
+        return False
+
+
+def verify_update_root_path(project, new_path):
+    # if no vuids allow update root path
+    if project.vuid_set.all().count() == 0:
+        return True
+
+    old_path = project.root_path
+    if old_path.startswith(new_path):  # go up level, allowed
+        try:
+            with pysftp.Connection(project.bravo_server.address,
+                                   username=project.bravo_server.account,
+                                   private_key=settings.PRIVATE_KEY) as sftp:
+                wc = sftp.execute('ls {0} -Rf | wc --l'.format(new_path))
+                if int(wc[0]) > 15000:  # word count > 15k not allowed
+                    return False
+                else:
+                    return True
+        except (pysftp.ConnectionException,
+                pysftp.CredentialException,
+                pysftp.AuthenticationException,
+                pysftp.SSHException):
+            return False
+    else:  # go deep level, not allowed
+        return False

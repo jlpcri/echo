@@ -6,12 +6,10 @@ import uuid
 import pysftp
 
 from django.db import models
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
 from django.conf import settings
 
-from echo.apps.activity.models import Action, Scope
-
-User = get_user_model()
+from echo.apps.activity.models import Action
 
 
 def vuid_location(instance, filename):
@@ -28,6 +26,7 @@ class Project(models.Model):
     tests_run = models.IntegerField(default=0)
     failure_count = models.IntegerField(default=0)
     bravo_server = models.ForeignKey('settings.Server', blank=True, null=True, on_delete=models.SET_NULL)
+    root_path = models.TextField(blank=True, null=True)
     preprod_server = models.ForeignKey('settings.PreprodServer', blank=True, null=True, on_delete=models.SET_NULL)
     preprod_path = models.TextField(blank=True, null=True)
     status = models.TextField(choices=PROJECT_STATUS_CHOICES, default=TESTING)
@@ -78,6 +77,9 @@ class Project(models.Model):
             return float(self.slots_passed()) / self.slots_total() * 100
         else:
             return 0
+
+    def slots_passed_and_failed(self):
+        return self.voiceslots().filter(status=VoiceSlot.PASS).count() + self.voiceslots().filter(status=VoiceSlot.FAIL).count()
 
     def slots_tested(self):
         return self.voiceslots().filter(status__in=(VoiceSlot.PASS, VoiceSlot.FAIL)).count()
@@ -133,11 +135,10 @@ class Project(models.Model):
                 a = Action.objects.filter(scope__voiceslot=slot, type=Action.TESTER_FAIL_SLOT).order_by('-time')[0]
                 Action.log(a.actor,
                            Action.AUTO_FAIL_SLOT,
-                           u'{0} (duplicate of {1})'.format(a.description, a.voiceslot.name),
+                           u'{0} (duplicate of {1})'.format(a.description, a.scope.voiceslot.name),
                            s)
             s.save()
         return vs.count()
-
 
     def voiceslots_queue(self, checked_out=False, filter_language=None, older_than_ten=False):
         vs = self.voiceslots().filter(checked_out=checked_out, status=VoiceSlot.NEW)
@@ -169,6 +170,29 @@ class Project(models.Model):
 
     def actions_failed(self):
         return self.actions(filter_status=VoiceSlot.FAIL)
+
+    def created_date(self):
+        vuids = VUID.objects.filter(project=self)
+        if vuids.count() == 1:
+            upload_date = vuids[0].upload_date
+        elif vuids.count() > 1:
+            upload_date = vuids[0].upload_date
+            for vuid in vuids:
+                if vuid.upload_date < upload_date:
+                    upload_date = vuid.upload_date
+        else:
+            upload_date = None
+
+        return upload_date
+
+    def last_modified_date(self):
+        if self.actions().count() > 0:
+            return self.actions().latest('time').time
+        else:
+            return None
+
+    def update_file_status_last_time(self):
+        return self.actions().filter(type=Action.UPDATE_FILE_STATUSES).latest('time').time
 
 
 class VoiceSlot(models.Model):

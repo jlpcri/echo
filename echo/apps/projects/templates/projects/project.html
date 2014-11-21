@@ -9,7 +9,7 @@
         {% if project %}
             <div class="row">
                 <div class="col-xs-9">
-                    <h3>{{ project.name }}&nbsp;<i><small>{{ project.status }}</small></i></h3>
+                    <h3>{{ project.name }}&nbsp;<i></i></h3>
                 </div>
                 <div class="col-xs-3">
                     {% if user.username not in project.usernames %}
@@ -29,12 +29,12 @@
         <hr>
         <div class="row">
             <div class="col-xs-12">
-                <div class="progress">
-                    <div class="progress-bar progress-bar-success"
+                <div class="progress" id="progress_bar">
+                    <div class="progress-bar progress-bar-success" id="bar_passed"
                          style="width: {{ project.slots_passed_percent }}%">{{ project.slots_passed }}</div>
-                    <div class="progress-bar progress-bar-warning"
+                    <div class="progress-bar progress-bar-warning" id="bar_failed"
                          style="width: {{ project.slots_failed_percent }}%">{{ project.slots_failed }}</div>
-                    <div class="progress-bar progress-bar-danger"
+                    <div class="progress-bar progress-bar-danger" id="bar_missing"
                          style="width: {{ project.slots_missing_percent }}%">{{ project.slots_missing }}</div>
                 </div>
             </div>
@@ -44,28 +44,51 @@
                 {% if languages %}
                     <label class="control-label" for="language_list">Prompts by Language</label>
                     <ul id="language_list" class="list-group">
-                        <li class="list-group-item">
-                            <span class="badge">{{ project.voiceslot_count }}</span>
-                            <a href="{% url "projects:voiceslots" project.pk %}?language=master"><b>master</b></a>
-                        </li>
                         {% for language in languages %}
                             <li class="list-group-item">
                                 <span class="badge">{{ language.voiceslot_count }}</span>
                                 <a href="{% url "projects:voiceslots" project.pk %}?language={{ language.name|lower }}">
-                                    <b>{{ language.name }}</b>
+                                    <b>{{ language.name|capfirst }}</b>
                                 </a>
-                                {% if user.username in project.usernames %}
-                                <a href="{% url "projects:queue" project.pk %}?language={{ language.name|lower }}">
-                                    <div class="text-center">Start Testing</div>
-                                </a>
-                                {% endif %}
+
                             </li>
                         {% endfor %}
+
+                        <li class="list-group-item">
+                            <span class="badge">{{ project.voiceslot_count }}</span>
+                            <a href="{% url "projects:voiceslots" project.pk %}?language=master"><b>Total</b></a>
+                        </li>
                     </ul>
                     <br>
                     <label class="control-label" for="action_list">Project Actions</label>
                     <ul id="action_list" class="list-group">
+                        {% if user.username in project.usernames %}
+                        <li class="list-group-item">
+                            <b>Start Testing</b>
+                            <ul>
+                                {% for language in languages %}
+                                    <li>
+                                        <i class="fa fa-hand-o-right"></i> <a href="{% url "projects:queue" project.pk %}?language={{ language.name|lower }}">
+                                            <b>{{ language.name | capfirst }}</b>
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                        {% endif %}
                         <li class="list-group-item"><a href="{% url 'elpis:dashboard' project.pk %}"><b>Verify File Transfer</b></a></li>
+                        <li class="list-group-item">
+                            <a href="#" class="text" onclick="project_update_file_status('{{ project.name }}', {{ project.id }})" title="Update File Statuses">
+                            <b>Update File Statuses</b>
+                            </a>
+                        </li>
+                        <li class="list-group-item">
+                            {% if project.status == 'Testing' %}
+                                <a href="{% url "projects:archive_project" project.pk %}" title="Archive Project"><b>Archive Project</b></a>
+                            {% elif project.status == 'Closed' %}
+                                <a href="{% url "projects:archive_project" project.pk %}" title="Un-Archive Project"><b>Un Archive Project</b></a>
+                            {% endif %}
+                        </li>
                     </ul>
                     <br>
                 {% endif %}
@@ -77,33 +100,19 @@
                                 {{ user.username }}
                             </li>
                         {% endfor %}
+                        <li class="list-group-item">
+                            <span class="badge">{{ project.users.all.count }}</span>
+                            <b>Total</b>
+                        </li>
                     </ul>
                 {% endif %}
             </div>
             <div class="col-xs-8">
                 <form action="{% url 'projects:project' project.pk %}" method="post" enctype="multipart/form-data">
                     {% csrf_token %}
-                    <div class="form-group">
-                        <label class="control-label">Bravo Server</label>
 
-                        <div class="input-group">
-                            {{ server_form.server }}
-                            <span class="input-group-btn">
-                                <button type="submit" name="update_server" class="btn btn-primary">
-                                    Update
-                                </button>
-                            </span>
-                        </div>
-                    </div>
-                    <a href="{% url "projects:fetch" project.pk %}" name="update_files" class="btn btn-warning pull-right"
-                       style="width: 50%;">
-                        <i class="fa fa-refresh fa-fw"></i>&nbsp;Update File Statuses
-                    </a>
-
-                    <div class="clearfix"></div>
-                    <hr>
                     <div class="form-group">
-                        <label class="control-label">Upload VUID File (.xlsx format)</label>
+                        <label class="control-label">Upload Prompt List File (.xlsx format)</label>
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         <label id="throbber" hidden><i class="fa fa-spinner fa-2x fa-spin"></i> </label>
 
@@ -121,36 +130,113 @@
                             </span>
                         </div>
                     </div>
+                    {% if vuids %}
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th class="col-xs-5">Filename</th>
+                                    <th class="col-xs-5">Upload Date</th>
+                                    <th class="col-xs-2">Upload By</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for vuid in vuids %}
+                                    <tr>
+                                        <td><a href="{% url "projects:vuid" project.pk vuid.pk %}">{{ vuid.filename }}</a></td>
+                                        <td>{{ vuid.upload_date }}</td>
+                                        <td>{{ vuid.upload_by.username }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% endif %}
+
+                    <div class="clearfix"></div>
+                    <hr>
+
+                    <div class="form-group">
+                        <label class="control-label">Bravo Server</label>
+                        <div class="input-group">
+                            {{ server_form.server }}
+                            <span class="input-group-btn">
+                                <button type="submit" name="update_server" class="btn btn-primary">
+                                    Update
+                                </button>
+                            </span>
+                        </div>
+                    </div>
+                    {% if project.update_file_status_last_time %}
+                        <div>
+                            <b>Last update file status time:</b> {{ project.update_file_status_last_time | date:'Y-m-j H:i:s'}}
+                        </div>
+                    {% endif %}
+
+                    <hr>
+                    <div class="form-group">
+                        <label class="content-label">Bravo Server Root Path</label>
+                        <div class="input-group">
+                            {{ root_path_form.root_path }}
+                            <span class="input-group-btn">
+                                <button type="submit" name="update_root_path" class="btn btn-primary">
+                                    Update
+                                </button>
+                            </span>
+                        </div>
+                    </div>
                 </form>
-                <table class="table">
-                    <thead>
-                    <tr>
-                        <th class="col-xs-5">Filename</th>
-                        <th class="col-xs-5">Upload Date</th>
-                        <th class="col-xs-2">Upload By</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for vuid in vuids %}
-                        <tr>
-                            <td><a href="{% url "projects:vuid" project.pk vuid.pk %}">{{ vuid.filename }}</a></td>
-                            <td>{{ vuid.upload_date }}</td>
-                            <td>{{ vuid.upload_by.username }}</td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
             </div>
         </div>
+
+    <!--Update File Status Confirmation modal -->
+    <div class="modal fade" id="update_file_modal" tabindex="-1" role="dialog" aria-labelledby="confirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button id="update_file_close" type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h3 id="update_file_title"></h3>
+                </div>
+                <div class="modal-body">
+                    <div class="col-md-10">Are you sure to update file status from bravo server?</div>
+                    <div class="col-md-2" hidden id="update_file_throbber"><i class="fa fa-spinner fa-2x fa-spin"></i></div>
+                </div>
+                <div class="modal-footer">
+                    <button id="update_file_cancel" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                    <a href="#" id="update_file_confirm" data-ttggle="modal" role="button" class="btn btn-success">Update</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     </div>
 {% endblock %}
 {% block endscript %}
     <script type="text/javascript">
-        $('#upload_file').click(function () {
+        $('#update_file_confirm').click(function () {
             setTimeout(function () {
-                $('#throbber').show();
-                $('#upload_file').attr('disabled', 'disabled');
+                $('#update_file_throbber').show();
+                $('#update_file_confirm').attr('disabled', 'disabled');
+                $('#update_file_cancel').attr('disabled', 'disabled');
+                $('#update_file_close').attr('disabled', 'disabled');
             }, 0);
-        })
+        });
+
+        function project_update_file_status(project_name, project_id) {
+            $('#update_file_title').text('Project: ' + project_name);
+            $('#update_file_confirm').attr('href', '/pheme/projects/' + project_id + '/fetch');
+            $('#update_file_modal').modal({backdrop: 'static'});
+        }
+
+
+        window.setInterval(function() {
+            $.getJSON('{% url 'projects:project_progress' project.id %}', function(data){
+                $('#bar_passed').css('width', data['passed_percent'] + '%');
+                $('#bar_passed').html(data['passed']);
+                $('#bar_failed').css('width', data['failed_percent'] + '%');
+                $('#bar_failed').html(data['failed']);
+                $('#bar_missing').css('width', data['missing_percent'] + '%');
+                $('#bar_missing').html(data['missing']);
+            })
+        }, 5000);
+
     </script>
 {% endblock %}
