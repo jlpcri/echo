@@ -8,7 +8,7 @@ import pysftp
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.conf import settings
@@ -218,7 +218,9 @@ def project_progress(request, pid):
             'failed': p.slots_failed(),
             'failed_percent': p.slots_failed_percent(),
             'missing': p.slots_missing(),
-            'missing_percent': p.slots_missing_percent()
+            'missing_percent': p.slots_missing_percent(),
+            'untested': p.slots_untested(),
+            'untested_percent': p.slots_untested_percent()
         }
         return HttpResponse(json.dumps(data), content_type="application/json")
 
@@ -259,6 +261,12 @@ def projects(request):
 def queue(request, pid):
     if request.method == 'GET':
         p = get_object_or_404(Project, pk=pid)
+        # check if update file status from bravo server
+        try:
+            p.update_file_status_last_time()
+        except ObjectDoesNotExist:
+            messages.danger(request, 'Please update file statuses from bravo server')
+            return redirect('projects:project', pid=pid)
         lang = get_object_or_404(Language, project=p, name=request.GET.get('language', '__malformed').lower())
         slots_out = request.user.voiceslot_set
         if slots_out.count() < 0:
@@ -409,6 +417,13 @@ def testslot(request, pid, vsid):
 def voiceslots(request, pid):
     if request.method == 'GET':
         p = get_object_or_404(Project, pk=pid)
+        # check if update file status from bravo server
+        try:
+            p.update_file_status_last_time()
+        except ObjectDoesNotExist:
+            messages.danger(request, 'Please update file statuses from bravo server')
+            return redirect('projects:project', pid=pid)
+
         lang = request.GET.get('language', 'master').strip().lower()
         if lang == 'master' or lang in p.language_list():
             if request.GET.get('export', False) == 'csv':
