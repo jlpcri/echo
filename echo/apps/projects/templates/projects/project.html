@@ -93,7 +93,7 @@
                             <ul>
                                 {% for language in languages %}
                                     <li>
-                                        <i class="fa fa-hand-o-right"></i> <a href="{% url "projects:queue" project.pk %}?language={{ language.name|lower }}">
+                                        <a href="{% url "projects:queue" project.pk %}?language={{ language.name|lower }}">
                                             <b>{{ language.name | capfirst }}</b>
                                         </a>
                                     </li>
@@ -271,12 +271,14 @@
 
         window.setInterval(function() {
             $.getJSON('{% url 'projects:project_progress' project.id %}', function(data){
-                $('#bar_passed').css('width', data['passed_percent'] + '%');
-                $('#bar_passed').html(data['passed']);
-                $('#bar_failed').css('width', data['failed_percent'] + '%');
-                $('#bar_failed').html(data['failed']);
-                $('#bar_missing').css('width', data['missing_percent'] + '%');
-                $('#bar_missing').html(data['missing']);
+                $('#passed_bar_' + {{ project.id }}).css('width', data['passed_percent'] + '%');
+                $('#passed_bar_' + {{ project.id }}).html(data['passed']);
+                $('#defective_bar_{{ project.id }}').css('width', data['failed_percent'] + '%');
+                $('#defective_bar_{{ project.id }}').html(data['failed']);
+                $('#missing_bar_{{ project.id }}').css('width', data['missing_percent'] + '%');
+                $('#missing_bar_{{ project.id }}').html(data['missing']);
+                $('#untested_bar_{{ project.id }}').css('width', data['untested_percent'] + '%');
+                $('#untested_bar_{{ project.id }}').html(data['untested']);
             })
         }, 5000);
 

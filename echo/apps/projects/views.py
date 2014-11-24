@@ -218,7 +218,9 @@ def project_progress(request, pid):
             'failed': p.slots_failed(),
             'failed_percent': p.slots_failed_percent(),
             'missing': p.slots_missing(),
-            'missing_percent': p.slots_missing_percent()
+            'missing_percent': p.slots_missing_percent(),
+            'untested': p.slots_untested(),
+            'untested_percent': p.slots_untested_percent()
         }
         return HttpResponse(json.dumps(data), content_type="application/json")
 
