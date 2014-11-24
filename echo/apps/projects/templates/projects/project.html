@@ -266,10 +266,12 @@
                 $('#passed_bar_' + {{ project.id }}).css('width', data['passed_percent'] + '%');
                 $('#passed_bar_' + {{ project.id }}).html(data['passed']);
                 $('#passed_bar_' + {{ project.id }}).attr('data-original-title', data['passed']+' passed');
+                $('#passed_bar_' + {{ project.id }}).tooltip();
 
                 $('#defective_bar_' + {{ project.id }}).css('width', data['failed_percent'] + '%');
                 $('#defective_bar_' + {{ project.id }}).html(data['failed']);
                 $('#defective_bar_' + {{ project.id }}).attr('data-original-title', data['failed']+' defective');
+                $('#defective_bar_' + {{ project.id }}).tooltip();
 
                 $('#missing_bar_' + {{ project.id }}).css('width', data['missing_percent'] + '%');
                 $('#missing_bar_' + {{ project.id }}).html(data['missing']);
