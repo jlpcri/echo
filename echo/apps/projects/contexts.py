@@ -10,19 +10,25 @@ def context_home(user, sort=None):
     if sort:
         if sort == 'project_name':
             projects = projects.order_by('name')
+            print type(projects)
         elif sort == '-project_name':
             projects = projects.order_by('-name')
+            print type(projects)
         elif sort == 'total_prompts':
             projects = sorted(projects, key=lambda p: p.slots_total())
+            print type(projects)
         elif sort == '-total_prompts':
             projects = sorted(projects, key=lambda p: p.slots_total(), reverse=True)
+            print type(projects)
         elif sort == 'user_count':
             projects = sorted(projects, key=lambda p: p.users_total())
+            print type(projects)
         elif sort == '-user_count':
             projects = sorted(projects, key=lambda p: p.users_total(), reverse=True)
+            print type(projects)
     return {
         'feed': Action.objects.filter(
-            scope__project=projects,
+            scope__project__in=projects,
             type__in=[
                 Action.ARCHIVE_PROJECT,
                 Action.CREATE_PROJECT,
@@ -92,13 +98,13 @@ def context_projects(user, tab, sort=None, page=None):
         elif sort == '-project_name':
             projects = projects.order_by('-name')
         elif sort == 'created_date':
-            pass
+            projects = sorted(projects, key=lambda p: p.created_date())
         elif sort == '-created_date':
-            pass
+            projects = sorted(projects, key=lambda p: p.created_date(), reverse=True)
         elif sort == 'last_modified':
-            pass
+            projects = sorted(projects, key=lambda p: p.last_modified_date())
         elif sort == '-last_modified':
-            pass
+            projects = sorted(projects, key=lambda p: p.last_modified_date(), reverse=True)
         elif sort == 'total_prompts':
             projects = sorted(projects, key=lambda p: p.slots_total())
         elif sort == '-total_prompts':

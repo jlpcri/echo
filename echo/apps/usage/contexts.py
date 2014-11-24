@@ -14,7 +14,7 @@ def overall():
     overall_auto_total = overall_auto_pass + overall_auto_fail + overall_auto_missing + overall_auto_new
     voiceslot_pass_fail_total = VoiceSlot.objects.filter(status__in=[VoiceSlot.PASS, VoiceSlot.FAIL]).count()
     overall_rework_ratio = float(overall_total) / voiceslot_pass_fail_total if voiceslot_pass_fail_total else 0
-    overall_auto_ratio = float(overall_total) / overall_auto_total if overall_auto_total else 0
+    overall_auto_ratio = float(overall_auto_total) / overall_total if overall_total else 0
     return {
         'total': overall_pass + overall_fail,
         'passed': overall_pass,
@@ -48,7 +48,7 @@ def projects_context(sort=None):
         project_auto_new = Action.objects.filter(scope__project=p, type=Action.AUTO_NEW_SLOT).count()
         project_auto_total = project_auto_pass + project_auto_fail + project_auto_missing + project_auto_new
         project_rework_ratio = float(project_total) / p.slots_passed_and_failed() if p.slots_passed_and_failed() else 0
-        project_auto_ratio = float(project_total) / project_auto_total if project_auto_total else 0
+        project_auto_ratio = float(project_auto_total) / project_total if project_total else 0
         projects.append(
             {
                 'project': p,
