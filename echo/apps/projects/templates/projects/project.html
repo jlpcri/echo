@@ -238,19 +238,19 @@
     <script type="text/javascript">
         {% if project.slots_total > 0 %}
             {% if project.slots_passed %}
-                $('#passed_bar_{{ project.pk }}').tooltip();
+                $('#passed_bar_' + {{ project.id }}).tooltip();
             {% endif %}
             {% if project.slots_failed %}
-                $('#defective_bar_{{ project.pk }}').tooltip();
+                $('#defective_bar_' + {{ project.id }}).tooltip();
             {% endif %}
             {% if project.slots_missing %}
-                $('#missing_bar_{{ project.pk }}').tooltip();
+                $('#missing_bar_' + {{ project.id }}).tooltip();
             {% endif %}
             {% if project.slots_untested %}
-                $('#untested_bar_{{ project.pk }}').tooltip();
+                $('#untested_bar_' + {{ project.id }}).tooltip();
             {% endif %}
         {% else %}
-            $('#progress_{{ project.pk }}').tooltip();
+            $('#progress_' + {{ project.id }}).tooltip();
         {% endif %}
 
         $('#update_file_confirm').click(function () {
@@ -273,12 +273,19 @@
             $.getJSON('{% url 'projects:project_progress' project.id %}', function(data){
                 $('#passed_bar_' + {{ project.id }}).css('width', data['passed_percent'] + '%');
                 $('#passed_bar_' + {{ project.id }}).html(data['passed']);
-                $('#defective_bar_{{ project.id }}').css('width', data['failed_percent'] + '%');
-                $('#defective_bar_{{ project.id }}').html(data['failed']);
-                $('#missing_bar_{{ project.id }}').css('width', data['missing_percent'] + '%');
-                $('#missing_bar_{{ project.id }}').html(data['missing']);
-                $('#untested_bar_{{ project.id }}').css('width', data['untested_percent'] + '%');
-                $('#untested_bar_{{ project.id }}').html(data['untested']);
+                $('#passed_bar_' + {{ project.id }}).attr('data-original-title', data['passed']+' passed');
+
+                $('#defective_bar_' + {{ project.id }}).css('width', data['failed_percent'] + '%');
+                $('#defective_bar_' + {{ project.id }}).html(data['failed']);
+                $('#defective_bar_' + {{ project.id }}).attr('data-original-title', data['failed']+' defective');
+
+                $('#missing_bar_' + {{ project.id }}).css('width', data['missing_percent'] + '%');
+                $('#missing_bar_' + {{ project.id }}).html(data['missing']);
+                $('#missing_bar_' + {{ project.id }}).attr('data-original-title', data['missing']+' missing');
+
+                $('#untested_bar_' + {{ project.id }}).css('width', data['untested_percent'] + '%');
+                $('#untested_bar_' + {{ project.id }}).html(data['untested']);
+                $('#untested_bar_' + {{ project.id }}).attr('data-original-title', data['untested']+' untested');
             })
         }, 5000);
 
