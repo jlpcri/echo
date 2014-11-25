@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import json
 import os
 import uuid
 
@@ -7,7 +8,7 @@ import pysftp
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.conf import settings
@@ -15,7 +16,7 @@ from echo.apps.activity.models import Action
 
 from echo.apps.core import messages
 from echo.apps.settings.models import Server
-from echo.apps.projects.forms import ProjectForm, ServerForm, UploadForm
+from echo.apps.projects.forms import ProjectForm, ServerForm, UploadForm, ProjectRootPathForm
 from echo.apps.projects.models import Language, Project, VoiceSlot, VUID
 from echo.apps.projects import contexts, helpers
 
@@ -103,12 +104,17 @@ def new(request):
                     return render(request, "projects/new.html", contexts.context_new(form))
 
                 n = form.cleaned_data['name']
+                root_path = form.cleaned_data['root_path']
+                if root_path and not os.path.isabs(root_path):
+                    messages.danger(request, 'Bravo Server Root Path Format Incorrect')
+                    return render(request, 'projects/new.html', contexts.context_new(form))
                 p = Project(name=n)
                 try:
                     p.full_clean()
                     p.save()
                     p.users.add(request.user)
                     p.bravo_server = bravo_server  # set default bravo server
+                    p.root_path = root_path
                     p.save()
                     messages.success(request, "Created project")
                     if 'file' in request.FILES and request.FILES['file'].name.endswith('.xlsx'):
@@ -178,8 +184,45 @@ def project(request, pid):
             return render(request, "projects/project.html", contexts.context_project(p, upload_form=form,
                                                                                      server_form=ServerForm(initial={
                                                                                          'server': p.current_server_pk()})))
+        elif "update_root_path" in request.POST:
+            form = ProjectRootPathForm(request.POST)
+            p = get_object_or_404(Project, pk=pid)
+            if form.is_valid():
+                root_path = form.cleaned_data['root_path']
+                if not os.path.isabs(root_path):
+                    messages.danger(request, 'Bravo Server Root Path Format Incorrect')
+                    return redirect('projects:project', pid=pid)
+
+                if p.root_path and not helpers.verify_update_root_path(p, root_path):
+                    messages.danger(request, 'New root path not allowed')
+                    return redirect('projects:project', pid=pid)
+
+                p.root_path = root_path
+                p.save()
+                Action.log(request.user,
+                           Action.UPDATE_ROOT_PATH,
+                           u'Bravo server root path updated to ' + unicode(root_path),
+                           p)
+                messages.success(request, 'Updated Bravo Server Path Successfully')
+                return redirect('projects:project', pid=pid)
         return redirect("projects:project", pid=pid)
     return HttpResponseNotFound()
+
+@login_required
+def project_progress(request, pid):
+    if request.method == 'GET':
+        p = get_object_or_404(Project, pk=pid)
+        data = {
+            'passed': p.slots_passed(),
+            'passed_percent': p.slots_passed_percent(),
+            'failed': p.slots_failed(),
+            'failed_percent': p.slots_failed_percent(),
+            'missing': p.slots_missing(),
+            'missing_percent': p.slots_missing_percent(),
+            'untested': p.slots_untested(),
+            'untested_percent': p.slots_untested_percent()
+        }
+        return HttpResponse(json.dumps(data), content_type="application/json")
 
 
 @login_required
@@ -218,6 +261,12 @@ def projects(request):
 def queue(request, pid):
     if request.method == 'GET':
         p = get_object_or_404(Project, pk=pid)
+        # check if update file status from bravo server
+        try:
+            p.update_file_status_last_time()
+        except ObjectDoesNotExist:
+            messages.danger(request, 'Please update file statuses from bravo server')
+            return redirect('projects:project', pid=pid)
         lang = get_object_or_404(Language, project=p, name=request.GET.get('language', '__malformed').lower())
         slots_out = request.user.voiceslot_set
         if slots_out.count() < 0:
@@ -368,6 +417,13 @@ def testslot(request, pid, vsid):
 def voiceslots(request, pid):
     if request.method == 'GET':
         p = get_object_or_404(Project, pk=pid)
+        # check if update file status from bravo server
+        try:
+            p.update_file_status_last_time()
+        except ObjectDoesNotExist:
+            messages.danger(request, 'Please update file statuses from bravo server')
+            return redirect('projects:project', pid=pid)
+
         lang = request.GET.get('language', 'master').strip().lower()
         if lang == 'master' or lang in p.language_list():
             if request.GET.get('export', False) == 'csv':

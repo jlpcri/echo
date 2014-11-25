@@ -6,12 +6,10 @@ import uuid
 import pysftp
 
 from django.db import models
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
 from django.conf import settings
 
-from echo.apps.activity.models import Action, Scope
-
-User = get_user_model()
+from echo.apps.activity.models import Action
 
 
 def vuid_location(instance, filename):
@@ -28,6 +26,7 @@ class Project(models.Model):
     tests_run = models.IntegerField(default=0)
     failure_count = models.IntegerField(default=0)
     bravo_server = models.ForeignKey('settings.Server', blank=True, null=True, on_delete=models.SET_NULL)
+    root_path = models.TextField(blank=True, null=True)
     preprod_server = models.ForeignKey('settings.PreprodServer', blank=True, null=True, on_delete=models.SET_NULL)
     preprod_path = models.TextField(blank=True, null=True)
     status = models.TextField(choices=PROJECT_STATUS_CHOICES, default=TESTING)
@@ -136,7 +135,7 @@ class Project(models.Model):
                 a = Action.objects.filter(scope__voiceslot=slot, type=Action.TESTER_FAIL_SLOT).order_by('-time')[0]
                 Action.log(a.actor,
                            Action.AUTO_FAIL_SLOT,
-                           u'{0} (duplicate of {1})'.format(a.description, a.voiceslot.name),
+                           u'{0} (duplicate of {1})'.format(a.description, a.scope.voiceslot.name),
                            s)
             s.save()
         return vs.count()
