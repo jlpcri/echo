@@ -79,7 +79,7 @@
                     <br>
                     <label class="control-label" for="action_list">Project Actions</label>
                     <ul id="action_list" class="list-group">
-                        {% if user.username in project.usernames %}
+                        {% if user.username in project.usernames and project.bravo_server%}
                         <li class="list-group-item">
                             <b>Start Testing</b>
                             <ul>
@@ -94,11 +94,13 @@
                         </li>
                         {% endif %}
                         <li class="list-group-item"><a href="{% url 'elpis:dashboard' project.pk %}"><b>Verify File Transfer</b></a></li>
-                        <li class="list-group-item">
-                            <a href="#" class="text" onclick="project_update_file_status('{{ project.name }}', {{ project.id }})" title="Update File Statuses">
-                            <b>Update File Statuses</b>
-                            </a>
-                        </li>
+                        {% if project.bravo_server %}
+                            <li class="list-group-item">
+                                <a href="#" class="text" onclick="project_update_file_status('{{ project.name }}', {{ project.id }})" title="Update File Statuses">
+                                <b>Update File Statuses</b>
+                                </a>
+                            </li>
+                        {% endif %}
                         <li class="list-group-item">
                             {% if project.status == 'Testing' %}
                                 <a href="{% url "projects:archive_project" project.pk %}" title="Archive Project"><b>Archive Project</b></a>
@@ -188,18 +190,20 @@
                         </div>
                     {% endif %}
 
-                    <hr>
-                    <div class="form-group">
-                        <label class="content-label">Bravo Server Root Path</label>
-                        <div class="input-group">
-                            {{ root_path_form.root_path }}
-                            <span class="input-group-btn">
-                                <button type="submit" name="update_root_path" class="btn btn-primary">
-                                    Update
-                                </button>
-                            </span>
+                    {% if project.bravo_server %}
+                        <hr>
+                        <div class="form-group">
+                            <label class="content-label">Bravo Server Root Path</label>
+                            <div class="input-group">
+                                {{ root_path_form.root_path }}
+                                <span class="input-group-btn">
+                                    <button type="submit" name="update_root_path" class="btn btn-primary">
+                                        Update
+                                    </button>
+                                </span>
+                            </div>
                         </div>
-                    </div>
+                    {% endif %}
                 </form>
             </div>
         </div>

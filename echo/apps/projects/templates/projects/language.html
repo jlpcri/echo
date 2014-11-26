@@ -56,7 +56,7 @@
                                             <i class="fa fa-refresh fa-fw"></i>
                                         </button>
                                         <button type="submit" name="retest_slot"
-                                                class="btn btn-success btn-xs">
+                                                class="btn btn-success btn-xs" {% if not project.bravo_server %}disabled {% endif %}>
                                             <i class="fa fa-play fa-fw"></i>
                                         </button>
                                     </div>
