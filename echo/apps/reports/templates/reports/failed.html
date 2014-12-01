@@ -21,54 +21,48 @@
                 </ul>
             </div>
         </div>
-        <div class="row">
-            <div class="col-xs-9">
-
+        {% if project_defective %}
+            <div class="row">
+                <div class="col-xs-9">
+                    <h4>Defective Voice Slots</h4>
+                </div>
+                <div class="col-xs-3">
+                    <a href="{% url "reports:failed" project.pk %}?export=csv" class="btn btn-info btn-sm pull-right"
+                       style="width: 100%;">
+                        <i class="fa fa-download fa-fw"></i>&nbsp;Report
+                    </a>
+                </div>
             </div>
-            <div class="col-xs-3">
-                <a href="{% url "reports:failed" project.pk %}?export=csv" class="btn btn-info btn-sm pull-right" style="width: 100%;">
-                    <i class="fa fa-download fa-fw"></i>&nbsp;Report
-                </a>
+            <div class="row">
+                <div class="col-xs-12">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <td class="col-md-3"><strong>VoiceSlot</strong></td>
+                            <td class="col-md-3"><strong>Test Time</strong></td>
+                            <td class="col-md-3"><strong>Failure Cause</strong></td>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for item in project_defective %}
+                            <tr>
+                                <td>{{ item.name }}</td>
+                                <td>{{ item.test_time }}</td>
+                                <td>{{ item.fail_note }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
-        <div class="row">
-            <div class="col-xs-12">
-
-            <div id="project_defective">
-                {% if project_defective %}
-                    <ul class="project_defective_list">
-                        <li class="folder">
-                            <div id="project_defective_view" class="fa fa-plus-square-o">
-                                <b>Project Defective</b>
-                            </div>
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <td class="col-md-3"><strong>VoiceSlot</strong></td>
-                                        <td class="col-md-3"><strong>Test Time</strong></td>
-                                        <td class="col-md-3"><strong>Failure Cause</strong></td>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for item in project_defective %}
-                                        <tr>
-                                            <td>{{ item.name }}</td>
-                                            <td>{{ item.test_time }}</td>
-                                            <td>{{ item.fail_note }}</td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </li>
-                    </ul>
-                {% else %}
-                    <p>No Defective VoiceSlots.</p>
-                {% endif %}
+        {% else %}
+            <div class="row">
+                <div class="col-xs-12 text-center">
+                    <br><br><br>
+                    <h4>No Defective Voice Slots.</h4>
+                </div>
             </div>
-
-
-            </div>
-        </div>
+        {% endif %}
     </div>
 {% endblock %}
 {% block endscript %}

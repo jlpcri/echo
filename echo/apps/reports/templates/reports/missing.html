@@ -21,41 +21,36 @@
                 </ul>
             </div>
         </div>
-        <div class="row">
-            <div class="col-xs-9">
-
-            </div>
-            <div class="col-xs-3">
-                <a href="{% url "reports:missing" project.pk %}?export=csv" class="btn btn-info btn-sm pull-right" style="width: 100%;">
-                    <i class="fa fa-download fa-fw"></i>&nbsp;Report
-                </a>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12">
-                <div id="missing_slots" style="overflow: auto;">
-                    <div style="font-size:large;">{{ project.slots_total }} attempted uploads</div>
-                    <div style="font-size:large;">{{ project.slots_missing }} files missing</div>
-
-                    {% if missing_slots %}
-                        <ul class="missing_files">
-                            <li class="folder">
-                                <div id="missing_slots_view" class="fa fa-plus-square-o">
-                                    <b>Missing Files</b>
-                                </div>
-                                <ul class="missing_files_list">
-                                    {% for f in missing_slots %}
-                                        <li>{{ f.filepath }} - {{ f.language }}</li>
-                                    {% endfor %}
-                                </ul>
-                            </li>
-                        </ul>
-                    {% else %}
-                        <p>No Files Missing.</p>
-                    {% endif %}
+        {% if missing_slots %}
+            <div class="row">
+                <div class="col-xs-9">
+                    <h4>Missing Files</h4>
+                </div>
+                <div class="col-xs-3">
+                    <a href="{% url "reports:missing" project.pk %}?export=csv" class="btn btn-info btn-sm pull-right"
+                       style="width: 100%;">
+                        <i class="fa fa-download fa-fw"></i>&nbsp;Report
+                    </a>
                 </div>
             </div>
-        </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div style="font-size:large;">{{ project.slots_total }} attempted uploads</div>
+                    <div style="font-size:large;">{{ project.slots_missing }} files missing</div>
+                    <br>
+                    {% for f in missing_slots %}
+                        <p>{{ f.filepath }} - {{ f.language }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+        {% else %}
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <br><br><br>
+                    <h4>No Missing Voice Slots.</h4>
+                </div>
+            </div>
+        {% endif %}
     </div>
 {% endblock %}
 {% block endscript %}
