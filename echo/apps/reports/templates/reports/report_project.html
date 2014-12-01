@@ -24,7 +24,7 @@
     <div class="container">
         <div class="row">
             <div class="col-xs-12">
-                <h3>{{ project.name }}&nbsp;Report</h3>{{ start }}{{ end }}
+                <h3>{{ project.name }}&nbsp;Report</h3>
             </div>
         </div>
         <hr>
@@ -47,12 +47,24 @@
                             <span id="report-range-display"></span>
                         </div>
                         <div id="project_progress">
-                            Project Progress
+
                         </div>
                     </div>
                     <div class="col-xs-3">
                         <div id="activity_feed">
-                            Activity Feed
+                            <h4>Recent Activity</h4>
+                            <hr style="margin-top: 10px; margin-bottom: 10px;">
+                            {% if feed %}
+                                {% for f in feed %}
+                                    <h6 class="text-right">{{ f.time }}</h6>
+                                    <h6 class="text-right">{{ f.actor.username }}</h6>
+                                    <p>{{ f.description }}</p>
+                                    <hr style="margin-top: 5px; margin-bottom: 5px">
+                                {% endfor %}
+                            {% else %}
+                                <br><br>
+                                <h5 class="text-center">No recent activity</h5>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

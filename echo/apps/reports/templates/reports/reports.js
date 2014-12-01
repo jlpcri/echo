@@ -1,6 +1,7 @@
 /**
  * Created by sliu on 11/3/14.
  */
+moment.tz.add('America/New_York|EST EDT|50 40|01010101010101010101010|1BQT0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0');
 
 /* make folders collapsible */
 function makeCollapsible() {
@@ -62,33 +63,24 @@ var endDatetime;
 
 function setStartDate(datetime) {
     startDatetime = moment.tz(moment(datetime*1000), 'America/New_York');
+//    startDatetime = moment(datetime*1000);
 }
 
 function setEndDate(datetime) {
     endDatetime = moment.tz(moment(datetime*1000), 'America/New_York');
+//    endDatetime = moment(datetime*1000);
 }
 
-function attachDateRangePicker() {
-    $('#report-range').daterangepicker(
-        {
-            format: 'YYYY-MM-DD',
-            startDate: startDatetime,
-            endDate: endDatetime
-        },
-        function (start, end, label) {
-            alert('A date range was chosen: ' + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD'));
-        }
-    );
+//function attachDateRangePicker() {
 //    $('#report-range').daterangepicker(
 //        {
 //            ranges: {
-//                'Last Hour': [moment.tz(moment().valueOf(), 'America/New_York').subtract('hour', 1).startOf('minute') , moment.tz(moment().valueOf(), 'America/New_York').endOf('minute')],
-//                'Today': [moment.tz(moment().valueOf(), 'America/New_York').startOf('day'), moment.tz(moment().valueOf(), 'America/New_York').endOf('day')],
-//                'Yesterday': [moment.tz(moment().valueOf(), 'America/New_York').subtract('days', 1).startOf('day'), moment.tz(moment().valueOf(), 'America/New_York').subtract('days', 1).endOf('day')],
-//                'Last 7 Days': [moment.tz(moment().valueOf(), 'America/New_York').subtract('days', 6).startOf('day'), moment.tz(moment().valueOf(), 'America/New_York').endOf('day')],
-//                'Last 30 Days': [moment.tz(moment().valueOf(), 'America/New_York').subtract('days', 29).startOf('day'), moment.tz(moment().valueOf(), 'America/New_York').endOf('day')],
-//                'This Month': [moment.tz(moment().valueOf(), 'America/New_York').startOf('month').startOf('day'), moment.tz(moment().valueOf(), 'America/New_York').endOf('month').endOf('day')],
-//                'Last Month': [moment.tz(moment().valueOf(), 'America/New_York').subtract('month', 1).startOf('month').startOf('day'), moment.tz(moment().valueOf(), 'America/New_York').subtract('month', 1).endOf('month').endOf('day')]
+//                'Today': [moment().valueOf().startOf('day'), moment().valueOf().endOf('day')],
+//                'Yesterday': [moment().valueOf().subtract('days', 1).startOf('day'), moment().valueOf().subtract('days', 1).endOf('day')],
+//                'Last 7 Days': [moment().valueOf().subtract('days', 6).startOf('day'), moment().valueOf().endOf('day')],
+//                'Last 30 Days': [moment().valueOf().subtract('days', 29).startOf('day'), moment().valueOf().endOf('day')],
+//                'This Month': [moment().valueOf().startOf('month').startOf('day'), moment().valueOf().endOf('month').endOf('day')],
+//                'Last Month': [moment().valueOf().subtract('month', 1).startOf('month').startOf('day'), moment().valueOf().subtract('month', 1).endOf('month').endOf('day')]
 //            },
 //            startDate: startDatetime,
 //            endDate: endDatetime,
@@ -99,12 +91,41 @@ function attachDateRangePicker() {
 //            $('#report-range-display').html(start.format('MMMM D, YYYY HH:mm') + ' - ' + end.format('MMMM D, YYYY HH:mm'));
 //            startDatetime = start;
 //            endDatetime = end;
-//            loadRecords(sourceType);
+////            loadRecords(sourceType);
 //        });
-//    $('#report-range-display').html(startDatetime.format('MMMM D, YYYY') + ' - ' + endDatetime.format('MMMM D, YYYY'));
+//    $('#report-range-display').html(startDatetime.format('MMMM D, YYYY HH:mm') + ' - ' + endDatetime.format('MMMM D, YYYY HH:mm'));
+//}
+
+function loadRecords() {
+    window.location.href = "{% url 'reports:report_project' project.id %}?start=" + startDatetime.format('X') + "&end=" + endDatetime.format('X');
+}
+
+function attachDateRangePicker() {
+    $('#report-range').daterangepicker(
+        {
+            ranges: {
+                'Today': [moment.tz(moment().valueOf(), 'America/New_York').startOf('day'), moment.tz(moment().valueOf(), 'America/New_York').endOf('day')],
+                'Yesterday': [moment.tz(moment().valueOf(), 'America/New_York').subtract('days', 1).startOf('day'), moment.tz(moment().valueOf(), 'America/New_York').subtract('days', 1).endOf('day')],
+                'Last 7 Days': [moment.tz(moment().valueOf(), 'America/New_York').subtract('days', 6).startOf('day'), moment.tz(moment().valueOf(), 'America/New_York').endOf('day')],
+                'Last 30 Days': [moment.tz(moment().valueOf(), 'America/New_York').subtract('days', 29).startOf('day'), moment.tz(moment().valueOf(), 'America/New_York').endOf('day')],
+                'This Month': [moment.tz(moment().valueOf(), 'America/New_York').startOf('month').startOf('day'), moment.tz(moment().valueOf(), 'America/New_York').endOf('month').endOf('day')],
+                'Last Month': [moment.tz(moment().valueOf(), 'America/New_York').subtract('month', 1).startOf('month').startOf('day'), moment.tz(moment().valueOf(), 'America/New_York').subtract('month', 1).endOf('month').endOf('day')]
+            },
+            startDate: startDatetime,
+            endDate: endDatetime,
+            timePicker: true,
+            timePickerIncrement: 1
+        },
+        function (start, end) {
+            $('#report-range-display').html(start.format('MMMM D, YYYY HH:mm') + ' - ' + end.format('MMMM D, YYYY HH:mm'));
+            startDatetime = start;
+            endDatetime = end;
+            loadRecords();
+        });
+    $('#report-range-display').html(startDatetime.format('MMMM D, YYYY HH:mm') + ' - ' + endDatetime.format('MMMM D, YYYY HH:mm'));
 }
 
 $(document).ready(function () {
     makeCollapsible();
-    moment.tz.add('America/New_York|EST EDT|50 40|01010101010101010101010|1BQT0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0')
+    moment.tz.add('America/New_York|EST EDT|50 40|01010101010101010101010|1BQT0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Rd0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0 Op0 1zb0');
 });
