@@ -2,13 +2,11 @@ from datetime import timedelta, date, datetime
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseNotFound
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.template import RequestContext
-from django.utils import timezone
-from django.utils.timezone import is_aware, is_naive
 import pytz
-from datetime import datetime
 import time
+from echo.apps.core import messages
 from echo.apps.projects.models import Project
 import contexts
 from echo.apps.activity.models import Action
@@ -81,7 +79,22 @@ def reports(request):
 def report_project(request, pid):
     if request.method == 'GET':
         project = get_object_or_404(Project, pk=pid)
+
+        if not project.root_path:
+            messages.danger(request, 'Please set project root path')
+            return redirect('reports:reports')
+
         vuids = project.vuid_set.all()
+        if vuids.count() == 0:
+            messages.danger(request, 'Please upload prompt list file')
+            return redirect('reports:reports')
+
+        try:
+            project.update_file_status_last_time()
+        except ObjectDoesNotExist:
+            messages.danger(request, 'Please update file statuses from bravo server')
+            return redirect('reports:reports')
+
         # Get VUID upload_date
         vuid_upload_date = None
         if vuids.count() == 1:
