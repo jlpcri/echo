@@ -99,9 +99,9 @@ def report_project(request, pid):
             # Second check Actions type
             vuid_upload_date = vuid_upload_date
 
-            print vuid_upload_date
-            print type(vuid_upload_date)
-            print vuid_upload_date.tzinfo
+            # print vuid_upload_date
+            # print type(vuid_upload_date)
+            # print vuid_upload_date.tzinfo
 
             outputs = {
                 'date': [],
@@ -131,16 +131,16 @@ def report_project(request, pid):
             # else:
             #     start = end - timedelta(days=10)
 
-            print start
-            print type(start)
-            print start.tzinfo
-            print end
-            print type(end)
-            print end.tzinfo
-            t = timezone.now()
-            print t
-            print type(t)
-            print t.tzinfo
+            # print start
+            # print type(start)
+            # print start.tzinfo
+            # print end
+            # print type(end)
+            # print end.tzinfo
+            # t = timezone.now()
+            # print t
+            # print type(t)
+            # print t.tzinfo
 
             days = (end - start).days
             if days == 0:
@@ -170,7 +170,6 @@ def report_project(request, pid):
                                                               day,
                                                               vuid_upload_date,
                                                               break_flag)
-
                     outputs['date'].append(day.strftime('%Y-%m-%d'))
                     for key in settings.VOICESLOTS_METRICS.keys():
                         outputs[key].append(tmp_statistics['statistics'][key])
@@ -180,18 +179,18 @@ def report_project(request, pid):
         else:
             outputs = None
 
-        print start
-        print start.astimezone(tz=pytz.timezone('America/Chicago'))
-        print time.mktime(start.timetuple())
-        print time.mktime(start.utctimetuple())
-        print time.mktime(start.astimezone(tz=pytz.timezone('America/Chicago')).timetuple()) # this passes the right timestamp
-        print time.mktime(start.astimezone(tz=pytz.timezone('America/Chicago')).utctimetuple())
-        print end
-        print end.astimezone(tz=pytz.timezone('America/Chicago'))
-        print time.mktime(end.timetuple())
-        print time.mktime(end.utctimetuple())
-        print time.mktime(end.astimezone(tz=pytz.timezone('America/Chicago')).timetuple()) # this passes the right timestamp
-        print time.mktime(end.astimezone(tz=pytz.timezone('America/Chicago')).utctimetuple())
+        # print start
+        # print start.astimezone(tz=pytz.timezone('America/Chicago'))
+        # print time.mktime(start.timetuple())
+        # print time.mktime(start.utctimetuple())
+        # print time.mktime(start.astimezone(tz=pytz.timezone('America/Chicago')).timetuple()) # this passes the right timestamp
+        # print time.mktime(start.astimezone(tz=pytz.timezone('America/Chicago')).utctimetuple())
+        # print end
+        # print end.astimezone(tz=pytz.timezone('America/Chicago'))
+        # print time.mktime(end.timetuple())
+        # print time.mktime(end.utctimetuple())
+        # print time.mktime(end.astimezone(tz=pytz.timezone('America/Chicago')).timetuple()) # this passes the right timestamp
+        # print time.mktime(end.astimezone(tz=pytz.timezone('America/Chicago')).utctimetuple())
 
         context = RequestContext(request, {
             'project': project,
@@ -254,4 +253,4 @@ def get_voiceslot_statistics(voiceslots, day, vuid_upload_date, break_flag):
 
 
 def get_midnight_of_day(day):
-    return day.replace(hour=0, minute=0, second=0)
+    return day.replace(hour=0, minute=0, second=0, microsecond=0)
