@@ -72,7 +72,26 @@ def missing(request, pid):
 @login_required
 def reports(request):
     if request.method == 'GET':
-        return render(request, "reports/reports.html", contexts.reports())
+        sort_types = [
+            'project_name',
+            '-project_name',
+            'passed',
+            '-passed',
+            'defective',
+            '-defective',
+            'missing',
+            '-missing',
+            'total',
+            '-total',
+            'progress',
+            '-progress',
+            'testers',
+            '-testers'
+        ]
+        sort = request.GET.get('sort', '')
+        sort = sort if sort else 'project_name'
+        if sort in sort_types:
+            return render(request, "reports/reports.html", contexts.reports_context(sort))
     return HttpResponseNotFound()
 
 @login_required()

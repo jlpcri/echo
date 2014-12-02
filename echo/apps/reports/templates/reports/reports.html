@@ -2,7 +2,7 @@
 {% block title %}Reports{% endblock %}
 {% load staticfiles %}
 {% block headscript %}
-<link rel="stylesheet" type="text/css" href="{% static 'echo/core/core.css' %}"/>
+
 {% endblock %}
 {% block content %}
     <div class="container">
@@ -18,33 +18,102 @@
             <table class="table table-striped table-hover">
                 <thead>
                 <tr>
-                    <th class="col-xs-3 text-left">Project Name</th>
-                    <th class="col-xs-1 text-right">Pass</th>
-                    <th class="col-xs-1 text-right">Fail</th>
-                    <th class="col-xs-1 text-right">Missing</th>
-                    <th class="col-xs-1 text-right">Total</th>
-                    <th class="col-xs-1 text-right">Progress</th>
-                    <th class="col-xs-1 text-right">Testers</th>
-                    <th class="col-xs-1"></th>
-                    <th class="col-xs-2 text-center">Reports</th>
+                    <th class="col-xs-3 text-left">
+                        {% if sort == "project_name" %}
+                            <a href="{% url 'reports:reports' %}?sort=-project_name">
+                                Project Name</a>&nbsp;<i class="fa fa-sort-asc"></i>
+                        {% elif sort == "-project_name" %}
+                            <a href="{% url 'reports:reports' %}?sort=project_name">
+                                Project Name</a>&nbsp;<i class="fa fa-sort-desc"></i>
+                        {% else %}
+                            <a href="{% url 'reports:reports' %}?sort=project_name">
+                                Project Name</a>&nbsp;<i class="fa fa-sort"></i>
+                        {% endif %}
+                    </th>
+                    <th class="col-xs-1 text-right">
+                        {% if sort == "passed" %}
+                            <a href="{% url 'reports:reports' %}?sort=-passed">
+                                Passed</a>&nbsp;<i class="fa fa-sort-asc"></i>
+                        {% elif sort == "-passed" %}
+                            <a href="{% url 'reports:reports' %}?sort=passed">
+                                Passed</a>&nbsp;<i class="fa fa-sort-desc"></i>
+                        {% else %}
+                            <a href="{% url 'reports:reports' %}?sort=passed">
+                                Passed</a>&nbsp;<i class="fa fa-sort"></i>
+                        {% endif %}
+                    </th>
+                    <th class="col-xs-1 text-right">
+                        {% if sort == "defective" %}
+                            <a href="{% url 'reports:reports' %}?sort=-defective">
+                                Fail</a>&nbsp;<i class="fa fa-sort-asc"></i>
+                        {% elif sort == "-defective" %}
+                            <a href="{% url 'reports:reports' %}?sort=defective">
+                                Fail</a>&nbsp;<i class="fa fa-sort-desc"></i>
+                        {% else %}
+                            <a href="{% url 'reports:reports' %}?sort=defective">
+                                Fail</a>&nbsp;<i class="fa fa-sort"></i>
+                        {% endif %}
+                    </th>
+                    <th class="col-xs-1 text-right">
+                        {% if sort == "missing" %}
+                            <a href="{% url 'reports:reports' %}?sort=-missing">
+                                Missing</a>&nbsp;<i class="fa fa-sort-asc"></i>
+                        {% elif sort == "-missing" %}
+                            <a href="{% url 'reports:reports' %}?sort=missing">
+                                Missing</a>&nbsp;<i class="fa fa-sort-desc"></i>
+                        {% else %}
+                            <a href="{% url 'reports:reports' %}?sort=missing">
+                                Missing</a>&nbsp;<i class="fa fa-sort"></i>
+                        {% endif %}
+                    </th>
+                    <th class="col-xs-1 text-right">
+                        {% if sort == "total" %}
+                            <a href="{% url 'reports:reports' %}?sort=-total">
+                                Total</a>&nbsp;<i class="fa fa-sort-asc"></i>
+                        {% elif sort == "-total" %}
+                            <a href="{% url 'reports:reports' %}?sort=total">
+                                Total</a>&nbsp;<i class="fa fa-sort-desc"></i>
+                        {% else %}
+                            <a href="{% url 'reports:reports' %}?sort=total">
+                                Total</a>&nbsp;<i class="fa fa-sort"></i>
+                        {% endif %}
+                    </th>
+                    <th class="col-xs-1 text-right">
+                        {% if sort == "progress" %}
+                            <a href="{% url 'reports:reports' %}?sort=-progress">
+                                Progress</a>&nbsp;<i class="fa fa-sort-asc"></i>
+                        {% elif sort == "-progress" %}
+                            <a href="{% url 'reports:reports' %}?sort=progress">
+                                Progress</a>&nbsp;<i class="fa fa-sort-desc"></i>
+                        {% else %}
+                            <a href="{% url 'reports:reports' %}?sort=progress">
+                                Progress</a>&nbsp;<i class="fa fa-sort"></i>
+                        {% endif %}
+                    </th>
+                    <th class="col-xs-1 text-right">
+                        {% if sort == "testers" %}
+                            <a href="{% url 'reports:reports' %}?sort=-testers">
+                                Testers</a>&nbsp;<i class="fa fa-sort-asc"></i>
+                        {% elif sort == "-testers" %}
+                            <a href="{% url 'reports:reports' %}?sort=testers">
+                                Testers</a>&nbsp;<i class="fa fa-sort-desc"></i>
+                        {% else %}
+                            <a href="{% url 'reports:reports' %}?sort=testers">
+                                Testers</a>&nbsp;<i class="fa fa-sort"></i>
+                        {% endif %}
+                    </th>
                 </tr>
                 </thead>
                 <tbody>
                 {% for project in projects %}
                     <tr>
                         <td class="text-left"><a href="{% url "reports:report_project" project.id %}"> {{ project.name }}</a></td>
-                        <td class="text-right">{{ project.slots_passed }}</td>
-                        <td class="text-right">{{ project.slots_failed }}</td>
-                        <td class="text-right">{{ project.slots_missing }}</td>
-                        <td class="text-right">{{ project.slots_total }}</td>
-                        <td class="text-right">{{ project.slots_tested_percent | floatformat:2}}%</td>
-                        <td class="text-right">{{ project.users_total }}</td>
-                        <td></td>
-                        <td class="text-center">
-                                <a href="{% url "reports:failed" project.pk %}"><i class="fa fa-file-text"></i>&nbsp;Failed</a>
-                                &nbsp;&nbsp;|&nbsp;&nbsp;
-                                <a href="{% url "reports:missing" project.pk %}"><i class="fa fa-file-text"></i>&nbsp;Missing</a>
-                        </td>
+                        <td class="text-right" style="padding-right: 2em;">{{ project.slots_passed }}</td>
+                        <td class="text-right" style="padding-right: 2em;">{{ project.slots_failed }}</td>
+                        <td class="text-right" style="padding-right: 2em;">{{ project.slots_missing }}</td>
+                        <td class="text-right" style="padding-right: 2em;">{{ project.slots_total }}</td>
+                        <td class="text-right" style="padding-right: 1em;">{{ project.slots_tested_percent | floatformat:2}}%</td>
+                        <td class="text-right" style="padding-right: 2em;">{{ project.users_total }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>
@@ -55,7 +124,6 @@
     </div>
 {% endblock %}
 {% block endscript %}
-    <script type="text/javascript" src="{% static 'echo/core/core.js' %}"></script>
     <script type="text/javascript">
     </script>
 {% endblock %}

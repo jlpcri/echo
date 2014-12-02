@@ -55,37 +55,37 @@
                         <th class="col-xs-1 text-center">
                             {% if sort == 'total_prompts' %}
                                 <a href="{% url 'projects:projects' %}?tab={{ tab }}&sort=-total_prompts">
-                                    Total Prompts</a>&nbsp;<i class="fa fa-sort-asc"></i>
+                                    Prompts</a>&nbsp;<i class="fa fa-sort-asc"></i>
                             {% elif sort == '-total_prompts' %}
                                 <a href="{% url 'projects:projects' %}?tab={{ tab }}&sort=total_prompts">
-                                    Total Prompts</a>&nbsp;<i class="fa fa-sort-desc"></i>
+                                    Prompts</a>&nbsp;<i class="fa fa-sort-desc"></i>
                             {% else %}
                                 <a href="{% url 'projects:projects' %}?tab={{ tab }}&sort=total_prompts">
-                                    Total Prompts</a>&nbsp;<i class="fa fa-sort"></i>
+                                    Prompts</a>&nbsp;<i class="fa fa-sort"></i>
                             {% endif %}
                         </th>
                         <th class="col-xs-1 text-center">
                             {% if sort == 'created_date' %}
                                 <a href="{% url 'projects:projects' %}?tab={{ tab }}&sort=-created_date">
-                                    Created Date</a>&nbsp;<i class="fa fa-sort-asc"></i>
+                                    Created</a>&nbsp;<i class="fa fa-sort-asc"></i>
                             {% elif sort == '-created_date' %}
                                 <a href="{% url 'projects:projects' %}?tab={{ tab }}&sort=created_date">
-                                    Created Date</a>&nbsp;<i class="fa fa-sort-desc"></i>
+                                    Created</a>&nbsp;<i class="fa fa-sort-desc"></i>
                             {% else %}
                                 <a href="{% url 'projects:projects' %}?tab={{ tab }}&sort=created_date">
-                                    Created Date</a>&nbsp;<i class="fa fa-sort"></i>
+                                    Created</a>&nbsp;<i class="fa fa-sort"></i>
                             {% endif %}
                         </th>
                         <th class="col-xs-1 text-center">
                             {% if sort == 'last_modified' %}
                                 <a href="{% url 'projects:projects' %}?tab={{ tab }}&sort=-last_modified">
-                                    Last Modified</a>&nbsp;<i class="fa fa-sort-asc"></i>
+                                    Modified</a>&nbsp;<i class="fa fa-sort-asc"></i>
                             {% elif sort == '-last_modified' %}
                                 <a href="{% url 'projects:projects' %}?tab={{ tab }}&sort=last_modified">
-                                    Last Modified</a>&nbsp;<i class="fa fa-sort-desc"></i>
+                                    Modified</a>&nbsp;<i class="fa fa-sort-desc"></i>
                             {% else %}
                                 <a href="{% url 'projects:projects' %}?tab={{ tab }}&sort=last_modified">
-                                    Last Modified</a>&nbsp;<i class="fa fa-sort"></i>
+                                    Modified</a>&nbsp;<i class="fa fa-sort"></i>
                             {% endif %}
 
                         </th>
@@ -151,8 +151,8 @@
                         <td class="text-center">
                             <div id="total_prompts_{{ project.pk }}">{{ project.slots_total }}</div>
                         </td>
-                        <td class="text-center">{{ project.created_date | date:'Y-m-j H:i:s' }}</td>
-                        <td class="text-center">{{ project.last_modified_date | date:'Y-m-j H:i:s' }}</td>
+                        <td class="text-center">{{ project.created_date | date:'Y-m-j' }}</td>
+                        <td class="text-center">{{ project.last_modified_date | date:'Y-m-j' }}</td>
                         <td class="text-center">{{ project.users_total }}</td>
                         <td class="text-center">
                             {% if project.languages %}
