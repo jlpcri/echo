@@ -43,9 +43,9 @@ def reports_context(sort=None):
     elif sort == '-defective':
         projects = sorted(projects, key=lambda p: p.slots_failed(), reverse=True)
     elif sort == 'missing':
-        projects = sorted(projects, key=lambda p: p.slots_passed())
+        projects = sorted(projects, key=lambda p: p.slots_missing())
     elif sort == '-missing':
-        projects = sorted(projects, key=lambda p: p.slots_passed(), reverse=True)
+        projects = sorted(projects, key=lambda p: p.slots_missing(), reverse=True)
     elif sort == 'total':
         projects = sorted(projects, key=lambda p: p.slots_total())
     elif sort == '-total':
