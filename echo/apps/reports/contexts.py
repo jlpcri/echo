@@ -28,5 +28,38 @@ def missing_csv(project, response):
     return response
 
 
-def reports():
-    return {'projects': Project.objects.all().order_by('name')}
+def reports_context(sort=None):
+    projects = Project.objects.all()
+    if sort == 'project_name':
+        projects = projects.order_by('name')
+    elif sort == '-project_name':
+        projects = projects.order_by('-name')
+    elif sort == 'passed':
+        projects = sorted(projects, key=lambda p: p.slots_passed())
+    elif sort == '-passed':
+        projects = sorted(projects, key=lambda p: p.slots_passed(), reverse=True)
+    elif sort == 'defective':
+        projects = sorted(projects, key=lambda p: p.slots_failed())
+    elif sort == '-defective':
+        projects = sorted(projects, key=lambda p: p.slots_failed(), reverse=True)
+    elif sort == 'missing':
+        projects = sorted(projects, key=lambda p: p.slots_passed())
+    elif sort == '-missing':
+        projects = sorted(projects, key=lambda p: p.slots_passed(), reverse=True)
+    elif sort == 'total':
+        projects = sorted(projects, key=lambda p: p.slots_total())
+    elif sort == '-total':
+        projects = sorted(projects, key=lambda p: p.slots_total(), reverse=True)
+    elif sort == 'progress':
+        projects = sorted(projects, key=lambda p: p.slots_tested_percent())
+    elif sort == '-progress':
+        projects = sorted(projects, key=lambda p: p.slots_tested_percent(), reverse=True)
+    elif sort == 'testers':
+        projects = sorted(projects, key=lambda p: p.users_total())
+    elif sort == '-testers':
+        projects = sorted(projects, key=lambda p: p.users_total(), reverse=True)
+
+    return {
+        'projects': projects,
+        'sort': sort
+    }
