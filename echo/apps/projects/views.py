@@ -278,6 +278,7 @@ def queue(request, pid):
             return redirect('projects:project', pid=pid)
         lang = get_object_or_404(Language, project=p, name=request.GET.get('language', '__malformed').lower())
         slots_out = request.user.voiceslot_set
+        # TODO check this block
         if slots_out.count() < 0:
             slot = slots_out.first()
             if slot.language.pk == lang.pk:
@@ -290,6 +291,10 @@ def queue(request, pid):
         # check if all voice slots have been tested
         if not slot:
             messages.warning(request, 'No new voice slots available to be tested')
+            return redirect('projects:project', pid=pid)
+        # check if project has default bravo server
+        if not p.bravo_server:
+            messages.warning(request, 'Please set default bravo server')
             return redirect('projects:project', pid=pid)
 
         slot_file = slot.download()
