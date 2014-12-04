@@ -248,8 +248,17 @@ def projects(request):
         # if tab and sort are not present, set to empty
         tab = request.GET.get('tab', '')
         sort = request.GET.get('sort', '')
-        # if tab and sort are empty, set to defaults
-        tab = tab if tab else 'my'
+
+        # if tab empty, set to defaults
+        if not tab:
+            projects = Project.objects.filter(users__pk=request.user.pk, status=Project.TESTING)
+            # if not join any project , navigate to All Projects tab
+            if projects.count() == 0:
+                tab = 'all'
+            else:
+                tab = 'my'
+
+        # if sort empty, set to default
         sort = sort if sort else 'project_name'
         # validate tab and sort
         if tab in tab_types and sort in sort_types:
@@ -278,6 +287,11 @@ def queue(request, pid):
                 for slot in slots_out:
                     slot.check_in()
         slot = lang.voiceslot_set.filter(status=VoiceSlot.NEW, checked_out=False).first()
+        # check if all voice slots have been tested
+        if not slot:
+            messages.warning(request, 'No new voice slots available to be tested')
+            return redirect('projects:project', pid=pid)
+
         slot_file = slot.download()
         return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, slot_file))
     elif request.method == 'POST':
@@ -428,7 +442,7 @@ def voiceslots(request, pid):
         if lang == 'master' or lang in p.language_list():
             if request.GET.get('export', False) == 'csv':
                 return contexts.context_language_csv(p, HttpResponse(content_type='text/csv'), lang)
-            return render(request, "projects/language.html", contexts.context_language(p, language_type=lang))
+            return render(request, "projects/language.html", contexts.context_language(request.user, p, language_type=lang))
     if request.method == 'POST':
         p = get_object_or_404(Project, pk=pid)
         lang = request.GET.get('language', 'master').strip().lower()
