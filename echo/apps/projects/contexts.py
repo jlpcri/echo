@@ -41,7 +41,7 @@ def context_home(user, sort=None):
     }
 
 
-def context_language(project, language_type='master'):
+def context_language(user, project, language_type='master'):
     return {
         'project': project,
         'language_type': language_type,

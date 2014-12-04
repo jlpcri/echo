@@ -433,7 +433,7 @@ def voiceslots(request, pid):
         if lang == 'master' or lang in p.language_list():
             if request.GET.get('export', False) == 'csv':
                 return contexts.context_language_csv(p, HttpResponse(content_type='text/csv'), lang)
-            return render(request, "projects/language.html", contexts.context_language(p, language_type=lang))
+            return render(request, "projects/language.html", contexts.context_language(request.user, p, language_type=lang))
     if request.method == 'POST':
         p = get_object_or_404(Project, pk=pid)
         lang = request.GET.get('language', 'master').strip().lower()
