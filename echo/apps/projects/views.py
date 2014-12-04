@@ -248,8 +248,17 @@ def projects(request):
         # if tab and sort are not present, set to empty
         tab = request.GET.get('tab', '')
         sort = request.GET.get('sort', '')
-        # if tab and sort are empty, set to defaults
-        tab = tab if tab else 'my'
+
+        # if tab empty, set to defaults
+        if not tab:
+            projects = Project.objects.filter(users__pk=request.user.pk, status=Project.TESTING)
+            # if not join any project , navigate to All Projects tab
+            if projects.count() == 0:
+                tab = 'all'
+            else:
+                tab = 'my'
+
+        # if sort empty, set to default
         sort = sort if sort else 'project_name'
         # validate tab and sort
         if tab in tab_types and sort in sort_types:
