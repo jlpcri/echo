@@ -90,7 +90,7 @@ def context_projects(user, tab, sort=None, page=None):
         projects = Project.objects.filter(status=Project.CLOSED)
     else:
         tab = 'all'
-        projects = Project.objects.all().exclude(users__pk=user.pk)
+        projects = Project.objects.filter(status=Project.TESTING).exclude(users__pk=user.pk)
 
     if sort:
         if sort == 'project_name':
