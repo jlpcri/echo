@@ -46,13 +46,13 @@
                             <th class="col-xs-1 text-center">
                                 {% if sort == 'total_prompts' %}
                                     <a href="{% url 'core:home' %}?sort=-total_prompts">
-                                        Total</a>&nbsp;<i class="fa fa-sort-asc"></i>
+                                        Prompts</a>&nbsp;<i class="fa fa-sort-asc"></i>
                                 {% elif sort == '-total_prompts' %}
                                     <a href="{% url 'core:home' %}?sort=total_prompts">
-                                        Total</a>&nbsp;<i class="fa fa-sort-desc"></i>
+                                        Prompts</a>&nbsp;<i class="fa fa-sort-desc"></i>
                                 {% else %}
                                     <a href="{% url 'core:home' %}?sort=total_prompts">
-                                        Total</a>&nbsp;<i class="fa fa-sort"></i>
+                                        Prompts</a>&nbsp;<i class="fa fa-sort"></i>
                                 {% endif %}
                             </th>
                             <th class="col-xs-1 text-center">
@@ -157,7 +157,7 @@
             {% else %}
                 <div class="text-center">
                     <br><br>
-                    <h5>You are not currently joined to any projects</h5>
+                    <h4>You are not currently joined to any projects</h4>
                 </div>
             {% endif %}
             </div>

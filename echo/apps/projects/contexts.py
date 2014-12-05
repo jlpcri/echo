@@ -10,22 +10,22 @@ def context_home(user, sort=None):
     if sort:
         if sort == 'project_name':
             projects = projects.order_by('name')
-            print type(projects)
+            #print type(projects)
         elif sort == '-project_name':
             projects = projects.order_by('-name')
-            print type(projects)
+            #print type(projects)
         elif sort == 'total_prompts':
             projects = sorted(projects, key=lambda p: p.slots_total())
-            print type(projects)
+            #print type(projects)
         elif sort == '-total_prompts':
             projects = sorted(projects, key=lambda p: p.slots_total(), reverse=True)
-            print type(projects)
+            #print type(projects)
         elif sort == 'user_count':
             projects = sorted(projects, key=lambda p: p.users_total())
-            print type(projects)
+            #print type(projects)
         elif sort == '-user_count':
             projects = sorted(projects, key=lambda p: p.users_total(), reverse=True)
-            print type(projects)
+            #print type(projects)
     return {
         'feed': Action.objects.filter(
             scope__project__in=projects,
@@ -41,7 +41,7 @@ def context_home(user, sort=None):
     }
 
 
-def context_language(project, language_type='master'):
+def context_language(user, project, language_type='master'):
     return {
         'project': project,
         'language_type': language_type,
@@ -90,7 +90,7 @@ def context_projects(user, tab, sort=None, page=None):
         projects = Project.objects.filter(status=Project.CLOSED)
     else:
         tab = 'all'
-        projects = Project.objects.all().exclude(users__pk=user.pk)
+        projects = Project.objects.filter(status=Project.TESTING).exclude(users__pk=user.pk)
 
     if sort:
         if sort == 'project_name':

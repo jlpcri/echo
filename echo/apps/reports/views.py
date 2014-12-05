@@ -2,11 +2,11 @@ from datetime import timedelta, date, datetime
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseNotFound
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
 from django.template import RequestContext
-from django.utils import timezone
-from django.utils.timezone import is_aware, is_naive
 import pytz
+import time
+from echo.apps.core import messages
 from echo.apps.projects.models import Project
 import contexts
 from echo.apps.activity.models import Action
@@ -72,14 +72,48 @@ def missing(request, pid):
 @login_required
 def reports(request):
     if request.method == 'GET':
-        return render(request, "reports/reports.html", contexts.reports())
+        sort_types = [
+            'project_name',
+            '-project_name',
+            'passed',
+            '-passed',
+            'defective',
+            '-defective',
+            'missing',
+            '-missing',
+            'total',
+            '-total',
+            'progress',
+            '-progress',
+            'testers',
+            '-testers'
+        ]
+        sort = request.GET.get('sort', '')
+        sort = sort if sort else 'project_name'
+        if sort in sort_types:
+            return render(request, "reports/reports.html", contexts.reports_context(sort))
     return HttpResponseNotFound()
 
 @login_required()
 def report_project(request, pid):
     if request.method == 'GET':
         project = get_object_or_404(Project, pk=pid)
+
+        if not project.root_path:
+            messages.danger(request, 'Please set project root path')
+            return redirect('reports:reports')
+
         vuids = project.vuid_set.all()
+        if vuids.count() == 0:
+            messages.danger(request, 'Please upload prompt list file')
+            return redirect('reports:reports')
+
+        try:
+            project.update_file_status_last_time()
+        except ObjectDoesNotExist:
+            messages.danger(request, 'Please update file statuses from bravo server')
+            return redirect('reports:reports')
+
         # Get VUID upload_date
         vuid_upload_date = None
         if vuids.count() == 1:
@@ -97,6 +131,10 @@ def report_project(request, pid):
             # Second check Actions type
             vuid_upload_date = vuid_upload_date
 
+            # print vuid_upload_date
+            # print type(vuid_upload_date)
+            # print vuid_upload_date.tzinfo
+
             outputs = {
                 'date': [],
                 'fail': [],
@@ -105,15 +143,36 @@ def report_project(request, pid):
                 'missing': []
             }
 
-            if request.GET.get('start'):
-                start = request.GET.get('start')
-            else:
-                start = timezone.now() - timedelta(days=10)
+            try:
+                end = datetime.fromtimestamp(float(request.GET.get('end')), tz=pytz.timezone('America/Chicago'))
+            except (TypeError, ValueError):
+                end = datetime.now(tz=pytz.UTC)
 
-            if request.GET.get('end'):
-                end = request.GET.get('end')
-            else:
-                end = timezone.now()
+            try:
+                start = datetime.fromtimestamp(float(request.GET.get('start')), tz=pytz.timezone('America/Chicago'))
+            except (TypeError, ValueError):
+                start = end - timedelta(days=10)
+
+            # if request.GET.get('end'):
+            #     end = request.GET.get('end')
+            # else:
+            #     end = timezone.now()
+            #
+            # if request.GET.get('start'):
+            #     start = request.GET.get('start')
+            # else:
+            #     start = end - timedelta(days=10)
+
+            # print start
+            # print type(start)
+            # print start.tzinfo
+            # print end
+            # print type(end)
+            # print end.tzinfo
+            # t = timezone.now()
+            # print t
+            # print type(t)
+            # print t.tzinfo
 
             days = (end - start).days
             if days == 0:
@@ -131,7 +190,7 @@ def report_project(request, pid):
                 date_range = [start + timedelta(days=x) for x in range(0, days + 1)]
 
                 for day in date_range:
-                    if day < get_midninght_of_day(vuid_upload_date):
+                    if day < get_midnight_of_day(vuid_upload_date):
                         outputs['date'].append(day.strftime('%Y-%m-%d'))
                         for key in settings.VOICESLOTS_METRICS.keys():
                             outputs[key].append(settings.VOICESLOTS_METRICS[key])
@@ -143,7 +202,6 @@ def report_project(request, pid):
                                                               day,
                                                               vuid_upload_date,
                                                               break_flag)
-
                     outputs['date'].append(day.strftime('%Y-%m-%d'))
                     for key in settings.VOICESLOTS_METRICS.keys():
                         outputs[key].append(tmp_statistics['statistics'][key])
@@ -153,9 +211,25 @@ def report_project(request, pid):
         else:
             outputs = None
 
+        # print start
+        # print start.astimezone(tz=pytz.timezone('America/Chicago'))
+        # print time.mktime(start.timetuple())
+        # print time.mktime(start.utctimetuple())
+        # print time.mktime(start.astimezone(tz=pytz.timezone('America/Chicago')).timetuple()) # this passes the right timestamp
+        # print time.mktime(start.astimezone(tz=pytz.timezone('America/Chicago')).utctimetuple())
+        # print end
+        # print end.astimezone(tz=pytz.timezone('America/Chicago'))
+        # print time.mktime(end.timetuple())
+        # print time.mktime(end.utctimetuple())
+        # print time.mktime(end.astimezone(tz=pytz.timezone('America/Chicago')).timetuple()) # this passes the right timestamp
+        # print time.mktime(end.astimezone(tz=pytz.timezone('America/Chicago')).utctimetuple())
+
         context = RequestContext(request, {
             'project': project,
             'project_progress': outputs,
+            'start': time.mktime(start.astimezone(tz=pytz.timezone('America/Chicago')).timetuple()),
+            'end': time.mktime(end.astimezone(tz=pytz.timezone('America/Chicago')).timetuple()),
+            'feed': Action.objects.filter(scope__project=project).order_by('-time')[0:10]
         })
         Action.log(request.user, Action.REPORT_GENERATION, 'Viewed progress report dashboard', project)
         return render(request, "reports/report_project.html", context)
@@ -165,8 +239,8 @@ def get_voiceslot_statistics(voiceslots, day, vuid_upload_date, break_flag):
     tmp_statistics = settings.VOICESLOTS_METRICS.copy()
     for vs in voiceslots:
         try:
-            action = Action.objects.filter(time__gt=get_midninght_of_day(day),
-                                           time__lt=get_midninght_of_day(day)+timedelta(days=1),
+            action = Action.objects.filter(time__gt=get_midnight_of_day(day),
+                                           time__lt=get_midnight_of_day(day)+timedelta(days=1),
                                            scope__voiceslot=vs).latest('time')
             if action.type in (Action.TESTER_FAIL_SLOT, Action.AUTO_FAIL_SLOT):
                 tmp_statistics['fail'] += 1
@@ -179,14 +253,14 @@ def get_voiceslot_statistics(voiceslots, day, vuid_upload_date, break_flag):
 
         except ObjectDoesNotExist:
             one_day_before = day - timedelta(days=1)
-            if one_day_before < get_midninght_of_day(vuid_upload_date):
+            if one_day_before < get_midnight_of_day(vuid_upload_date):
                 break_flag = True
                 break
             found_flag = False
             while found_flag is False:
                 try:
-                    action = Action.objects.filter(time__gt=get_midninght_of_day(one_day_before),
-                                                   time__lt=get_midninght_of_day(one_day_before)+timedelta(days=1),
+                    action = Action.objects.filter(time__gt=get_midnight_of_day(one_day_before),
+                                                   time__lt=get_midnight_of_day(one_day_before)+timedelta(days=1),
                                                    scope__voiceslot=vs).latest('time')
                     if action.type in (Action.TESTER_FAIL_SLOT, Action.AUTO_FAIL_SLOT):
                         tmp_statistics['fail'] += 1
@@ -199,7 +273,7 @@ def get_voiceslot_statistics(voiceslots, day, vuid_upload_date, break_flag):
                     found_flag = True
                 except ObjectDoesNotExist:
                     one_day_before -= timedelta(days=1)
-                    if one_day_before < get_midninght_of_day(vuid_upload_date):
+                    if one_day_before < get_midnight_of_day(vuid_upload_date):
                         break
             if found_flag is True:
                 continue
@@ -210,5 +284,5 @@ def get_voiceslot_statistics(voiceslots, day, vuid_upload_date, break_flag):
     }
 
 
-def get_midninght_of_day(day):
-    return day.replace(hour=0, minute=0, second=0)
+def get_midnight_of_day(day):
+    return day.replace(hour=0, minute=0, second=0, microsecond=0)

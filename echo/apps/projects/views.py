@@ -8,7 +8,7 @@ import pysftp
 from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.contrib.auth.decorators import login_required
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.conf import settings
@@ -157,8 +157,17 @@ def project(request, pid):
                     if p.bravo_server is not None:
                         if server == p.bravo_server.name:
                             return redirect("projects:project", pid=pid)
+
+                    # force update file status from bravo server
+                    old_bravo_server = p.bravo_server
                     p.bravo_server = Server.objects.get(name=server)
                     p.save()
+                    if not able_update_file_status(request, p):
+                        p.bravo_server = old_bravo_server
+                        p.save()
+                        messages.warning(request, 'Cannot update file status, set Bravo Server back')
+                        return redirect("projects:project", pid=pid)
+
                 Action.log(request.user,
                            Action.UPDATE_BRAVO_SERVER,
                            u'Bravo server updated to ' + unicode(server),
@@ -208,6 +217,27 @@ def project(request, pid):
         return redirect("projects:project", pid=pid)
     return HttpResponseNotFound()
 
+
+def able_update_file_status(request, p):
+    try:
+        with pysftp.Connection(p.bravo_server.address, username=p.bravo_server.account,
+                               private_key=settings.PRIVATE_KEY) as sftp:
+            result = helpers.fetch_slots_from_server(p, sftp, request.user)
+            if result['valid']:
+                messages.success(request, result["message"])
+                Action.log(request.user, Action.UPDATE_FILE_STATUSES, 'File status update ran', p)
+                return True
+            else:
+                messages.danger(request, result['message'])
+                return False
+    except (pysftp.ConnectionException,
+            pysftp.CredentialException,
+            pysftp.AuthenticationException,
+            pysftp.SSHException):
+        messages.danger(request, "Connection error to server \"{0}\"".format(p.bravo_server.name))
+        return False
+
+
 @login_required
 def project_progress(request, pid):
     if request.method == 'GET':
@@ -218,7 +248,9 @@ def project_progress(request, pid):
             'failed': p.slots_failed(),
             'failed_percent': p.slots_failed_percent(),
             'missing': p.slots_missing(),
-            'missing_percent': p.slots_missing_percent()
+            'missing_percent': p.slots_missing_percent(),
+            'untested': p.slots_untested(),
+            'untested_percent': p.slots_untested_percent()
         }
         return HttpResponse(json.dumps(data), content_type="application/json")
 
@@ -246,8 +278,17 @@ def projects(request):
         # if tab and sort are not present, set to empty
         tab = request.GET.get('tab', '')
         sort = request.GET.get('sort', '')
-        # if tab and sort are empty, set to defaults
-        tab = tab if tab else 'my'
+
+        # if tab empty, set to defaults
+        if not tab:
+            projects = Project.objects.filter(users__pk=request.user.pk, status=Project.TESTING)
+            # if not join any project , navigate to All Projects tab
+            if projects.count() == 0:
+                tab = 'all'
+            else:
+                tab = 'my'
+
+        # if sort empty, set to default
         sort = sort if sort else 'project_name'
         # validate tab and sort
         if tab in tab_types and sort in sort_types:
@@ -259,8 +300,15 @@ def projects(request):
 def queue(request, pid):
     if request.method == 'GET':
         p = get_object_or_404(Project, pk=pid)
+        # check if update file status from bravo server
+        try:
+            p.update_file_status_last_time()
+        except ObjectDoesNotExist:
+            messages.danger(request, 'Please update file statuses from bravo server')
+            return redirect('projects:project', pid=pid)
         lang = get_object_or_404(Language, project=p, name=request.GET.get('language', '__malformed').lower())
         slots_out = request.user.voiceslot_set
+        # TODO check this block
         if slots_out.count() < 0:
             slot = slots_out.first()
             if slot.language.pk == lang.pk:
@@ -270,6 +318,15 @@ def queue(request, pid):
                 for slot in slots_out:
                     slot.check_in()
         slot = lang.voiceslot_set.filter(status=VoiceSlot.NEW, checked_out=False).first()
+        # check if all voice slots have been tested
+        if not slot:
+            messages.warning(request, 'No new voice slots available to be tested')
+            return redirect('projects:project', pid=pid)
+        # check if project has default bravo server
+        if not p.bravo_server:
+            messages.warning(request, 'Please set default bravo server')
+            return redirect('projects:project', pid=pid)
+
         slot_file = slot.download()
         return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, slot_file))
     elif request.method == 'POST':
@@ -409,11 +466,18 @@ def testslot(request, pid, vsid):
 def voiceslots(request, pid):
     if request.method == 'GET':
         p = get_object_or_404(Project, pk=pid)
+        # check if update file status from bravo server
+        try:
+            p.update_file_status_last_time()
+        except ObjectDoesNotExist:
+            messages.danger(request, 'Please update file statuses from bravo server')
+            return redirect('projects:project', pid=pid)
+
         lang = request.GET.get('language', 'master').strip().lower()
         if lang == 'master' or lang in p.language_list():
             if request.GET.get('export', False) == 'csv':
                 return contexts.context_language_csv(p, HttpResponse(content_type='text/csv'), lang)
-            return render(request, "projects/language.html", contexts.context_language(p, language_type=lang))
+            return render(request, "projects/language.html", contexts.context_language(request.user, p, language_type=lang))
     if request.method == 'POST':
         p = get_object_or_404(Project, pk=pid)
         lang = request.GET.get('language', 'master').strip().lower()
