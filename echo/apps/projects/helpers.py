@@ -187,9 +187,10 @@ def upload_vuid(uploaded_file, user, project):
     vuid = VUID(filename=uploaded_file.name, file=uploaded_file, project=project, upload_by=user)
     vuid.save()
 
+    # check if any cell of 'vuid file header' is empty
     if not verify_vuid_headers_empty(vuid):
         vuid.delete()
-        return {"valid": False, "message": "Vuid headers empty, unable to upload"}
+        return {"valid": False, "message": "Invalid file structure, unable to upload"}
 
     # check conflict between root path and vuid path
     if not verify_root_path(vuid):
@@ -246,17 +247,16 @@ def verify_vuid_headers_empty(vuid):
     ws = wb.active
     try:
         headers = set([i.value.lower() for i in ws.rows[0]])
-        print headers
     except AttributeError:
-        print 'find 1 empty'
+        return False
 
-    headers = unicode(ws['A2'].value)
-    if headers:
-        print headers
-    else:
-        print 'find 2 empty'
+    try:
+        index = unicode(ws['A2'].value).strip().find('/')
+        vuid_path = ws['A2'].value.strip()[index:]
+    except AttributeError:
+        return False
 
-    return False
+    return True
 
 
 def verify_root_path(vuid):
