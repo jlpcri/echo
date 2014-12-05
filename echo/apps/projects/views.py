@@ -157,8 +157,17 @@ def project(request, pid):
                     if p.bravo_server is not None:
                         if server == p.bravo_server.name:
                             return redirect("projects:project", pid=pid)
+
+                    # force update file status from bravo server
+                    old_bravo_server = p.bravo_server
                     p.bravo_server = Server.objects.get(name=server)
                     p.save()
+                    if not able_update_file_status(request, p):
+                        p.bravo_server = old_bravo_server
+                        p.save()
+                        messages.warning(request, 'Cannot update file status, set Bravo Server back')
+                        return redirect("projects:project", pid=pid)
+
                 Action.log(request.user,
                            Action.UPDATE_BRAVO_SERVER,
                            u'Bravo server updated to ' + unicode(server),
@@ -207,6 +216,27 @@ def project(request, pid):
                 return redirect('projects:project', pid=pid)
         return redirect("projects:project", pid=pid)
     return HttpResponseNotFound()
+
+
+def able_update_file_status(request, p):
+    try:
+        with pysftp.Connection(p.bravo_server.address, username=p.bravo_server.account,
+                               private_key=settings.PRIVATE_KEY) as sftp:
+            result = helpers.fetch_slots_from_server(p, sftp, request.user)
+            if result['valid']:
+                messages.success(request, result["message"])
+                Action.log(request.user, Action.UPDATE_FILE_STATUSES, 'File status update ran', p)
+                return True
+            else:
+                messages.danger(request, result['message'])
+                return False
+    except (pysftp.ConnectionException,
+            pysftp.CredentialException,
+            pysftp.AuthenticationException,
+            pysftp.SSHException):
+        messages.danger(request, "Connection error to server \"{0}\"".format(p.bravo_server.name))
+        return False
+
 
 @login_required
 def project_progress(request, pid):
