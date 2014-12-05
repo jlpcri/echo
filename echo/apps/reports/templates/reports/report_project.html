@@ -46,6 +46,7 @@
                             <i class="fa fa-calendar"></i>
                             <span id="report-range-display"></span>
                         </div>
+                        <div class="clearfix"></div>
                         <div id="project_progress">
 
                         </div>
@@ -78,64 +79,61 @@
     <script type='text/javascript' src="{% static 'common/bootstrap-daterangepicker/1.2/daterangepicker.js' %}"></script>
     <script type='text/javascript' src="{% static 'common/highcharts/3.0.7/js/highcharts.js' %}"></script>
     <script type="text/javascript">
-    $(function() {
-        var data = {{ project_progress | safe }};
-        $('#project_progress').highcharts({
-        chart: {
-            type: 'area'
-        },
-        title: {
-            text: 'Voice Prompts Broke down by Date'
-        },
-        colors: [
-            '#033c73', '#c71c22', '#dd5600', '#73a839'
-        ],
-        xAxis: {
-            categories: data['date'],
-            allowDecimals: false,
-            tickmarkPlacement: 'on',
+        {% include 'reports/reports.js' %}
+
+        $(function() {
+            setStartDate("{{ start }}");
+            setEndDate("{{ end }}");
+            attachDateRangePicker();
+
+            var data = {{ project_progress | safe }};
+            $('#project_progress').highcharts({
+            chart: {
+                type: 'column'
+            },
             title: {
-                text: 'Date'
-            }
-        },
-        yAxis: {
-            title: {
-                text: 'Prompts'
-            }
-        },
-        tooltip: {
-            shared: true
-        },
-        plotOptions: {
-            area: {
-                stacking: 'normal',
-                lineColor: '#666666',
-                lineWidth: 1,
-                marker: {
-                    lineWidth: 1,
-                    lineColor: '#666666'
+                text: 'Voice Prompts Broke down by Date'
+            },
+            colors: [
+                '#033c73', '#c71c22', '#dd5600', '#73a839'
+            ],
+            xAxis: {
+                categories: data['date'],
+                allowDecimals: false,
+                tickmarkPlacement: 'on',
+                title: {
+                    text: 'Date'
                 }
-            }
-        },
-        series: [{
-            name: 'Untested',
-            data: data['new']
-        }, {
-            name: 'Missing',
-            data: data['missing']
-        }, {
-            name: 'Defective',
-            data: data['fail']
-        }, {
-            name: 'Passed',
-            data: data['pass']
-        }],
-        credits: false
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: 'Prompts'
+                }
+            },
+            tooltip: {
+                shared: true
+            },
+            plotOptions: {
+                column: {
+                    stacking: 'normal'
+                }
+            },
+            series: [{
+                name: 'Untested',
+                data: data['new']
+            }, {
+                name: 'Missing',
+                data: data['missing']
+            }, {
+                name: 'Defective',
+                data: data['fail']
+            }, {
+                name: 'Passed',
+                data: data['pass']
+            }],
+            credits: false
+            });
         });
-        });
-    {% include 'reports/reports.js' %}
-    setStartDate("{{ start }}");
-    setEndDate("{{ end }}");
-    attachDateRangePicker();
     </script>
 {% endblock %}

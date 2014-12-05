@@ -1,4 +1,6 @@
 import json
+from datetime import datetime, timedelta
+import pytz
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseNotFound
@@ -56,16 +58,20 @@ def projects(request):
             'auto_ratio',
             '-auto_ratio'
         ]
-        # if tab and sort are not present, set to empty
-        # tab = request.GET.get('tab', '')
         sort = request.GET.get('sort', '')
-        # if tab and sort are empty, set to defaults
-        # tab = tab if tab else 'my'
         sort = sort if sort else 'project_name'
-        # validate tab and sort
-        # if tab in tab_types and sort in sort_types:
+        try:
+            end = datetime.fromtimestamp(float(request.GET.get('end')), tz=pytz.timezone('America/New_York'))
+        except (TypeError, ValueError):
+            end = datetime.now(tz=pytz.UTC)
+        try:
+            start = datetime.fromtimestamp(float(request.GET.get('start')), tz=pytz.timezone('America/New_York'))
+        except (TypeError, ValueError):
+            start = end - timedelta(days=6)
+        print start
+        print end
         if sort in sort_types:
-            return render(request, "usage/projects.html", contexts.projects_context(sort))
+            return render(request, "usage/projects.html", contexts.projects_context(start, end, sort))
     return HttpResponseNotFound()
 
 
@@ -114,14 +120,19 @@ def users(request):
             'projects',
             '-projects'
         ]
-        # if tab and sort are not present, set to empty
-        # tab = request.GET.get('tab', '')
         sort = request.GET.get('sort', '')
-        # if tab and sort are empty, set to defaults
-        # tab = tab if tab else 'my'
         sort = sort if sort else 'username'
-        # validate tab and sort
-        # if tab in tab_types and sort in sort_types:
+
+        try:
+            end = datetime.fromtimestamp(float(request.GET.get('end')), tz=pytz.timezone('America/New_York'))
+        except (TypeError, ValueError):
+            end = datetime.now(tz=pytz.UTC)
+
+        try:
+            start = datetime.fromtimestamp(float(request.GET.get('start')), tz=pytz.timezone('America/New_York'))
+        except (TypeError, ValueError):
+            start = end - timedelta(days=6)
+
         if sort in sort_types:
-            return render(request, "usage/users.html", contexts.users_context(sort))
+            return render(request, "usage/users.html", contexts.users_context(start, end, sort))
     return HttpResponseNotFound()
