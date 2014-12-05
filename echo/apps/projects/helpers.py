@@ -93,14 +93,12 @@ def fetch_slots_from_server(project, sftp, user):
                         slot.status = VoiceSlot.NEW
                         slot.bravo_checksum = fs.msum
                         slot.bravo_time = timezone.make_aware(datetime.fromtimestamp(fs.mtime), timezone.get_current_timezone())
-                        slot.history = "Slot found, {0}\n".format(datetime.now()) + slot.history
                         slot.save()
                         Action.log(user, Action.AUTO_NEW_SLOT, 'Slot discovered during status check', slot)
                     elif slot.bravo_time is None or bravo_time < datetime.fromtimestamp(fs.mtime) and slot.bravo_checksum != fs.msum:
                         slot.status = VoiceSlot.NEW
                         slot.bravo_checksum = fs.msum
                         slot.bravo_time = timezone.make_aware(datetime.fromtimestamp(fs.mtime), timezone.get_current_timezone())
-                        slot.history = "Slot is new, {0}\n".format(datetime.now()) + slot.history
                         slot.save()
                         Action.log(user, Action.AUTO_NEW_SLOT, 'Slot discovered during status check', slot)
             return {"valid": True, "message": "Files from Bravo Server have been fetched"}

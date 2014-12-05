@@ -57,12 +57,12 @@ def context_language_csv(project, response, language_type='master'):
     if language_type == 'master':
         for slot in project.voiceslots().order_by('name'):
             writer.writerow(
-                [slot.name, slot.path, slot.language.name, slot.verbiage, slot.history, slot.status, slot.vuid.filename,
+                [slot.name, slot.path, slot.language.name, slot.verbiage, slot.status, slot.vuid.filename,
                  slot.vuid.upload_date, slot.vuid.upload_by.username])
     else:
         for slot in project.voiceslots(filter_language=language_type).order_by('name'):
             writer.writerow(
-                [slot.name, slot.path, slot.language.name, slot.verbiage, slot.history, slot.status, slot.vuid.filename,
+                [slot.name, slot.path, slot.language.name, slot.verbiage, slot.status, slot.vuid.filename,
                  slot.vuid.upload_date, slot.vuid.upload_by.username])
     return response
 
