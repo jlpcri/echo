@@ -60,16 +60,20 @@ def projects(request):
         ]
         sort = request.GET.get('sort', '')
         sort = sort if sort else 'project_name'
+
         try:
             end = datetime.fromtimestamp(float(request.GET.get('end')), tz=pytz.timezone('America/New_York'))
         except (TypeError, ValueError):
             end = datetime.now(tz=pytz.UTC)
+
         try:
             start = datetime.fromtimestamp(float(request.GET.get('start')), tz=pytz.timezone('America/New_York'))
         except (TypeError, ValueError):
             start = end - timedelta(days=6)
+
         print start
         print end
+
         if sort in sort_types:
             return render(request, "usage/projects.html", contexts.projects_context(start, end, sort))
     return HttpResponseNotFound()
@@ -132,6 +136,9 @@ def users(request):
             start = datetime.fromtimestamp(float(request.GET.get('start')), tz=pytz.timezone('America/New_York'))
         except (TypeError, ValueError):
             start = end - timedelta(days=6)
+
+        print start
+        print end
 
         if sort in sort_types:
             return render(request, "usage/users.html", contexts.users_context(start, end, sort))

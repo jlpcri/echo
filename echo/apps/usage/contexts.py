@@ -108,8 +108,8 @@ def projects_context(start, end, sort=None):
     return {
         'overall': overall(),
         'projects': projects,
-        'start': time.mktime(start.astimezone(tz=pytz.timezone('America/Chicago')).timetuple()),
-        'end': time.mktime(end.astimezone(tz=pytz.timezone('America/Chicago')).timetuple()),
+        'start': time.mktime(start.astimezone(tz=pytz.timezone('America/New_York')).timetuple()),
+        'end': time.mktime(end.astimezone(tz=pytz.timezone('America/New_York')).timetuple()),
         'sort': sort
     }
 
