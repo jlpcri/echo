@@ -37,6 +37,7 @@
                                     <div id="player_time" class="text-right" style="font-size: smaller"></div>
                                 </div>
                             </div>
+                            <input id="finish_listen" name="finish_listen" type="hidden" value="notyet" />
                             <div class="clearfix"></div>
                         </div>
                         </div>
@@ -120,13 +121,13 @@
     <script type="text/javascript">
         $("[name='test_result']").bootstrapSwitch();
         {% if browser != "ie9" %}
-        $('#volume').slider();
-        init();
-        $('#volume').slider()
-                .on('slide', function (ev) {
-                    var n = ev.value * 0.1;
-                    setVolume(n);
-                });
+            $('#volume').slider();
+            init();
+            $('#volume').slider()
+                    .on('slide', function (ev) {
+                        var n = ev.value * 0.1;
+                        setVolume(n);
+                    });
         {% endif %}
         $(".rg").change(function () {
             if ($('input[name=slot_status]:checked', '#passfail').val() == 'pass') {
@@ -141,8 +142,14 @@
                 $("#label-fail").addClass('btn-danger');
             }
         });
+
+        if ('{{ finish_listen }}' == 'heard'){
+            listened = true;
+        }
+
         $('button[name=submit_test]').on('click', function (event) {
-            if (listened == false) {
+
+            if (listened == false ) {
                 event.preventDefault();
 
                 msg = '<div class="container">';

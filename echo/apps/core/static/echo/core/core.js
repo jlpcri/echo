@@ -65,6 +65,7 @@ function inform() {
         soundPosition += t / 1000;
         if (soundPosition > soundLength) {
             listened = true;
+            document.getElementById('finish_listen').value = 'heard';
         }
         last = now;
     }
