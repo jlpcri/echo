@@ -267,3 +267,10 @@ class Language(models.Model):
 
     def voiceslots(self):
         return VoiceSlot.objects.filter(language=self)
+
+
+class UpdateStatus(models.Model):
+    project = models.ForeignKey('projects.Project')
+    last_run = models.DateTimeField(auto_now=True)
+    running = models.BooleanField(default=False)
+    query_id = models.TextField(default='')
