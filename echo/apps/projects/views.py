@@ -135,6 +135,7 @@ def new(request):
             return render(request, "projects/new.html", contexts.context_new(form))
     return HttpResponseNotFound()
 
+
 @transaction.atomic
 @login_required
 def project(request, pid):
@@ -218,6 +219,7 @@ def project(request, pid):
     return HttpResponseNotFound()
 
 
+@login_required
 def able_update_file_status(request, p):
     try:
         with pysftp.Connection(p.bravo_server.address, username=p.bravo_server.account,
@@ -249,8 +251,10 @@ def project_progress(request, pid):
             'failed_percent': p.slots_failed_percent(),
             'missing': p.slots_missing(),
             'missing_percent': p.slots_missing_percent(),
-            'untested': p.slots_untested(),
-            'untested_percent': p.slots_untested_percent()
+            'ready': p.slots_ready(),
+            'ready_percent': p.slots_ready_percent(),
+            'new': p.slots_untested(),
+            'new_percent': p.slots_untested_percent()
         }
         return HttpResponse(json.dumps(data), content_type="application/json")
 

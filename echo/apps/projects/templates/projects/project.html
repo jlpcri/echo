@@ -43,10 +43,15 @@
                              style="width: {{ project.slots_missing_percent }}%; cursor: default;"
                              data-toggle="tooltip" data-placement="top"
                              title="{{ project.slots_missing }} missing">{{ project.slots_missing }}</div>
-                        <div id="untested_bar_{{ project.pk }}" class="progress-bar progress-bar-info"
+                        <div id="ready_bar_{{ project.pk }}" class="progress-bar progress-bar-info"
+                             style="width: {{ project.slots_ready_percent }}%; cursor: default;"
+                             data-toggle="tooltip" data-placement="top"
+                             title="{{ project.slots_ready }} ready to test">{{ project.slots_ready }}</div>
+                        <div id="new_bar_{{ project.pk }}" class="progress-bar progress-bar-default"
                              style="width: {{ project.slots_untested_percent }}%; cursor: default;"
                              data-toggle="tooltip" data-placement="top"
                              title="{{ project.slots_untested }} untested">{{ project.slots_untested }}</div>
+
                     </div>
                 {% else %}
                     <div id="progress_{{ project.pk }}" class="progress" class="progress"
@@ -242,8 +247,11 @@
             {% if project.slots_missing %}
                 $('#missing_bar_' + {{ project.id }}).tooltip();
             {% endif %}
+            {% if project.slots_ready %}
+                $('#ready_bar_' + {{ project.id }}).tooltip();
+            {% endif %}
             {% if project.slots_untested %}
-                $('#untested_bar_' + {{ project.id }}).tooltip();
+                $('#new_bar_' + {{ project.id }}).tooltip();
             {% endif %}
         {% else %}
             $('#progress_' + {{ project.id }}).tooltip();
@@ -281,9 +289,13 @@
                 $('#missing_bar_' + {{ project.id }}).html(data['missing']);
                 $('#missing_bar_' + {{ project.id }}).attr('data-original-title', data['missing']+' missing');
 
-                $('#untested_bar_' + {{ project.id }}).css('width', data['untested_percent'] + '%');
-                $('#untested_bar_' + {{ project.id }}).html(data['untested']);
-                $('#untested_bar_' + {{ project.id }}).attr('data-original-title', data['untested']+' untested');
+                $('#ready_bar_' + {{ project.id }}).css('width', data['ready_percent'] + '%');
+                $('#ready_bar_' + {{ project.id }}).html(data['ready']);
+                $('#ready_bar_' + {{ project.id }}).attr('data-original-title', data['ready']+' ready');
+
+                $('#new_bar_' + {{ project.id }}).css('width', data['new_percent'] + '%');
+                $('#new_bar_' + {{ project.id }}).html(data['new']);
+                $('#new_bar_' + {{ project.id }}).attr('data-original-title', data['new']+' new');
             })
         }, 5000);
 
