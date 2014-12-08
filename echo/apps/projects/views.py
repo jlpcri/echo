@@ -340,10 +340,10 @@ def queue(request, pid):
             return redirect("projects:project", pid=pid)
         elif "submit_test" in request.POST:
             test_result = request.POST.get('slot_status', False)
-            finish_listen = request.POST.get('finish_listen', 'notyet')
+            finish_listen_post = request.POST.get('finish_listen', 'notyet')
 
             # finish_listen to check if finish listened without Pass/Fail selection
-            if not test_result and finish_listen == 'heard':
+            if not test_result and finish_listen_post == 'heard':
                 messages.danger(request, "Please enter a pass or fail")
                 return HttpResponseRedirect(reverse("projects:queue", args=(p.pk, )) + "?language=" + lang.name + '&listened=heard')
             elif test_result == 'pass':
@@ -396,9 +396,14 @@ def submitslot(request, vsid):
             slot = get_object_or_404(VoiceSlot, pk=vsid)
             p = slot.language.project
             slot_status = request.POST.get('slot_status', False)
-            if not slot_status:
+
+            finish_listen_post = request.POST.get('finish_listen', 'notyet')
+            if not slot_status and finish_listen_post == 'heard':
                 messages.danger(request, "Please enter a pass or fail")
-                return redirect("projects:testslot", pid=p.pk, vsid=vsid)
+                #return redirect("projects:testslot", pid=p.pk, vsid=vsid)
+                response = redirect("projects:testslot", pid=p.pk, vsid=vsid)
+                response['Location'] += '?listened=heard'
+                return response
             if slot_status == 'pass':
                 slot.status = VoiceSlot.PASS
                 slot.check_in(request.user)
@@ -431,7 +436,7 @@ def submitslot(request, vsid):
 @login_required
 def testslot(request, pid, vsid):
     if request.method == 'GET':
-        finish_listen = request.GET.get('finish_listen', 'notyet')
+        finish_listen = request.GET.get('listened', 'notyet')
         p = get_object_or_404(Project, pk=pid)
         slot = get_object_or_404(VoiceSlot, pk=vsid)
         if p.bravo_server:
