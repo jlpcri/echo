@@ -196,7 +196,7 @@ class Project(models.Model):
 
 
 class VoiceSlot(models.Model):
-    """Represents a .wav file and its associated verbiage, status, and history"""
+    """Represents a .wav file and its associated verbiage and testing status"""
     NEW = 'New'
     PASS = 'Pass'
     FAIL = 'Fail'
@@ -208,7 +208,6 @@ class VoiceSlot(models.Model):
     name = models.TextField()
     path = models.TextField()
     user = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
-    history = models.TextField(blank=True, null=True, default="")
     status = models.TextField(choices=VOICESLOT_STATUS_CHOICES, default=NEW)
     verbiage = models.TextField(blank=True, null=True)
     checked_out = models.BooleanField(default=False)
@@ -223,10 +222,6 @@ class VoiceSlot(models.Model):
             self.checked_out = False
             self.check_in_time = datetime.now()
             self.user = None
-            if forced:
-                self.history = "Forced check in by {0} at {1}\n".format(user, self.check_in_time.strftime("%b %d %Y, %H:%M")) + self.history
-            else:
-                self.history = "Checked in by {0} at {1}\n".format(user, self.check_in_time.strftime("%b %d %Y, %H:%M")) + self.history
             self.save()
 
     def check_out(self, user, forced=False):
@@ -234,17 +229,10 @@ class VoiceSlot(models.Model):
             self.checked_out = True
             self.checked_out_time = datetime.now()
             self.user = user
-            if forced:
-                self.history = "Forced check out by {0} at {1}\n".format(user, self.checked_out_time.strftime("%b %d %Y, %H:%M")) + self.history
-            else:
-                self.history = "Checked out by {0} at {1}\n".format(user, self.checked_out_time.strftime("%b %d %Y, %H:%M")) + self.history
             self.save()
 
     def filepath(self):
         return "{0}/{1}.wav".format(self.path, self.name)
-
-    def history_list(self):
-        return [s for s in self.history.split('\n') if len(s) > 0]
 
     def download(self):
         """Downloads a file from the remote server and returns the path on the local server"""
@@ -257,8 +245,6 @@ class VoiceSlot(models.Model):
             conn.get(remote_path, local_path)
             filepath = settings.MEDIA_URL + filename
             last_modified = int(conn.execute('stat -c %Y {0}'.format(remote_path))[0])
-            self.history = "Downloaded file last modified on {0}\n".format(
-                datetime.fromtimestamp(last_modified).strftime("%b %d %Y, %H:%M")) + self.history
         return filepath
 
 
