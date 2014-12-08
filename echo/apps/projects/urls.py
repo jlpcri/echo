@@ -19,4 +19,5 @@ urlpatterns = patterns('',
     url(r'^projects/(?P<pid>\d+)/voiceslots/(?P<vsid>\d+)$', views.testslot, name='testslot'),
     url(r'^projects/voiceslots/(?P<vsid>\d+)/submit$', views.submitslot, name='submitslot'),
     url(r'^projects/temp/$', views.temp, name='temp'),
+    url(r'^projects/(?P<pid>\d+)/update/$', views.project_progress, name='initiate_status_update'),
 )

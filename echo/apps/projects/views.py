@@ -9,16 +9,17 @@ from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.conf import settings
-from echo.apps.activity.models import Action
 
+from echo.apps.activity.models import Action
 from echo.apps.core import messages
 from echo.apps.settings.models import Server
 from echo.apps.projects.forms import ProjectForm, ServerForm, UploadForm, ProjectRootPathForm
-from echo.apps.projects.models import Language, Project, VoiceSlot, VUID
+from echo.apps.projects.models import Language, Project, VoiceSlot, VUID, UpdateStatus
 from echo.apps.projects import contexts, helpers
+from echo.apps.projects.tasks import update_file_statuses
 
 
 @login_required
@@ -546,3 +547,21 @@ def archive_project(request, pid):
         Action.log(request.user, action, note, p)
 
     return redirect("projects:project", pid)
+
+@login_required
+def initiate_status_update(request, pid):
+    """
+    Kicks off the request from "Update File Statuses"
+    """
+    if not request.method == "POST":
+        raise Http404
+    status = UpdateStatus.objects.get_or_create(project__pk=pid)[0]
+    if status.running:
+            return HttpResponse(json.dumps({'success': False, 'message': 'Task already running'}),
+                                content_type="application/json")
+    query_item = update_file_statuses.delay(project_id=pid)
+    status.query_id = query_item
+    status.running = True
+    status.save()
+    Action.log(request.user, Action.UPDATE_FILE_STATUSES, 'Updated file statuses', Project.objects.get(pk=pid))
+    return HttpResponse(json.dumps({'success': True}), content_type="application/json")
