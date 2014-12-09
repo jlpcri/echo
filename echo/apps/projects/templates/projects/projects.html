@@ -135,8 +135,14 @@
                                      data-toggle="tooltip" data-placement="top"
                                      title="{{ project.slots_missing }} missing">{{ project.slots_missing }}</div>
                             {% endif %}
+                            {% if project.slots_ready %}
+                                <div id="ready_bar_{{ project.pk }}" class="progress-bar progress-bar-info"
+                                     style="width: {{ project.slots_ready_percent }}%; cursor: default;"
+                                     data-toggle="tooltip" data-placement="top"
+                                     title="{{ project.slots_missing }} missing">{{ project.slots_ready }}</div>
+                            {% endif %}
                             {% if project.slots_untested %}
-                                <div id="untested_bar_{{ project.pk }}" class="progress-bar progress-bar-info"
+                                <div id="new_bar_{{ project.pk }}" class="progress-bar progress-bar-default"
                                      style="width: {{ project.slots_untested_percent }}%; cursor: default;"
                                      data-toggle="tooltip" data-placement="top"
                                      title="{{ project.slots_untested }} untested">{{ project.slots_untested }}</div>
@@ -230,8 +236,11 @@
                 {% if project.slots_missing %}
                     $('#missing_bar_{{ project.pk }}').tooltip();
                 {% endif %}
+                    {% if project.slots_ready %}
+                    $('#ready_bar_{{ project.pk }}').tooltip();
+                {% endif %}
                 {% if project.slots_untested %}
-                    $('#untested_bar_{{ project.pk }}').tooltip();
+                    $('#new_bar_{{ project.pk }}').tooltip();
                 {% endif %}
             {% else %}
                 $('#progress_{{ project.pk }}').tooltip();

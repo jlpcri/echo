@@ -259,7 +259,13 @@
                             $("#update-disabled-link").addClass("hidden");
                             $("#update-active-link").removeClass("hidden");
                         },
-                        success: function() {alert("Now you're cooking with gas!")}
+                        success: function(data) {
+                            var json_data = $.parseJSON(data);
+                            if (json_data.success == false)
+                            {
+                                alert("Another file status check was already running.");
+                            }
+                        }
                     });
         }
 
@@ -287,6 +293,17 @@
                 $('#new_bar_' + {{ project.id }}).css('width', data['new_percent'] + '%');
                 $('#new_bar_' + {{ project.id }}).html(data['new']);
                 $('#new_bar_' + {{ project.id }}).attr('data-original-title', data['new']+' new');
+
+                if ($("#update-disabled-link").hasClass("hidden") && data.running) {
+                    $("#update-active-link").addClass("hidden");
+                    $("#update-disabled-link").removeClass("hidden");
+                }
+                else if ($("#update-active-link").hasClass("hidden") && !data.running) {
+                    $("#update-disabled-link").addClass("hidden");
+                    $("#update-active-link").removeClass("hidden");
+                }
+                console.log(data);
+                console.log(data.running);
             })
         }, 5000);
 
