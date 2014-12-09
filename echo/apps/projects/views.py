@@ -385,7 +385,10 @@ def queue(request, pid):
                     messages.success(request, "All slots in this language are tested or recently checked out for testing.")
                     return redirect("projects:project", pid=pid)
             slot_file = slot.download()
-            finish_listen = request.GET.get('listened', 'notyet')
+
+            # reset if finish listen to not yet
+            finish_listen = 'notyet'
+
             return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, slot_file, finish_listen))
         else:
             return HttpResponseNotFound()

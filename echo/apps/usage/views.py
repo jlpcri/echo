@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import redirect, render, get_object_or_404
+from django.utils import timezone
 from echo.apps.activity.models import Action
 from echo.apps.projects.models import Project
 from echo.apps.usage import contexts
@@ -23,7 +24,7 @@ def project(request, pid):
                 {
                     'username': a.actor.username,
                     'description': a.description,
-                    'time': a.time.strftime('%c')
+                    'time': timezone.localtime(a.time).strftime('%c')
                 }
             )
         json_data = json.dumps({'project_name': p.name, 'actions': actions})
@@ -87,7 +88,7 @@ def user(request, uid):
                 {
                     'project_name': a.scope.project.name,
                     'description': a.description,
-                    'time': a.time.strftime('%c')
+                    'time': timezone.localtime(a.time).strftime('%c')
                 }
             )
         json_data = json.dumps({'username': u.username, 'actions': actions})

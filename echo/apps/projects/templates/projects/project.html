@@ -105,7 +105,7 @@
                             {% if project.status == 'Testing' %}
                                 <a href="{% url "projects:archive_project" project.pk %}" title="Archive Project"><b>Archive Project</b></a>
                             {% elif project.status == 'Closed' %}
-                                <a href="{% url "projects:archive_project" project.pk %}" title="Un-Archive Project"><b>Un Archive Project</b></a>
+                                <a href="{% url "projects:archive_project" project.pk %}" title="Un-Archive Project"><b>Reactivate Project</b></a>
                             {% endif %}
                         </li>
                     </ul>
