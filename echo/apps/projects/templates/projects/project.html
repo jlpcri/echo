@@ -253,6 +253,7 @@
             $("#update-disabled-link").removeClass("hidden");
             $.ajax("{% url 'projects:initiate_status_update' project.pk %}",
                     {
+                        type: "POST",
                         error: function() {
                             alert("An unexpected error occurred. Status update failed!");
                             $("#update-disabled-link").addClass("hidden");

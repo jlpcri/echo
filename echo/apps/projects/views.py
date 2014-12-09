@@ -12,6 +12,7 @@ from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
 
 from echo.apps.activity.models import Action
 from echo.apps.core import messages
@@ -246,6 +247,7 @@ def project_progress(request, pid):
     if request.method == 'GET':
         p = get_object_or_404(Project, pk=pid)
         data = {
+            #'running': UpdateStatus.objects.get(project=p).running,
             'passed': p.slots_passed(),
             'passed_percent': p.slots_passed_percent(),
             'failed': p.slots_failed(),
@@ -561,13 +563,15 @@ def archive_project(request, pid):
     return redirect("projects:project", pid)
 
 @login_required
+@csrf_exempt
 def initiate_status_update(request, pid):
     """
     Kicks off the request from "Update File Statuses"
     """
     if not request.method == "POST":
         raise Http404
-    status = UpdateStatus.objects.get_or_create(project__pk=pid)[0]
+    project = Project.objects.get(pk=pid)
+    status = UpdateStatus.objects.get_or_create(project=project)[0]
     if status.running:
             return HttpResponse(json.dumps({'success': False, 'message': 'Task already running'}),
                                 content_type="application/json")
