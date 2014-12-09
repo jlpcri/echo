@@ -58,7 +58,13 @@
                         <label id="label-pass" class="btn btn-default pass" style="width: 50%;">
                             <input type="radio" id="pass" class="rg" name="slot_status" value="pass">Pass
                         </label>
-                        <label id="label-fail" class="btn btn-default fail" style="width: 50%;">
+                        <label id="label-fail" style="width: 50%;"
+                            {% if fail_select %}
+                               class="btn btn-danger fail activate"
+                            {% else %}
+                                class="btn btn-default fail"
+                            {% endif %}
+                                >
                             <input type="radio" id="fail" class="rg" name="slot_status" value="fail">Fail
                         </label>
                     </div>

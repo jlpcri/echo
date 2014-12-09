@@ -301,6 +301,7 @@ def queue(request, pid):
     if request.method == 'GET':
         # check if voice slot already listened
         finish_listen = request.GET.get('listened', 'notyet')
+        fail_select = request.GET.get('fail_select', False)
         p = get_object_or_404(Project, pk=pid)
         # check if update file status from bravo server
         try:
@@ -315,7 +316,7 @@ def queue(request, pid):
             slot = slots_out.first()
             if slot.language.pk == lang.pk:
                 slot_file = slot.download()
-                return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, slot_file, finish_listen))
+                return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, slot_file, finish_listen, fail_select))
             else:
                 for slot in slots_out:
                     slot.check_in()
@@ -330,7 +331,7 @@ def queue(request, pid):
             return redirect('projects:project', pid=pid)
 
         slot_file = slot.download()
-        return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, slot_file, finish_listen))
+        return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, slot_file, finish_listen, fail_select))
     elif request.method == 'POST':
         p = get_object_or_404(Project, pk=pid)
         lang = get_object_or_404(Language, project=p, name=request.GET.get('language', '__malformed').lower())
@@ -341,9 +342,12 @@ def queue(request, pid):
         elif "submit_test" in request.POST:
             test_result = request.POST.get('slot_status', False)
             finish_listen_post = request.POST.get('finish_listen', 'notyet')
+            already_listen_post = request.GET.get('listened', 'notyet')
+            fail_select = request.GET.get('fail_select', False)
 
             # finish_listen to check if finish listened without Pass/Fail selection
-            if not test_result and finish_listen_post == 'heard':
+            if not test_result and (finish_listen_post == 'heard' or already_listen_post == 'heard') and fail_select != 'selected':
+
                 messages.danger(request, "Please enter a pass or fail")
                 return HttpResponseRedirect(reverse("projects:queue", args=(p.pk, )) + "?language=" + lang.name + '&listened=heard')
             elif test_result == 'pass':
@@ -359,7 +363,7 @@ def queue(request, pid):
             else:
                 if not request.POST.get('notes', False):
                     messages.danger(request, "Please provide notes on test failure")
-                    return HttpResponseRedirect(reverse("projects:queue", args=(p.pk, )) + "?language=" + lang.name)
+                    return HttpResponseRedirect(reverse("projects:queue", args=(p.pk, )) + "?language=" + lang.name + '&listened=heard&fail_select=selected')
                 tested_slot.status = VoiceSlot.FAIL
                 tested_slot.check_in(request.user)
                 tested_slot.save()
@@ -387,9 +391,11 @@ def queue(request, pid):
             slot_file = slot.download()
 
             # reset if finish listen to not yet
-            finish_listen = 'notyet'
+            #finish_listen = 'notyet'
+            #fail_select = False
 
-            return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, slot_file, finish_listen))
+            #return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, slot_file, finish_listen, fail_select))
+            return HttpResponseRedirect(reverse("projects:queue", args=(p.pk, )) + "?language=" + lang.name)
         else:
             return HttpResponseNotFound()
 
@@ -402,7 +408,10 @@ def submitslot(request, vsid):
             slot_status = request.POST.get('slot_status', False)
 
             finish_listen_post = request.POST.get('finish_listen', 'notyet')
-            if not slot_status and finish_listen_post == 'heard':
+            already_listen_post = request.GET.get('listened', 'notyet')
+            fail_select = request.GET.get('fail_select', False)
+
+            if not slot_status and (finish_listen_post == 'heard' or already_listen_post == 'heard') and fail_select != 'selected':
                 messages.danger(request, "Please enter a pass or fail")
                 #return redirect("projects:testslot", pid=p.pk, vsid=vsid)
                 response = redirect("projects:testslot", pid=p.pk, vsid=vsid)
@@ -418,7 +427,9 @@ def submitslot(request, vsid):
             else:
                 if not request.POST.get('notes', False):
                     messages.danger(request, "Please provide notes on test failure")
-                    return redirect("projects:testslot", pid=p.pk, vsid=vsid)
+                    response = redirect("projects:testslot", pid=p.pk, vsid=vsid)
+                    response['Location'] += '?listened=heard&fail_select=selected'
+                    return response
                 slot.status = VoiceSlot.FAIL
                 slot.check_in(request.user)
                 slot.save()
@@ -441,6 +452,7 @@ def submitslot(request, vsid):
 def testslot(request, pid, vsid):
     if request.method == 'GET':
         finish_listen = request.GET.get('listened', 'notyet')
+        fail_select = request.GET.get('fail_select', False)
         p = get_object_or_404(Project, pk=pid)
         slot = get_object_or_404(VoiceSlot, pk=vsid)
         if p.bravo_server:
@@ -471,7 +483,7 @@ def testslot(request, pid, vsid):
             except pysftp.SSHException:
                 messages.danger(request, "SSH error to server \"{0}\"".format(p.bravo_server.name))
                 return redirect("projects:project", pid)
-            return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, filepath, finish_listen))
+            return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, filepath, finish_listen, fail_select))
         messages.danger(request, "No server associated with project")
         return redirect("projects:project", pid)
     return submitslot(request, vsid)

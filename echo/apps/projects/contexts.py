@@ -121,7 +121,7 @@ def context_projects(user, tab, sort=None, page=None):
     }
 
 
-def context_testslot(browser, project, slot, filepath, finish_listen):
+def context_testslot(browser, project, slot, filepath, finish_listen, fail_select):
     browser_type = None
     if browser:
         if browser.family and browser.version_string:
@@ -131,7 +131,8 @@ def context_testslot(browser, project, slot, filepath, finish_listen):
         'project': project,
         'slot': slot,
         'file': filepath,
-        'finish_listen': finish_listen
+        'finish_listen': finish_listen,
+        'fail_select': fail_select
     }
 
 
