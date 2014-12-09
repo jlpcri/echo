@@ -1,6 +1,7 @@
 from base import *
 
-STATIC_URL = 'http://apps.qaci01.wic.west.com/static/'
+#STATIC_URL = 'http://apps.qaci01.wic.west.com/static/'
+STATICFILES_DIRS = ('/opt/static/',)
 
 # DATABASES = {
 #     'default': {

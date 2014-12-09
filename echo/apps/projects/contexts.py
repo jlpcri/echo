@@ -41,7 +41,7 @@ def context_home(user, sort=None):
     }
 
 
-def context_language(project, language_type='master'):
+def context_language(user, project, language_type='master'):
     return {
         'project': project,
         'language_type': language_type,
@@ -57,12 +57,12 @@ def context_language_csv(project, response, language_type='master'):
     if language_type == 'master':
         for slot in project.voiceslots().order_by('name'):
             writer.writerow(
-                [slot.name, slot.path, slot.language.name, slot.verbiage, slot.history, slot.status, slot.vuid.filename,
+                [slot.name, slot.path, slot.language.name, slot.verbiage, slot.status, slot.vuid.filename,
                  slot.vuid.upload_date, slot.vuid.upload_by.username])
     else:
         for slot in project.voiceslots(filter_language=language_type).order_by('name'):
             writer.writerow(
-                [slot.name, slot.path, slot.language.name, slot.verbiage, slot.history, slot.status, slot.vuid.filename,
+                [slot.name, slot.path, slot.language.name, slot.verbiage, slot.status, slot.vuid.filename,
                  slot.vuid.upload_date, slot.vuid.upload_by.username])
     return response
 
@@ -90,7 +90,7 @@ def context_projects(user, tab, sort=None, page=None):
         projects = Project.objects.filter(status=Project.CLOSED)
     else:
         tab = 'all'
-        projects = Project.objects.all().exclude(users__pk=user.pk)
+        projects = Project.objects.filter(status=Project.TESTING).exclude(users__pk=user.pk)
 
     if sort:
         if sort == 'project_name':
@@ -121,7 +121,7 @@ def context_projects(user, tab, sort=None, page=None):
     }
 
 
-def context_testslot(browser, project, slot, filepath):
+def context_testslot(browser, project, slot, filepath, finish_listen):
     browser_type = None
     if browser:
         if browser.family and browser.version_string:
@@ -130,7 +130,8 @@ def context_testslot(browser, project, slot, filepath):
         'browser': browser_type,
         'project': project,
         'slot': slot,
-        'file': filepath
+        'file': filepath,
+        'finish_listen': finish_listen
     }
 
 

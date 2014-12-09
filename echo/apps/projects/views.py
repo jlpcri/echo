@@ -157,8 +157,17 @@ def project(request, pid):
                     if p.bravo_server is not None:
                         if server == p.bravo_server.name:
                             return redirect("projects:project", pid=pid)
+
+                    # force update file status from bravo server
+                    old_bravo_server = p.bravo_server
                     p.bravo_server = Server.objects.get(name=server)
                     p.save()
+                    if not able_update_file_status(request, p):
+                        p.bravo_server = old_bravo_server
+                        p.save()
+                        messages.warning(request, 'Cannot update file status, set Bravo Server back')
+                        return redirect("projects:project", pid=pid)
+
                 Action.log(request.user,
                            Action.UPDATE_BRAVO_SERVER,
                            u'Bravo server updated to ' + unicode(server),
@@ -208,6 +217,27 @@ def project(request, pid):
         return redirect("projects:project", pid=pid)
     return HttpResponseNotFound()
 
+
+def able_update_file_status(request, p):
+    try:
+        with pysftp.Connection(p.bravo_server.address, username=p.bravo_server.account,
+                               private_key=settings.PRIVATE_KEY) as sftp:
+            result = helpers.fetch_slots_from_server(p, sftp, request.user)
+            if result['valid']:
+                messages.success(request, result["message"])
+                Action.log(request.user, Action.UPDATE_FILE_STATUSES, 'File status update ran', p)
+                return True
+            else:
+                messages.danger(request, result['message'])
+                return False
+    except (pysftp.ConnectionException,
+            pysftp.CredentialException,
+            pysftp.AuthenticationException,
+            pysftp.SSHException):
+        messages.danger(request, "Connection error to server \"{0}\"".format(p.bravo_server.name))
+        return False
+
+
 @login_required
 def project_progress(request, pid):
     if request.method == 'GET':
@@ -248,8 +278,17 @@ def projects(request):
         # if tab and sort are not present, set to empty
         tab = request.GET.get('tab', '')
         sort = request.GET.get('sort', '')
-        # if tab and sort are empty, set to defaults
-        tab = tab if tab else 'my'
+
+        # if tab empty, set to defaults
+        if not tab:
+            projects = Project.objects.filter(users__pk=request.user.pk, status=Project.TESTING)
+            # if not join any project , navigate to All Projects tab
+            if projects.count() == 0:
+                tab = 'all'
+            else:
+                tab = 'my'
+
+        # if sort empty, set to default
         sort = sort if sort else 'project_name'
         # validate tab and sort
         if tab in tab_types and sort in sort_types:
@@ -260,6 +299,8 @@ def projects(request):
 @login_required
 def queue(request, pid):
     if request.method == 'GET':
+        # check if voice slot already listened
+        finish_listen = request.GET.get('listened', 'notyet')
         p = get_object_or_404(Project, pk=pid)
         # check if update file status from bravo server
         try:
@@ -269,17 +310,27 @@ def queue(request, pid):
             return redirect('projects:project', pid=pid)
         lang = get_object_or_404(Language, project=p, name=request.GET.get('language', '__malformed').lower())
         slots_out = request.user.voiceslot_set
+        # TODO check this block
         if slots_out.count() < 0:
             slot = slots_out.first()
             if slot.language.pk == lang.pk:
                 slot_file = slot.download()
-                return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, slot_file))
+                return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, slot_file, finish_listen))
             else:
                 for slot in slots_out:
                     slot.check_in()
         slot = lang.voiceslot_set.filter(status=VoiceSlot.NEW, checked_out=False).first()
+        # check if all voice slots have been tested
+        if not slot:
+            messages.warning(request, 'No new voice slots available to be tested')
+            return redirect('projects:project', pid=pid)
+        # check if project has default bravo server
+        if not p.bravo_server:
+            messages.warning(request, 'Please set default bravo server')
+            return redirect('projects:project', pid=pid)
+
         slot_file = slot.download()
-        return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, slot_file))
+        return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, slot_file, finish_listen))
     elif request.method == 'POST':
         p = get_object_or_404(Project, pk=pid)
         lang = get_object_or_404(Language, project=p, name=request.GET.get('language', '__malformed').lower())
@@ -289,9 +340,12 @@ def queue(request, pid):
             return redirect("projects:project", pid=pid)
         elif "submit_test" in request.POST:
             test_result = request.POST.get('slot_status', False)
-            if not test_result:
+            finish_listen_post = request.POST.get('finish_listen', 'notyet')
+
+            # finish_listen to check if finish listened without Pass/Fail selection
+            if not test_result and finish_listen_post == 'heard':
                 messages.danger(request, "Please enter a pass or fail")
-                return HttpResponseRedirect(reverse("projects:queue", args=(p.pk, )) + "?language=" + lang.name)
+                return HttpResponseRedirect(reverse("projects:queue", args=(p.pk, )) + "?language=" + lang.name + '&listened=heard')
             elif test_result == 'pass':
                 tested_slot.status = VoiceSlot.PASS
                 tested_slot.check_in(request.user)
@@ -331,7 +385,8 @@ def queue(request, pid):
                     messages.success(request, "All slots in this language are tested or recently checked out for testing.")
                     return redirect("projects:project", pid=pid)
             slot_file = slot.download()
-            return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, slot_file))
+            finish_listen = request.GET.get('listened', 'notyet')
+            return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, slot_file, finish_listen))
         else:
             return HttpResponseNotFound()
 
@@ -342,9 +397,14 @@ def submitslot(request, vsid):
             slot = get_object_or_404(VoiceSlot, pk=vsid)
             p = slot.language.project
             slot_status = request.POST.get('slot_status', False)
-            if not slot_status:
+
+            finish_listen_post = request.POST.get('finish_listen', 'notyet')
+            if not slot_status and finish_listen_post == 'heard':
                 messages.danger(request, "Please enter a pass or fail")
-                return redirect("projects:testslot", pid=p.pk, vsid=vsid)
+                #return redirect("projects:testslot", pid=p.pk, vsid=vsid)
+                response = redirect("projects:testslot", pid=p.pk, vsid=vsid)
+                response['Location'] += '?listened=heard'
+                return response
             if slot_status == 'pass':
                 slot.status = VoiceSlot.PASS
                 slot.check_in(request.user)
@@ -377,6 +437,7 @@ def submitslot(request, vsid):
 @login_required
 def testslot(request, pid, vsid):
     if request.method == 'GET':
+        finish_listen = request.GET.get('listened', 'notyet')
         p = get_object_or_404(Project, pk=pid)
         slot = get_object_or_404(VoiceSlot, pk=vsid)
         if p.bravo_server:
@@ -407,7 +468,7 @@ def testslot(request, pid, vsid):
             except pysftp.SSHException:
                 messages.danger(request, "SSH error to server \"{0}\"".format(p.bravo_server.name))
                 return redirect("projects:project", pid)
-            return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, filepath))
+            return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, filepath, finish_listen))
         messages.danger(request, "No server associated with project")
         return redirect("projects:project", pid)
     return submitslot(request, vsid)
@@ -428,7 +489,7 @@ def voiceslots(request, pid):
         if lang == 'master' or lang in p.language_list():
             if request.GET.get('export', False) == 'csv':
                 return contexts.context_language_csv(p, HttpResponse(content_type='text/csv'), lang)
-            return render(request, "projects/language.html", contexts.context_language(p, language_type=lang))
+            return render(request, "projects/language.html", contexts.context_language(request.user, p, language_type=lang))
     if request.method == 'POST':
         p = get_object_or_404(Project, pk=pid)
         lang = request.GET.get('language', 'master').strip().lower()
