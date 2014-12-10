@@ -66,36 +66,12 @@
             transform: rotate(180deg) !important;
         }
 
-{#        .timer.fill > .percent {#}
-{#            z-index: 2;#}
-{#        }#}
-
-{#        .player #button_play {#}
-{#            z-index: 2;#}
-{#        }#}
-
         .timer.fill > #slice > .pie {
             border: solid grey 1px;
             background-color: cyan;
             width: 1em;
             height: 1em;
         }
-
-{#        .timer.fill > #button_play {#}
-{#            margin: 0 0 0 0;#}
-{#            padding: 0 0 0 0;#}
-{#            z-index: 2;#}
-{#            background-color: #eceeec;#}
-{#            border: solid grey 1px;#}
-{#            height: 80%;#}
-{#            width: 80%;#}
-{#            -moz-border-radius: 50%;#}
-{#            -webkit-border-radius: 50%;#}
-{#            border-radius: 50%;#}
-{#            position: absolute;#}
-{#            top: 10%;#}
-{#            left: 10%;#}
-{#        }#}
 
         .timer.fill > .hole {
             margin: 0 0 0 0;
@@ -122,6 +98,35 @@
             </div>
         </div>
         <hr>
+        <div class="row">
+            <div class="col-xs-12">
+                {% if project.slots_total > 0 %}
+                    <div id="progress_{{ project.pk }}" class="progress" style="line-height: 20px;">
+                        <div id="passed_bar_{{ project.pk }}" class="progress-bar progress-bar-success"
+                             style="width: {{ project.slots_passed_percent }}%; cursor: default;"
+                             data-toggle="tooltip" data-placement="top"
+                             title="{{ project.slots_passed }} passed">{{ project.slots_passed }}</div>
+                        <div id="defective_bar_{{ project.pk }}" class="progress-bar progress-bar-warning"
+                             style="width: {{ project.slots_failed_percent }}%; cursor: default;"
+                             data-toggle="tooltip" data-placement="top"
+                             title="{{ project.slots_failed }} defective">{{ project.slots_failed }}</div>
+                        <div id="missing_bar_{{ project.pk }}" class="progress-bar progress-bar-danger"
+                             style="width: {{ project.slots_missing_percent }}%; cursor: default;"
+                             data-toggle="tooltip" data-placement="top"
+                             title="{{ project.slots_missing }} missing">{{ project.slots_missing }}</div>
+                        <div id="untested_bar_{{ project.pk }}" class="progress-bar progress-bar-info"
+                             style="width: {{ project.slots_untested_percent }}%; cursor: default;"
+                             data-toggle="tooltip" data-placement="top"
+                             title="{{ project.slots_untested }} untested">{{ project.slots_untested }}</div>
+                    </div>
+                {% else %}
+                    <div id="progress_{{ project.pk }}" class="progress" class="progress"
+                         style="line-height: 20px; margin-bottom: 0px;"
+                         data-toggle="tooltip" data-placement="top"
+                         title="No voiceslots yet"></div>
+                {% endif %}
+            </div>
+        </div>
         <form method="post">
             {% csrf_token %}
             <input type="hidden" name="slot-id" value="{{ slot.pk }}">
@@ -137,29 +142,10 @@
                             <button type="button" class="btn btn-default hole" id="button_play"
                                         onclick="buttonPlayPauseHandler('{{ file }}');"><i
                                         class="fa fa-play"></i></button>
-{#                                <div class="hole"></div>#}
                             </div>
                             <input id="finish_listen" name="finish_listen" type="hidden" value="notyet" />
                         </div>
                         <br>
-{#                        <div style="width: 160px;">#}
-{#                        <div class="well" style="background-color:transparent;">#}
-{#                            <div class="pull-left">#}
-{#                                <div class="pull-control">#}
-{#                                    <button type="button" class="btn btn-default" id="button_play"#}
-{#                                            onclick="buttonPlayPauseHandler('{{ file }}');"><i#}
-{#                                            class="fa fa-play"></i></button>#}
-{#                                </div>#}
-{#                            </div>#}
-{#                            <div class="pull-left" style="margin-left: 10px;">#}
-{#                                <div id="player_panel" style="height: 38px; background-color: gainsboro; padding-left: 5px; padding-right: 5px;">#}
-{#                                    <div id="player_info" class="text-right" style="font-size: smaller"></div>#}
-{#                                    <div id="player_time" class="text-right" style="font-size: smaller"></div>#}
-{#                                </div>#}
-{#                            </div>#}
-{#                            <div class="clearfix"></div>#}
-{#                        </div>#}
-{#                        </div>#}
                     {% else %}
                         <!--[if gte IE 10]> -->
                         <audio controls src="{{ file }}" type="audio/wav">
@@ -217,7 +203,6 @@
                 </div>
             </div>
         </form>
-{#        <p><input type="button" id="watch" value="Start" /> count down from <input type="text" id="watch" size="2" value="2.25" /> seconds</p>#}
         {% if browser != "ie9" %}
         <object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000"
                 id="player"
@@ -315,7 +300,6 @@
             } else {
                 $('div.timer').html('<button type="button" class="btn btn-default hole" id="button_play" onclick="buttonPlayPauseHandler(\'{{ file }}\');"><i class="fa fa-play"></i></button><div id="slice"'+(percent > 50?' class="gt50"':'')+'><div class="pie"></div>'+(percent > 50?'<div class="pie fill"></div>':'')+'</div>');
             }
-{#            $('div.timer').html('<div class="hole"></div><div id="slice"'+(percent > 50?' class="gt50"':'')+'><div class="pie"></div>'+(percent > 50?'<div class="pie fill"></div>':'')+'</div>');#}
             var deg = 360/100*percent;
             $('#slice .pie').css({
                 '-moz-transform':'rotate('+deg+'deg)',
@@ -323,7 +307,6 @@
                 '-o-transform':'rotate('+deg+'deg)',
                 'transform':'rotate('+deg+'deg)'
             });
-{#            $('.percent').html(Math.round(percent)+'%');#}
         }
 
         function stopWatch(){
@@ -331,8 +314,6 @@
             if(seconds <= 0){
                 drawTimer(100);
                 clearInterval(timer);
-{#                $('input[type=button]#watch').val('Start');#}
-{#                alert('Finished counting down from '+timerSeconds);#}
             }else{
                 var percent = 100-((seconds/timerSeconds)*100);
                 if (percent > 95) {
@@ -382,11 +363,9 @@
             } else if (state == "PLAYING") {
                 $('#button_play').children().first().removeClass('fa-play').addClass('fa-pause');
                 last = new Date();
-{#                timer = setInterval(inform, 10);#}
                 timer = setInterval('stopWatch()',10);
             }
             playerState = state;
-{#            inform();#}
         }
 
         function init() {
@@ -401,7 +380,6 @@
                 player.attachHandler("PLAYER_PAUSED", "playerController", "PAUSED");
                 playerInfo = document.getElementById('player_info');
                 playerTime = document.getElementById('player_time');
-{#                inform();#}
             }
         }
 
@@ -441,7 +419,5 @@
                 $('#wrapper').prepend(msg);
             }
         });
-
-{#        $('input[type=button]#watch').click();#}
     </script>
 {% endblock %}
