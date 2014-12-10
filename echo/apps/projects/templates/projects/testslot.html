@@ -66,9 +66,13 @@
             transform: rotate(180deg) !important;
         }
 
-        .timer.fill > .percent {
-            z-index: 2;
-        }
+{#        .timer.fill > .percent {#}
+{#            z-index: 2;#}
+{#        }#}
+
+{#        .player #button_play {#}
+{#            z-index: 2;#}
+{#        }#}
 
         .timer.fill > #slice > .pie {
             border: solid grey 1px;
@@ -76,6 +80,22 @@
             width: 1em;
             height: 1em;
         }
+
+{#        .timer.fill > #button_play {#}
+{#            margin: 0 0 0 0;#}
+{#            padding: 0 0 0 0;#}
+{#            z-index: 2;#}
+{#            background-color: #eceeec;#}
+{#            border: solid grey 1px;#}
+{#            height: 80%;#}
+{#            width: 80%;#}
+{#            -moz-border-radius: 50%;#}
+{#            -webkit-border-radius: 50%;#}
+{#            border-radius: 50%;#}
+{#            position: absolute;#}
+{#            top: 10%;#}
+{#            left: 10%;#}
+{#        }#}
 
         .timer.fill > .hole {
             margin: 0 0 0 0;
@@ -93,35 +113,6 @@
             left: 10%;
         }
     </style>
-    <script type="text/javascript">
-        var timer;
-        var timerCurrent;
-        var timerFinish;
-        var timerSeconds;
-        function drawTimer(percent){
-            $('div.timer').html('<div class="hole"></div><div class="percent"></div><div id="slice"'+(percent > 50?' class="gt50"':'')+'><div class="pie"></div>'+(percent > 50?'<div class="pie fill"></div>':'')+'</div>');
-            var deg = 360/100*percent;
-            $('#slice .pie').css({
-                '-moz-transform':'rotate('+deg+'deg)',
-                '-webkit-transform':'rotate('+deg+'deg)',
-                '-o-transform':'rotate('+deg+'deg)',
-                'transform':'rotate('+deg+'deg)'
-            });
-            $('.percent').html(Math.round(percent)+'%');
-        }
-        function stopWatch(){
-            var seconds = (timerFinish-(new Date().getTime()))/1000;
-            if(seconds <= 0){
-                drawTimer(100);
-                clearInterval(timer);
-                $('input[type=button]#watch').val('Start');
-                alert('Finished counting down from '+timerSeconds);
-            }else{
-                var percent = 100-((seconds/timerSeconds)*100);
-                drawTimer(percent);
-            }
-        }
-    </script>
 {% endblock %}
 {% block content %}
     <div class="container">
@@ -142,9 +133,15 @@
                 <div class="col-xs-4">
                     {% if browser != "ie9" %}
                         <div class="player">
-                        <div class="timer fill"><div class="hole"></div></div>
+                            <div class="timer fill">
+                            <button type="button" class="btn btn-default hole" id="button_play"
+                                        onclick="buttonPlayPauseHandler('{{ file }}');"><i
+                                        class="fa fa-play"></i></button>
+{#                                <div class="hole"></div>#}
+                            </div>
                             <input id="finish_listen" name="finish_listen" type="hidden" value="notyet" />
                         </div>
+                        <br>
 {#                        <div style="width: 160px;">#}
 {#                        <div class="well" style="background-color:transparent;">#}
 {#                            <div class="pull-left">#}
@@ -220,7 +217,7 @@
                 </div>
             </div>
         </form>
-        <p><input type="button" id="watch" value="Start" /> count down from <input type="text" id="watch" size="2" value="2.25" /> seconds</p>
+{#        <p><input type="button" id="watch" value="Start" /> count down from <input type="text" id="watch" size="2" value="2.25" /> seconds</p>#}
         {% if browser != "ie9" %}
         <object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000"
                 id="player"
@@ -250,6 +247,10 @@
         var last = undefined;
         var timer = undefined;
         var listened = false;
+
+        var timerCurrent;
+        var timerFinish;
+        var timerSeconds;
 
         function getPlayer(pid) {
             var obj = document.getElementById(pid);
@@ -287,6 +288,9 @@
 
         function soundLoad(secLoad, secTotal) {
             soundLength = secTotal;
+            timerSeconds = secTotal;
+            timerCurrent = 0;
+            timerFinish = new Date().getTime()+(timerSeconds*1000);
         }
 
         function inform() {
@@ -300,9 +304,67 @@
                 }
                 last = now;
             }
+            drawTimer(0);
             playerInfo.innerHTML = playerState;
             playerTime.innerHTML = soundPosition.toFixed(0) + '/' + soundLength.toFixed(0) + ' SEC';
         }
+
+        function drawTimer(percent){
+            if (playerState == "PLAYING") {
+                $('div.timer').html('<button type="button" class="btn btn-default hole" id="button_play" onclick="buttonPlayPauseHandler(\'{{ file }}\');"><i class="fa fa-pause"></i></button><div id="slice"'+(percent > 50?' class="gt50"':'')+'><div class="pie"></div>'+(percent > 50?'<div class="pie fill"></div>':'')+'</div>');
+            } else {
+                $('div.timer').html('<button type="button" class="btn btn-default hole" id="button_play" onclick="buttonPlayPauseHandler(\'{{ file }}\');"><i class="fa fa-play"></i></button><div id="slice"'+(percent > 50?' class="gt50"':'')+'><div class="pie"></div>'+(percent > 50?'<div class="pie fill"></div>':'')+'</div>');
+            }
+{#            $('div.timer').html('<div class="hole"></div><div id="slice"'+(percent > 50?' class="gt50"':'')+'><div class="pie"></div>'+(percent > 50?'<div class="pie fill"></div>':'')+'</div>');#}
+            var deg = 360/100*percent;
+            $('#slice .pie').css({
+                '-moz-transform':'rotate('+deg+'deg)',
+                '-webkit-transform':'rotate('+deg+'deg)',
+                '-o-transform':'rotate('+deg+'deg)',
+                'transform':'rotate('+deg+'deg)'
+            });
+{#            $('.percent').html(Math.round(percent)+'%');#}
+        }
+
+        function stopWatch(){
+            var seconds = (timerFinish-(new Date().getTime()))/1000;
+            if(seconds <= 0){
+                drawTimer(100);
+                clearInterval(timer);
+{#                $('input[type=button]#watch').val('Start');#}
+{#                alert('Finished counting down from '+timerSeconds);#}
+            }else{
+                var percent = 100-((seconds/timerSeconds)*100);
+                if (percent > 95) {
+                    listened = true;
+                }
+                drawTimer(percent);
+            }
+        }
+
+        $('input[type=button]#percent').click(function(e){
+            e.preventDefault();
+            drawTimer($('input[type=text]#percent').val());
+        });
+
+        $('input[type=button]#size').click(function(e){
+            e.preventDefault();
+            $('.timer').css('font-size',$('input[type=text]#size').val()+'px');
+        });
+
+        $('input[type=button]#watch').click(function(e){
+            e.preventDefault();
+            if($('input[type=button]#watch').val() == 'Start'){
+                $('input[type=button]#watch').val('Stop');
+                timerSeconds = $('input[type=text]#watch').val();
+                timerCurrent = 0;
+                timerFinish = new Date().getTime()+(timerSeconds*1000);
+                timer = setInterval('stopWatch()',50);
+            }else{
+                $('input[type=button]#watch').val('Start');
+                clearInterval(timer);
+            }
+        });
 
         function playerController(state, position) {
             if (position != undefined) soundPosition = position;
@@ -320,10 +382,11 @@
             } else if (state == "PLAYING") {
                 $('#button_play').children().first().removeClass('fa-play').addClass('fa-pause');
                 last = new Date();
-                timer = setInterval(inform, 10);
+{#                timer = setInterval(inform, 10);#}
+                timer = setInterval('stopWatch()',10);
             }
             playerState = state;
-            inform();
+{#            inform();#}
         }
 
         function init() {
@@ -338,19 +401,12 @@
                 player.attachHandler("PLAYER_PAUSED", "playerController", "PAUSED");
                 playerInfo = document.getElementById('player_info');
                 playerTime = document.getElementById('player_time');
-                inform();
+{#                inform();#}
             }
         }
 
-        $("[name='test_result']").bootstrapSwitch();
         {% if browser != "ie9" %}
-            $('#volume').slider();
             init();
-            $('#volume').slider()
-                    .on('slide', function (ev) {
-                        var n = ev.value * 0.1;
-                        setVolume(n);
-                    });
         {% endif %}
 
         $(".rg").change(function () {
@@ -386,30 +442,6 @@
             }
         });
 
-        $('input[type=button]#percent').click(function(e){
-            e.preventDefault();
-            drawTimer($('input[type=text]#percent').val());
-        });
-
-        $('input[type=button]#size').click(function(e){
-            e.preventDefault();
-            $('.timer').css('font-size',$('input[type=text]#size').val()+'px');
-        });
-
-        $('input[type=button]#watch').click(function(e){
-            e.preventDefault();
-            if($('input[type=button]#watch').val() == 'Start'){
-                $('input[type=button]#watch').val('Stop');
-                timerSeconds = $('input[type=text]#watch').val();
-                timerCurrent = 0;
-                timerFinish = new Date().getTime()+(timerSeconds*1000);
-                timer = setInterval('stopWatch()',50);
-            }else{
-                $('input[type=button]#watch').val('Start');
-                clearInterval(timer);
-            }
-        });
-
-        $('input[type=button]#watch').click();
+{#        $('input[type=button]#watch').click();#}
     </script>
 {% endblock %}
