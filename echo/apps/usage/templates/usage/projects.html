@@ -2,7 +2,23 @@
 {% block title %}Reports{% endblock %}
 {% load staticfiles %}
 {% block headscript %}
+    <link href="{% static 'common/bootstrap-daterangepicker/1.2/daterangepicker-bs3.css' %}" rel="stylesheet" type="text/css">
+    <style type="text/css">
+        .query-field {
+            background: #ffffff;
+            -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, .25), inset 0 -1px 0 rgba(0, 0, 0, .1);
+            -moz-box-shadow: 0 1px 3px rgba(0, 0, 0, .25), inset 0 -1px 0 rgba(0, 0, 0, .1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, .25), inset 0 -1px 0 rgba(0, 0, 0, .1);
+            color: #333333;
+            padding: 8px;
+            line-height: 18px;
+            cursor: pointer;
+        }
 
+        a.sort-field:hover {
+            text-decoration: none;
+        }
+    </style>
 {% endblock %}
 {% block content %}
     <div class="container">
@@ -25,126 +41,134 @@
             <div id="tab_content" class="tab-content">
                 <div class="tab-pane active">
                     <div class="col-xs-12">
+                        <div id="report-range" class="query-field pull-right">
+                            <i class="fa fa-caret-down"></i>
+                            <i class="fa fa-calendar"></i>
+                            <span id="report-range-display"></span>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="col-xs-12">
                         <table class="table table-striped table-hover">
                             <thead>
                             <tr>
                                 <th class="col-xs-2 text-left">
                                 {% if sort == 'project_name' %}
-                                    <a href="{% url 'usage:projects' %}?sort=-project_name">
+                                    <a href="#" class="sort-field" data-field="-project_name">
                                         Project Name</a>&nbsp;<i class="fa fa-sort-asc"></i>
                                 {% elif sort == '-project_name' %}
-                                    <a href="{% url 'usage:projects' %}?sort=project_name">
+                                    <a href="#" class="sort-field" data-field="project_name">
                                         Project Name</a>&nbsp;<i class="fa fa-sort-desc"></i>
                                 {% else %}
-                                    <a href="{% url 'usage:projects' %}?sort=project_name">
+                                    <a href="#" class="sort-field" data-field="project_name">
                                         Project Name</a>&nbsp;<i class="fa fa-sort"></i>
                                 {% endif %}
                                 </th>
                                 <th class="col-xs-1 text-center">
                                 {% if sort == 'total' %}
-                                    <a href="{% url 'usage:projects' %}?sort=-total">
+                                    <a href="#" class="sort-field" data-field="-total">
                                         Total</a>&nbsp;<i class="fa fa-sort-asc"></i>
                                 {% elif sort == '-total' %}
-                                    <a href="{% url 'usage:projects' %}?sort=total">
+                                    <a href="#" class="sort-field" data-field="total">
                                         Total</a>&nbsp;<i class="fa fa-sort-desc"></i>
                                 {% else %}
-                                    <a href="{% url 'usage:projects' %}?sort=total">
+                                    <a href="#" class="sort-field" data-field="total">
                                         Total</a>&nbsp;<i class="fa fa-sort"></i>
                                 {% endif %}
                                 </th>
                                 <th class="col-xs-1 text-center">
                                 {% if sort == 'passed' %}
-                                    <a href="{% url 'usage:projects' %}?sort=-passed">
+                                    <a href="#" class="sort-field" data-field="-passed">
                                         Passed</a>&nbsp;<i class="fa fa-sort-asc"></i>
                                 {% elif sort == '-passed' %}
-                                    <a href="{% url 'usage:projects' %}?sort=passed">
+                                    <a href="#" class="sort-field" data-field="passed">
                                         Passed</a>&nbsp;<i class="fa fa-sort-desc"></i>
                                 {% else %}
-                                    <a href="{% url 'usage:projects' %}?sort=passed">
+                                    <a href="#" class="sort-field" data-field="passed">
                                         Passed</a>&nbsp;<i class="fa fa-sort"></i>
                                 {% endif %}
                                 </th>
                                 <th class="col-xs-1 text-center">
                                 {% if sort == 'defective' %}
-                                    <a href="{% url 'usage:projects' %}?sort=-defective">
+                                    <a href="#" class="sort-field" data-field="-defective">
                                         Defective</a>&nbsp;<i class="fa fa-sort-asc"></i>
                                 {% elif sort == '-defective' %}
-                                    <a href="{% url 'usage:projects' %}?sort=defective">
+                                    <a href="#" class="sort-field" data-field="defective">
                                         Defective</a>&nbsp;<i class="fa fa-sort-desc"></i>
                                 {% else %}
-                                    <a href="{% url 'usage:projects' %}?sort=defective">
+                                    <a href="#" class="sort-field" data-field="defective">
                                         Defective</a>&nbsp;<i class="fa fa-sort"></i>
                                 {% endif %}
                                 </th>
                                 <th class="col-xs-1 text-center">
                                 {% if sort == 'auto_total' %}
-                                    <a href="{% url 'usage:projects' %}?sort=-auto_total">
+                                    <a href="#" class="sort-field" data-field="-auto_total">
                                         Auto Total</a>&nbsp;<i class="fa fa-sort-asc"></i>
                                 {% elif sort == '-auto_total' %}
-                                    <a href="{% url 'usage:projects' %}?sort=auto_total">
+                                    <a href="#" class="sort-field" data-field="auto_total">
                                         Auto Total</a>&nbsp;<i class="fa fa-sort-desc"></i>
                                 {% else %}
-                                    <a href="{% url 'usage:projects' %}?sort=auto_total">
+                                    <a href="#" class="sort-field" data-field="auto_total">
                                         Auto Total</a>&nbsp;<i class="fa fa-sort"></i>
                                 {% endif %}
                                 </th>
                                 <th class="col-xs-1 text-center">
                                 {% if sort == 'auto_passed' %}
-                                    <a href="{% url 'usage:projects' %}?sort=-auto_passed">
+                                    <a href="#" class="sort-field" data-field="-auto_passed">
                                         Auto Passed</a>&nbsp;<i class="fa fa-sort-asc"></i>
                                 {% elif sort == '-auto_passed' %}
-                                    <a href="{% url 'usage:projects' %}?sort=auto_passed">
+                                    <a href="#" class="sort-field" data-field="auto_passed">
                                         Auto Passed</a>&nbsp;<i class="fa fa-sort-desc"></i>
                                 {% else %}
-                                    <a href="{% url 'usage:projects' %}?sort=auto_passed">
+                                    <a href="#" class="sort-field" data-field="auto_passed">
                                         Auto Passed</a>&nbsp;<i class="fa fa-sort"></i>
                                 {% endif %}
                                 </th>
                                 <th class="col-xs-1 text-center">
                                 {% if sort == 'auto_defective' %}
-                                    <a href="{% url 'usage:projects' %}?sort=-auto_defective">
+                                    <a href="#" class="sort-field" data-field="-auto_defective">
                                         Auto Defective</a>&nbsp;<i class="fa fa-sort-asc"></i>
                                 {% elif sort == '-auto_defective' %}
-                                    <a href="{% url 'usage:projects' %}?sort=auto_defective">
+                                    <a href="#" class="sort-field" data-field="auto_defective">
                                         Auto Defective</a>&nbsp;<i class="fa fa-sort-desc"></i>
                                 {% else %}
-                                    <a href="{% url 'usage:projects' %}?sort=auto_defective">
+                                    <a href="#" class="sort-field" data-field="auto_defective">
                                         Auto Defective</a>&nbsp;<i class="fa fa-sort"></i>
                                 {% endif %}
                                 </th>
                                 <th class="col-xs-1 text-center">
                                 {% if sort == 'auto_missing' %}
-                                    <a href="{% url 'usage:projects' %}?sort=-auto_missing">
+                                    <a href="#" class="sort-field" data-field="-auto_missing">
                                         Auto Missing</a>&nbsp;<i class="fa fa-sort-asc"></i>
                                 {% elif sort == '-auto_missing' %}
-                                    <a href="{% url 'usage:projects' %}?sort=auto_missing">
+                                    <a href="#" class="sort-field" data-field="auto_missing">
                                         Auto Missing</a>&nbsp;<i class="fa fa-sort-desc"></i>
                                 {% else %}
-                                    <a href="{% url 'usage:projects' %}?sort=auto_missing">
+                                    <a href="#" class="sort-field" data-field="auto_missing">
                                         Auto Missing</a>&nbsp;<i class="fa fa-sort"></i>
                                 {% endif %}
                                 </th>
                                 <th class="col-xs-1 text-center">
                                 {% if sort == 'rework_ratio' %}
-                                    <a href="{% url 'usage:projects' %}?sort=-rework_ratio">
+                                    <a href="#" class="sort-field" data-field="-rework_ratio">
                                         Rework Ratio</a>&nbsp;<i class="fa fa-sort-asc"></i>
                                 {% elif sort == '-rework_ratio' %}
-                                    <a href="{% url 'usage:projects' %}?sort=rework_ratio">
+                                    <a href="#" class="sort-field" data-field="rework_ratio">
                                         Rework Ratio</a>&nbsp;<i class="fa fa-sort-desc"></i>
                                 {% else %}
-                                    <a href="{% url 'usage:projects' %}?sort=rework_ratio">
+                                    <a href="#" class="sort-field" data-field="rework_ratio">
                                         Rework Ratio</a>&nbsp;<i class="fa fa-sort"></i>
                                 {% endif %}
                                 </th>
                                 <th class="col-xs-1 text-center">
                                 {% if sort == 'auto_ratio' %}
-                                    <a href="{% url 'usage:projects' %}?sort=-auto_ratio">
+                                    <a href="#" class="sort-field" data-field="-auto_ratio">
                                         Auto Ratio</a>&nbsp;<i class="fa fa-sort-asc"></i>
                                 {% elif sort == '-auto_ratio' %}
-                                    <a href="{% url 'usage:projects' %}?sort=auto_ratio">
+                                    <a href="#" class="sort-field" data-field="auto_ratio">
                                         Auto Ratio</a>&nbsp;<i class="fa fa-sort-desc"></i>
                                 {% else %}
-                                    <a href="{% url 'usage:projects' %}?sort=auto_ratio">
+                                    <a href="#" class="sort-field" data-field="auto_ratio">
                                         Auto Ratio</a>&nbsp;<i class="fa fa-sort"></i>
                                 {% endif %}
                                 </th>
@@ -180,7 +204,12 @@
     {% include 'usage/project_modal.html' %}
 {% endblock %}
 {% block endscript %}
+    <script type='text/javascript' src="{% static 'common/bootstrap-daterangepicker/1.2/moment.min.js' %}"></script>
+    <script type='text/javascript' src="{% static 'common/momentjs/tz/0.2.4/moment-timezone-with-data-2010-2020.js' %}"></script>
+    <script type='text/javascript' src="{% static 'common/bootstrap-daterangepicker/1.2/daterangepicker.js' %}"></script>
     <script type="text/javascript">
+        {% include 'usage/usage.js' %}
+
         $('.show-project').on('click', function (event) {
             var button = $(this);
             var url = button.data('url');
@@ -210,6 +239,16 @@
             var modal = $(this);
             modal.find('.modal-title').text('');
             modal.find('.modal-body').text('');
+        });
+
+        $(function() {
+            setTab('projects');
+            {% if sort %}
+                setSort("{{ sort }}");
+            {% endif %}
+            setStartDate("{{ start }}");
+            setEndDate("{{ end }}");
+            attachDateRangePicker();
         });
     </script>
 {% endblock %}
