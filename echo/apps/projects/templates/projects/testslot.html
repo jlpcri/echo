@@ -287,8 +287,6 @@
         }
 
         function soundLoad(secLoad, secTotal) {
-            console.log("secLoad = " + secLoad);
-            console.log("secTotal = " + secTotal);
             soundLength = secTotal;
             timerSeconds = secTotal;
             timerCurrent = 0;
@@ -337,6 +335,9 @@
 {#                alert('Finished counting down from '+timerSeconds);#}
             }else{
                 var percent = 100-((seconds/timerSeconds)*100);
+                if (percent > 95) {
+                    listened = true;
+                }
                 drawTimer(percent);
             }
         }
@@ -368,25 +369,21 @@
         function playerController(state, position) {
             if (position != undefined) soundPosition = position;
             if (state == "BUFFERING") {
-                console.log("BUFFERING");
                 // empty
             } else if (state == 'STOPPED') {
-                console.log("STOPPED");
                 $('#button_play').children().first().removeClass('fa-pause').addClass('fa-play');
                 clearInterval(timer);
                 last = undefined;
                 timer = undefined;
             } else if (state == "PAUSED") {
-                console.log("PAUSED");
                 $('#button_play').children().first().removeClass('fa-pause').addClass('fa-play');
                 clearInterval(timer);
                 timer = undefined
             } else if (state == "PLAYING") {
-                console.log("PLAYING");
                 $('#button_play').children().first().removeClass('fa-play').addClass('fa-pause');
                 last = new Date();
 {#                timer = setInterval(inform, 10);#}
-                timer = setInterval('stopWatch()',50);
+                timer = setInterval('stopWatch()',10);
             }
             playerState = state;
 {#            inform();#}
