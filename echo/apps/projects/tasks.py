@@ -5,16 +5,19 @@ import pysftp
 import pytz
 
 from django.conf import settings
+from django.contrib.auth.models import User
 
 from echo import celery_app
 from echo.apps.projects.models import Project, UpdateStatus, VoiceSlot
+from echo.apps.activity.models import Action
 
 
 @celery_app.task
-def update_file_statuses(project_id):
+def update_file_statuses(project_id, user_id):
     """Background process to update file statuses from Bravo server"""
     project = Project.objects.get(pk=int(project_id))
     status = UpdateStatus.objects.get_or_create(project__pk=project_id)[0]
+    user = User.objects.get(pk=int(user_id))
     # Connect to Bravo server and get filenames and md5sums
     with pysftp.Connection(project.bravo_server.address, username=project.bravo_server.account,
                            private_key=settings.PRIVATE_KEY) as sftp:
@@ -36,18 +39,15 @@ def update_file_statuses(project_id):
                         slot.bravo_time = datetime.utcfromtimestamp(float(fs.modified)).replace(tzinfo=pytz.utc)
                         slot.status = VoiceSlot.READY
                         slot.save()
+                        if slot.status in (VoiceSlot.NEW, VoiceSlot.READY):
+                            Action.log(user, Action.AUTO_NEW_SLOT, "Slot ready for testing", slot)
                     elif slot.status in (VoiceSlot.PASS, VoiceSlot.FAIL):
                         if fs.md5 != slot.bravo_checksum:
                             slot.bravo_checksum = fs.md5
                             slot.bravo_time = datetime.fromtimestamp(float(fs.modified)).replace(tzinfo=pytz.utc)
                             slot.status = VoiceSlot.READY
                             slot.save()
-                    else:
-                        print "No status match"
-                else:
-                    print "No match between {0} and {1}".format(fs.path, slot.filepath())
-        else:
-            print "No match for " + fs.path
+                            Action.log(user, Action.AUTO_NEW_SLOT, "Slot changed and needs retesting", slot)
 
     # Find and mark missing voiceslots
     vuid_set = set(slots.values_list('name', flat=True))
@@ -55,6 +55,7 @@ def update_file_statuses(project_id):
     missing_set = vuid_set - found_set
     missing_slots = slots.filter(name__in=list(missing_set))
     missing_slots.update(status=VoiceSlot.MISSING)
-
+    for slot in missing_slots:
+        Action.log(user, Action.AUTO_MISSING_SLOT, "Slot not found in update.", slot)
     status.running = False
     status.save()

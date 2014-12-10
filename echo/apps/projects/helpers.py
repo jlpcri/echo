@@ -7,8 +7,9 @@ from openpyxl import load_workbook
 from django.db import transaction
 import pysftp
 
-from echo.apps.projects.models import Language, Project, VoiceSlot, VUID
+from echo.apps.projects.models import Language, Project, VoiceSlot, VUID, UpdateStatus
 from echo.apps.activity.models import Action
+from echo.apps.projects.tasks import update_file_statuses
 
 
 PAGE_NAME = "page name"
@@ -205,6 +206,11 @@ def upload_vuid(uploaded_file, user, project):
         vuid.delete()
         return result
     Action.log(user, Action.UPLOAD_VUID, 'Prompt list {0} uploaded'.format(uploaded_file.name), project)
+    status = UpdateStatus.objects.get_or_create(project=project)[0]
+    query_item = update_file_statuses.delay(project_id=project.pk, user_id=user.id)
+    status.query_id = query_item
+    status.running = True
+    status.save()
     return {"valid": True, "message": "File uploaded and parsed successfully"}
 
 
