@@ -327,7 +327,7 @@ def queue(request, pid):
             else:
                 for slot in slots_out:
                     slot.check_in()
-        slot = lang.voiceslot_set.filter(status=VoiceSlot.NEW, checked_out=False).first()
+        slot = lang.voiceslot_set.filter(status=VoiceSlot.READY, checked_out=False).first()
         # check if all voice slots have been tested
         if not slot:
             messages.warning(request, 'No new voice slots available to be tested')
@@ -383,12 +383,12 @@ def queue(request, pid):
             if count > 0:
                 messages.success(request, "{0} matching slots updated".format(count))
 
-            slot_filter = lang.voiceslot_set.filter(status=VoiceSlot.NEW, checked_out=False)
+            slot_filter = lang.voiceslot_set.filter(status=VoiceSlot.READY, checked_out=False)
             if slot_filter.count() > 0:
                 slot = slot_filter.first()
             else:
                 ten_minutes_ago = datetime.now() - timedelta(minutes=10)
-                slot_filter = lang.voiceslot_set.filter(status=VoiceSlot.NEW, checked_out=True,
+                slot_filter = lang.voiceslot_set.filter(status=VoiceSlot.READY, checked_out=True,
                                                         checked_out_time__lte = ten_minutes_ago)
                 if slot_filter.count() > 0:
                     slot = slot_filter.first()
