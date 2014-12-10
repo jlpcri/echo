@@ -25,7 +25,11 @@ def update_file_statuses(project_id, user_id):
                               ' -exec md5sum {} \; -exec stat -c"%Y" {} \;')
 
     FileStatus = namedtuple('FileStatus', 'md5 path modified')
-    file_statuses = [FileStatus(*result[i].split() + [result[i + 1].strip(), ]) for i in range(0, len(result), 2)]
+    try:
+        file_statuses = [FileStatus(*result[i].split() + [result[i + 1].strip(), ]) for i in range(0, len(result), 2)]
+    except IndexError:
+        print file_statuses  # invokes Celery logger
+        file_statuses = []
 
     # Find and update matching voiceslots
     slots = project.voiceslots()
