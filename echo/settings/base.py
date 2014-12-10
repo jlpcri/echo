@@ -70,6 +70,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_user_agents',
+    'south',
     'echo.apps.core',
     'echo.apps.projects',
     'echo.apps.reports',

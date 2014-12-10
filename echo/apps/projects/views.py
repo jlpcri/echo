@@ -9,16 +9,18 @@ from django.core.urlresolvers import reverse
 from django.db import transaction
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
-from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.conf import settings
-from echo.apps.activity.models import Action
+from django.views.decorators.csrf import csrf_exempt
 
+from echo.apps.activity.models import Action
 from echo.apps.core import messages
 from echo.apps.settings.models import Server
 from echo.apps.projects.forms import ProjectForm, ServerForm, UploadForm, ProjectRootPathForm
-from echo.apps.projects.models import Language, Project, VoiceSlot, VUID
+from echo.apps.projects.models import Language, Project, VoiceSlot, VUID, UpdateStatus
 from echo.apps.projects import contexts, helpers
+from echo.apps.projects.tasks import update_file_statuses
 
 
 @login_required
@@ -135,6 +137,7 @@ def new(request):
             return render(request, "projects/new.html", contexts.context_new(form))
     return HttpResponseNotFound()
 
+
 @transaction.atomic
 @login_required
 def project(request, pid):
@@ -218,6 +221,7 @@ def project(request, pid):
     return HttpResponseNotFound()
 
 
+@login_required
 def able_update_file_status(request, p):
     try:
         with pysftp.Connection(p.bravo_server.address, username=p.bravo_server.account,
@@ -243,14 +247,17 @@ def project_progress(request, pid):
     if request.method == 'GET':
         p = get_object_or_404(Project, pk=pid)
         data = {
+            'running': UpdateStatus.objects.get(project=p).running,
             'passed': p.slots_passed(),
             'passed_percent': p.slots_passed_percent(),
             'failed': p.slots_failed(),
             'failed_percent': p.slots_failed_percent(),
             'missing': p.slots_missing(),
             'missing_percent': p.slots_missing_percent(),
-            'untested': p.slots_untested(),
-            'untested_percent': p.slots_untested_percent()
+            'ready': p.slots_ready(),
+            'ready_percent': p.slots_ready_percent(),
+            'new': p.slots_untested(),
+            'new_percent': p.slots_untested_percent()
         }
         return HttpResponse(json.dumps(data), content_type="application/json")
 
@@ -569,3 +576,23 @@ def archive_project(request, pid):
         Action.log(request.user, action, note, p)
 
     return redirect("projects:project", pid)
+
+@login_required
+@csrf_exempt
+def initiate_status_update(request, pid):
+    """
+    Kicks off the request from "Update File Statuses"
+    """
+    if not request.method == "POST":
+        raise Http404
+    project = Project.objects.get(pk=pid)
+    status = UpdateStatus.objects.get_or_create(project=project)[0]
+    if status.running:
+            return HttpResponse(json.dumps({'success': False, 'message': 'Task already running'}),
+                                content_type="application/json")
+    query_item = update_file_statuses.delay(project_id=pid)
+    status.query_id = query_item
+    status.running = True
+    status.save()
+    Action.log(request.user, Action.UPDATE_FILE_STATUSES, 'Updated file statuses', Project.objects.get(pk=pid))
+    return HttpResponse(json.dumps({'success': True}), content_type="application/json")

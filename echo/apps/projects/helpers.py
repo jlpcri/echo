@@ -90,13 +90,13 @@ def fetch_slots_from_server(project, sftp, user):
                     if slot.bravo_time:
                         bravo_time = slot.bravo_time.replace(tzinfo=None)
                     if slot.status == VoiceSlot.MISSING:
-                        slot.status = VoiceSlot.NEW
+                        slot.status = VoiceSlot.READY
                         slot.bravo_checksum = fs.msum
                         slot.bravo_time = timezone.make_aware(datetime.fromtimestamp(fs.mtime), timezone.get_current_timezone())
                         slot.save()
                         Action.log(user, Action.AUTO_NEW_SLOT, 'Slot discovered during status check', slot)
                     elif slot.bravo_time is None or bravo_time < datetime.fromtimestamp(fs.mtime) and slot.bravo_checksum != fs.msum:
-                        slot.status = VoiceSlot.NEW
+                        slot.status = VoiceSlot.READY
                         slot.bravo_checksum = fs.msum
                         slot.bravo_time = timezone.make_aware(datetime.fromtimestamp(fs.mtime), timezone.get_current_timezone())
                         slot.save()
@@ -110,6 +110,7 @@ def make_filename(path, name):
     elif path.endswith('/') or name.startswith('/'):
         return "{0}{1}".format(path, name)
     return "{0}/{1}".format(path, name)
+
 
 @transaction.atomic
 def parse_vuid(vuid):
