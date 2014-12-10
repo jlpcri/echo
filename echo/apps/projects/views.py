@@ -590,7 +590,7 @@ def initiate_status_update(request, pid):
     if status.running:
             return HttpResponse(json.dumps({'success': False, 'message': 'Task already running'}),
                                 content_type="application/json")
-    query_item = update_file_statuses.delay(project_id=pid)
+    query_item = update_file_statuses.delay(project_id=pid, user_id=request.user.pk)
     status.query_id = query_item
     status.running = True
     status.save()
