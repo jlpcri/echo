@@ -151,8 +151,8 @@
                         <td class="text-center">
                             <div id="total_prompts_{{ project.pk }}">{{ project.slots_total }}</div>
                         </td>
-                        <td class="text-center">{{ project.created_date | date:'M j, Y' }}</td>
-                        <td class="text-center">{{ project.last_modified_date | date:'M j, Y' }}</td>
+                        <td class="text-center"><small>{{ project.created_date | date:'M j, Y' }}</small></td>
+                        <td class="text-center"><small>{{ project.last_modified_date | date:'M j, Y' }}</small></td>
                         <td class="text-center">{{ project.users_total }}</td>
                         <td class="text-center">
                             {% if project.languages %}
