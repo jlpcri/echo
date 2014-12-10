@@ -7,7 +7,7 @@ from django.template import RequestContext
 import pytz
 import time
 from echo.apps.core import messages
-from echo.apps.projects.models import Project
+from echo.apps.projects.models import Project, VoiceSlot
 import contexts
 from echo.apps.activity.models import Action
 from django.conf import settings
@@ -108,9 +108,7 @@ def report_project(request, pid):
             messages.danger(request, 'Please upload prompt list file')
             return redirect('reports:reports')
 
-        try:
-            project.update_file_status_last_time()
-        except ObjectDoesNotExist:
+        if not project.voiceslots().filter(status__in=[VoiceSlot.READY, VoiceSlot.PASS, VoiceSlot.FAIL, VoiceSlot.MISSING]).exists():
             messages.danger(request, 'Please update file statuses from bravo server')
             return redirect('reports:reports')
 
