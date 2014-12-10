@@ -56,6 +56,6 @@ def update_file_statuses(project_id, user_id):
     missing_slots = slots.filter(name__in=list(missing_set))
     missing_slots.update(status=VoiceSlot.MISSING)
     for slot in missing_slots:
-        Action.log(user, Action.AUTO_MISSING_SLOT, "Slot not found in update.")
+        Action.log(user, Action.AUTO_MISSING_SLOT, "Slot not found in update.", slot)
     status.running = False
     status.save()
