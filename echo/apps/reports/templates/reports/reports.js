@@ -113,13 +113,14 @@ function attachDateRangePicker() {
             },
             startDate: startDatetime,
             endDate: endDatetime,
+            maxDate: moment.tz(moment().valueOf(), 'America/New_York').endOf('day'),
             timePicker: true,
             timePickerIncrement: 1
         },
         function (start, end) {
-            $('#report-range-display').html(start.format('MMMM D, YYYY HH:mm') + ' - ' + end.format('MMMM D, YYYY HH:mm'));
-            startDatetime = start;
-            endDatetime = end;
+            setStartDate(start);
+            setEndDate(end);
+            $('#report-range-display').html(startDatetime.format('MMMM D, YYYY HH:mm') + ' - ' + endDatetime.format('MMMM D, YYYY HH:mm'));
             loadRecords();
         });
     $('#report-range-display').html(startDatetime.format('MMMM D, YYYY HH:mm') + ' - ' + endDatetime.format('MMMM D, YYYY HH:mm'));

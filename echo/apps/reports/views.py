@@ -144,12 +144,12 @@ def report_project(request, pid):
             }
 
             try:
-                end = datetime.fromtimestamp(float(request.GET.get('end')), tz=pytz.timezone('America/Chicago'))
+                end = datetime.fromtimestamp(float(request.GET.get('end')), tz=pytz.timezone('America/New_York'))
             except (TypeError, ValueError):
                 end = datetime.now(tz=pytz.UTC)
 
             try:
-                start = datetime.fromtimestamp(float(request.GET.get('start')), tz=pytz.timezone('America/Chicago'))
+                start = datetime.fromtimestamp(float(request.GET.get('start')), tz=pytz.timezone('America/New_York'))
             except (TypeError, ValueError):
                 start = end - timedelta(days=10)
 
