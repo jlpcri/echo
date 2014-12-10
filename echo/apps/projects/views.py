@@ -311,10 +311,8 @@ def queue(request, pid):
         fail_select = request.GET.get('fail_select', False)
         p = get_object_or_404(Project, pk=pid)
         # check if update file status from bravo server
-        try:
-            p.update_file_status_last_time()
-        except ObjectDoesNotExist:
-            messages.danger(request, 'Please update file statuses from bravo server')
+        if not p.voiceslots().filter(status=VoiceSlot.READY).exists():
+            messages.danger(request, 'No files are pending test.')
             return redirect('projects:project', pid=pid)
         lang = get_object_or_404(Language, project=p, name=request.GET.get('language', '__malformed').lower())
         slots_out = request.user.voiceslot_set
@@ -501,9 +499,7 @@ def voiceslots(request, pid):
     if request.method == 'GET':
         p = get_object_or_404(Project, pk=pid)
         # check if update file status from bravo server
-        try:
-            p.update_file_status_last_time()
-        except ObjectDoesNotExist:
+        if not p.voiceslots().filter(status__in=[VoiceSlot.READY, VoiceSlot.PASS, VoiceSlot.FAIL, VoiceSlot.MISSING]).exists():
             messages.danger(request, 'Please update file statuses from bravo server')
             return redirect('projects:project', pid=pid)
 
