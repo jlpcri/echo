@@ -110,81 +110,81 @@
                     </thead>
                     <tbody>
             {% for project in projects %}
-                    <tr>
-                        <td>
-                            <h4><a href="{% url "projects:project" project.pk %}">{{ project.name }}</a></h4>
-                        </td>
-                        <td class="text-center">
-                    {% if project.slots_total > 0 %}
-                        <div id="progress_{{ project.pk }}" class="progress" style="line-height: 20px; margin-bottom: 0px;">
-                            {% if project.slots_passed %}
-                                <div id="passed_bar_{{ project.pk }}" class="progress-bar progress-bar-success"
-                                     style="width: {{ project.slots_passed_percent }}%; cursor: default;"
-                                     data-toggle="tooltip" data-placement="top"
-                                     title="{{ project.slots_passed }} passed">{{ project.slots_passed }}</div>
-                            {% endif %}
-                            {% if project.slots_failed %}
-                                <div id="defective_bar_{{ project.pk }}" class="progress-bar progress-bar-warning"
-                                     style="width: {{ project.slots_failed_percent }}%; cursor: default;"
-                                     data-toggle="tooltip" data-placement="top"
-                                     title="{{ project.slots_failed }} defective">{{ project.slots_failed }}</div>
-                            {% endif %}
-                            {% if project.slots_missing %}
-                                <div id="missing_bar_{{ project.pk }}" class="progress-bar progress-bar-danger"
-                                     style="width: {{ project.slots_missing_percent }}%; cursor: default;"
-                                     data-toggle="tooltip" data-placement="top"
-                                     title="{{ project.slots_missing }} missing">{{ project.slots_missing }}</div>
-                            {% endif %}
-                            {% if project.slots_ready %}
-                                <div id="ready_bar_{{ project.pk }}" class="progress-bar progress-bar-info"
-                                     style="width: {{ project.slots_ready_percent }}%; cursor: default;"
-                                     data-toggle="tooltip" data-placement="top"
-                                     title="{{ project.slots_missing }} ready to test">{{ project.slots_ready }}</div>
-                            {% endif %}
-                            {% if project.slots_untested %}
-                                <div id="new_bar_{{ project.pk }}" class="progress-bar progress-bar-default"
-                                     style="width: {{ project.slots_untested_percent }}%; cursor: default;"
-                                     data-toggle="tooltip" data-placement="top"
-                                     title="{{ project.slots_untested }} untested">{{ project.slots_untested }}</div>
-                            {% endif %}
-                        </div>
-                    {% else %}
-                        <div id="progress_{{ project.pk }}" class="progress" class="progress" style="line-height: 20px; margin-bottom: 0px;"
-                             data-toggle="tooltip" data-placement="top"
-                             title="No voiceslots yet"></div>
-                    {% endif %}
-                        </td>
-                        <td class="text-center">
-                            <div id="total_prompts_{{ project.pk }}">{{ project.slots_total }}</div>
-                        </td>
-                        <td class="text-center">{{ project.created_date | date:'M j, Y' }}</td>
-                        <td class="text-center">{{ project.last_modified_date | date:'M j, Y' }}</td>
-                        <td class="text-center">{{ project.users_total }}</td>
-                        <td class="text-center">
-                            {% if project.languages %}
-                                {% for language in project.languages %}
-                                    <a href="{% url "projects:queue" project.pk %}?language={{ language.name|lower }}">
-                                        <b>{{ language.name|title }}</b>
-                                    </a><br>
-                                {% endfor %}
-                            {% else %}
-                                None
-                            {% endif %}
-                        </td>
-                        <td class="text-center">
-                            {% if user.username not in project.usernames %}
-                                <a href="{% url "projects:joinproject" project.pk %}?page=projects" class="btn btn-default btn-sm"
-                                   style="width: 100%;">
-                                    <i class="fa fa-link fa-fw"></i>&nbsp;Join
-                                </a>
-                            {% else %}
-                                <a href="{% url "projects:leaveproject" project.pk %}?page=projects" class="btn btn-default btn-sm"
-                                   style="width: 100%;">
-                                    <i class="fa fa-unlink fa-fw"></i>&nbsp;Leave
-                                </a>
-                            {% endif %}
-                        </td>
-                    </tr>
+                <tr>
+                    <td>
+                        <h4><a href="{% url "projects:project" project.pk %}">{{ project.name }}</a></h4>
+                    </td>
+                    <td class="text-center">
+                {% if project.slots_total > 0 %}
+                    <div id="progress_{{ project.pk }}" class="progress" style="line-height: 20px; margin-bottom: 0px;">
+                        {% if project.slots_passed %}
+                            <div id="passed_bar_{{ project.pk }}" class="progress-bar progress-bar-success"
+                                 style="width: {{ project.slots_passed_percent }}%; cursor: default;"
+                                 data-toggle="tooltip" data-placement="top"
+                                 title="{{ project.slots_passed }} passed">{{ project.slots_passed }}</div>
+                        {% endif %}
+                        {% if project.slots_failed %}
+                            <div id="defective_bar_{{ project.pk }}" class="progress-bar progress-bar-warning"
+                                 style="width: {{ project.slots_failed_percent }}%; cursor: default;"
+                                 data-toggle="tooltip" data-placement="top"
+                                 title="{{ project.slots_failed }} defective">{{ project.slots_failed }}</div>
+                        {% endif %}
+                        {% if project.slots_missing %}
+                            <div id="missing_bar_{{ project.pk }}" class="progress-bar progress-bar-danger"
+                                 style="width: {{ project.slots_missing_percent }}%; cursor: default;"
+                                 data-toggle="tooltip" data-placement="top"
+                                 title="{{ project.slots_missing }} missing">{{ project.slots_missing }}</div>
+                        {% endif %}
+                        {% if project.slots_ready %}
+                            <div id="ready_bar_{{ project.pk }}" class="progress-bar progress-bar-info"
+                                 style="width: {{ project.slots_ready_percent }}%; cursor: default;"
+                                 data-toggle="tooltip" data-placement="top"
+                                 title="{{ project.slots_missing }} ready to test">{{ project.slots_ready }}</div>
+                        {% endif %}
+                        {% if project.slots_untested %}
+                            <div id="new_bar_{{ project.pk }}" class="progress-bar progress-bar-default"
+                                 style="width: {{ project.slots_untested_percent }}%; cursor: default;"
+                                 data-toggle="tooltip" data-placement="top"
+                                 title="{{ project.slots_untested }} untested">{{ project.slots_untested }}</div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <div id="progress_{{ project.pk }}" class="progress" class="progress" style="line-height: 20px; margin-bottom: 0px;"
+                         data-toggle="tooltip" data-placement="top"
+                         title="No voiceslots yet"></div>
+                {% endif %}
+                    </td>
+                    <td class="text-center">
+                        <div id="total_prompts_{{ project.pk }}">{{ project.slots_total }}</div>
+                    </td>
+                    <td class="text-center"><small>{{ project.created_date | date:'M j, Y' }}</small></td>
+                    <td class="text-center"><small>{{ project.last_modified_date | date:'M j, Y' }}</small></td>
+                    <td class="text-center">{{ project.users_total }}</td>
+                    <td class="text-center">
+                        {% if project.languages %}
+                            {% for language in project.languages %}
+                                <a href="{% url "projects:queue" project.pk %}?language={{ language.name|lower }}">
+                                    <b>{{ language.name|title }}</b>
+                                </a><br>
+                            {% endfor %}
+                        {% else %}
+                            None
+                        {% endif %}
+                    </td>
+                    <td class="text-center">
+                        {% if user.username not in project.usernames %}
+                            <a href="{% url "projects:joinproject" project.pk %}?page=projects" class="btn btn-default btn-sm"
+                               style="width: 100%;">
+                                <i class="fa fa-link fa-fw"></i>&nbsp;Join
+                            </a>
+                        {% else %}
+                            <a href="{% url "projects:leaveproject" project.pk %}?page=projects" class="btn btn-default btn-sm"
+                               style="width: 100%;">
+                                <i class="fa fa-unlink fa-fw"></i>&nbsp;Leave
+                            </a>
+                        {% endif %}
+                    </td>
+                </tr>
             {% endfor %}
                     </tbody>
                 </table>
