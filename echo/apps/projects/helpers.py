@@ -7,8 +7,9 @@ from openpyxl import load_workbook
 from django.db import transaction
 import pysftp
 
-from echo.apps.projects.models import Language, Project, VoiceSlot, VUID
+from echo.apps.projects.models import Language, Project, VoiceSlot, VUID, UpdateStatus
 from echo.apps.activity.models import Action
+from echo.apps.projects.tasks import update_file_statuses
 
 
 PAGE_NAME = "page name"
@@ -90,13 +91,13 @@ def fetch_slots_from_server(project, sftp, user):
                     if slot.bravo_time:
                         bravo_time = slot.bravo_time.replace(tzinfo=None)
                     if slot.status == VoiceSlot.MISSING:
-                        slot.status = VoiceSlot.NEW
+                        slot.status = VoiceSlot.READY
                         slot.bravo_checksum = fs.msum
                         slot.bravo_time = timezone.make_aware(datetime.fromtimestamp(fs.mtime), timezone.get_current_timezone())
                         slot.save()
                         Action.log(user, Action.AUTO_NEW_SLOT, 'Slot discovered during status check', slot)
                     elif slot.bravo_time is None or bravo_time < datetime.fromtimestamp(fs.mtime) and slot.bravo_checksum != fs.msum:
-                        slot.status = VoiceSlot.NEW
+                        slot.status = VoiceSlot.READY
                         slot.bravo_checksum = fs.msum
                         slot.bravo_time = timezone.make_aware(datetime.fromtimestamp(fs.mtime), timezone.get_current_timezone())
                         slot.save()
@@ -110,6 +111,7 @@ def make_filename(path, name):
     elif path.endswith('/') or name.startswith('/'):
         return "{0}{1}".format(path, name)
     return "{0}/{1}".format(path, name)
+
 
 @transaction.atomic
 def parse_vuid(vuid):
@@ -204,6 +206,11 @@ def upload_vuid(uploaded_file, user, project):
         vuid.delete()
         return result
     Action.log(user, Action.UPLOAD_VUID, 'Prompt list {0} uploaded'.format(uploaded_file.name), project)
+    status = UpdateStatus.objects.get_or_create(project=project)[0]
+    query_item = update_file_statuses.delay(project_id=project.pk, user_id=user.id)
+    status.query_id = query_item
+    status.running = True
+    status.save()
     return {"valid": True, "message": "File uploaded and parsed successfully"}
 
 
