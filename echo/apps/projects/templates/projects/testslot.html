@@ -21,12 +21,13 @@
         .ring {
             margin: 0 0 0 0;
             padding: 0;
+            z-index: 1;
             position: absolute;
             font-size: 110px;
-            width: 1em;
-            height: 1em;
-            top: 7px;
-            left: 22px;
+            width: inherit;
+            height: inherit;
+            top: 5%;
+            left: 5%;
         }
 
         .ring > .percent {
@@ -76,10 +77,10 @@
             height: 1em;
         }
 
-        .ring.fill > .hole {
+        .hole {
             margin: 0 0 0 0;
             padding: 0 0 0 0;
-            z-index: 1;
+            z-index: 2;
             background-color: #eceeec;
             border: solid grey 1px;
             height: 80%;
@@ -142,11 +143,10 @@
                     {% if browser != "ie9" %}
                         <div class="player">
                             <div class="timer">
-                                <div class="ring fill">
+                                <div class="ring fill"></div>
                                 <button type="button" class="btn btn-default hole" id="button_play"
                                             onclick="buttonPlayPauseHandler('{{ file }}');"><i
                                             class="fa fa-play"></i></button>
-                                </div>
                                 <input id="finish_listen" name="finish_listen" type="hidden" value="notyet" />
                             </div>
                         </div>
@@ -300,7 +300,7 @@
         }
 
         function drawTimer(percent){
-            $('div.ring').html('<button type="button" class="btn btn-default hole" id="button_play" onclick="buttonPlayPauseHandler(\'{{ file }}\');"><i class="fa fa-pause"></i></button><div id="slice"'+(percent > 50?' class="gt50"':'')+'><div class="pie"></div>'+(percent > 50?'<div class="pie fill"></div>':'')+'</div>');
+            $('div.ring').html('<div id="slice"'+(percent > 50?' class="gt50"':'')+'><div class="pie"></div>'+(percent > 50?'<div class="pie fill"></div>':'')+'</div>');
             var deg = 360/100*percent;
             $('#slice .pie').css({
                 '-moz-transform':'rotate('+deg+'deg)',
