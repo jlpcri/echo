@@ -247,7 +247,7 @@ def project_progress(request, pid):
     if request.method == 'GET':
         p = get_object_or_404(Project, pk=pid)
         data = {
-            'running': UpdateStatus.objects.get(project=p).running,
+            'running': UpdateStatus.objects.get_or_create(project=p)[0].running,
             'passed': p.slots_passed(),
             'passed_percent': p.slots_passed_percent(),
             'failed': p.slots_failed(),

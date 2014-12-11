@@ -25,7 +25,12 @@ def update_file_statuses(project_id, user_id):
                               ' -exec md5sum {} \; -exec stat -c"%Y" {} \;')
 
     FileStatus = namedtuple('FileStatus', 'md5 path modified')
-    file_statuses = [FileStatus(*result[i].split() + [result[i + 1].strip(), ]) for i in range(0, len(result), 2)]
+    try:
+        file_statuses = [FileStatus(*result[i].split() + [result[i + 1].strip(), ]) for i in range(0, len(result), 2)]
+    except IndexError:
+        print "Result:"
+        print repr(result)
+        file_statuses = []
 
     # Find and update matching voiceslots
     slots = project.voiceslots()
@@ -55,6 +60,13 @@ def update_file_statuses(project_id, user_id):
     missing_set = vuid_set - found_set
     missing_slots = slots.filter(name__in=list(missing_set))
     missing_slots.update(status=VoiceSlot.MISSING)
+
+    # Hack for files found in the wrong language. No es bueno
+    stragglers = slots.filter(status=VoiceSlot.NEW)
+    stragglers.update(status=VoiceSlot.MISSING)
+    for slot in stragglers:
+        Action.log(user, Action.AUTO_MISSING_SLOT, "Slot not found in update", slot)  # Missing period to distinguish
+
     for slot in missing_slots:
         Action.log(user, Action.AUTO_MISSING_SLOT, "Slot not found in update.", slot)
     status.running = False
