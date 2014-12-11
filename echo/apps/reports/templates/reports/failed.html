@@ -38,15 +38,15 @@
                     <table class="table">
                         <thead>
                         <tr>
-                            <td class="col-md-3"><strong>VoiceSlot</strong></td>
-                            <td class="col-md-3"><strong>Test Time</strong></td>
+                            <td class="col-md-4"><strong>Voice Slot</strong></td>
+                            <td class="col-md-2"><strong>Test Time</strong></td>
                             <td class="col-md-3"><strong>Failure Cause</strong></td>
                         </tr>
                         </thead>
                         <tbody>
                         {% for item in project_defective %}
                             <tr>
-                                <td>{{ item.name }}</td>
+                                <td>{{ item.path }}</td>
                                 <td>{{ item.test_time }}</td>
                                 <td>{{ item.fail_note }}</td>
                             </tr>

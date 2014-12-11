@@ -21,12 +21,15 @@ def failed(request, pid):
         #Defective
         defective = []
         project = get_object_or_404(Project, pk=pid)
-        failed_actions = project.actions_failed()
-        for item in failed_actions:
+        failing_slots = project.voiceslots().filter(status=VoiceSlot.FAIL)
+        for slot in failing_slots:
+            action = Action.objects.filter(scope__voiceslot=slot, type__in=[Action.TESTER_FAIL_SLOT, Action.AUTO_FAIL_SLOT]).latest()
             temp = {
-                'name': item.scope.voiceslot.name,
-                'test_time': item.time,
-                'fail_note': item.description
+                'name': slot.name,
+                'language': slot.language.name,
+                'path': slot.filepath(),
+                'test_time': action.time,
+                'fail_note': action.description
             }
             defective.append(temp)
 
