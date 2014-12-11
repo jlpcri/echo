@@ -28,7 +28,8 @@ def update_file_statuses(project_id, user_id):
     try:
         file_statuses = [FileStatus(*result[i].split() + [result[i + 1].strip(), ]) for i in range(0, len(result), 2)]
     except IndexError:
-        print file_statuses  # invokes Celery logger
+        print "Result:"
+        print repr(result)
         file_statuses = []
 
     # Find and update matching voiceslots
