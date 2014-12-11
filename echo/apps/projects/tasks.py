@@ -60,7 +60,7 @@ def update_file_statuses(project_id, user_id):
     missing_set = vuid_set - found_set
     missing_slots = slots.filter(name__in=list(missing_set))
     missing_slots.update(status=VoiceSlot.MISSING)
-    
+
     # Hack for files found in the wrong language. No es bueno
     stragglers = slots.filter(status=VoiceSlot.NEW)
     stragglers.update(status=VoiceSlot.MISSING)
