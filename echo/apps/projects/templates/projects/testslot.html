@@ -6,16 +6,11 @@
         .player {
             margin: 0 0 0 0;
             padding: 0;
-            background-color: #eceeec;
-            border: solid black 1px;
             width: 124px;
             height: 124px;
-            -moz-border-radius: 15px;
-            -webkit-border-radius: 15px;
-            border-radius: 15px;
         }
 
-        .timer {
+        .ring {
             margin: 0 0 0 0;
             padding: 0;
             position: absolute;
@@ -26,7 +21,7 @@
             left: 22px;
         }
 
-        .timer > .percent {
+        .ring > .percent {
             margin: 0 0 0 0;
             padding: 0 0 0 0;
             position: absolute;
@@ -37,18 +32,18 @@
             text-align: center;
         }
 
-        .timer > #slice {
+        .ring > #slice {
             position: absolute;
             width: 1em;
             height: 1em;
             clip: rect(0px, 1em, 1em, 0.5em);
         }
 
-        .timer > #slice.gt50 {
+        .ring > #slice.gt50 {
             clip: rect(auto, auto, auto, auto);
         }
 
-        .timer > #slice > .pie {
+        .ring > #slice > .pie {
             border: 0.1em solid #c0c0c0;
             position: absolute;
             width: 0.8em; /* 1 - (2 * border width) */
@@ -59,21 +54,21 @@
             border-radius: 0.5em;
         }
 
-        .timer > #slice > .pie.fill {
+        .ring > #slice > .pie.fill {
             -moz-transform: rotate(180deg) !important;
             -webkit-transform: rotate(180deg) !important;
             -o-transform: rotate(180deg) !important;
             transform: rotate(180deg) !important;
         }
 
-        .timer.fill > #slice > .pie {
+        .ring.fill > #slice > .pie {
             border: solid grey 1px;
             background-color: cyan;
             width: 1em;
             height: 1em;
         }
 
-        .timer.fill > .hole {
+        .ring.fill > .hole {
             margin: 0 0 0 0;
             padding: 0 0 0 0;
             z-index: 1;
@@ -138,7 +133,7 @@
                 <div class="col-xs-4">
                     {% if browser != "ie9" %}
                         <div class="player">
-                            <div class="timer fill">
+                            <div class="ring fill">
                             <button type="button" class="btn btn-default hole" id="button_play"
                                         onclick="buttonPlayPauseHandler('{{ file }}');"><i
                                         class="fa fa-play"></i></button>
@@ -295,11 +290,7 @@
         }
 
         function drawTimer(percent){
-            if (playerState == "PLAYING") {
-                $('div.timer').html('<button type="button" class="btn btn-default hole" id="button_play" onclick="buttonPlayPauseHandler(\'{{ file }}\');"><i class="fa fa-pause"></i></button><div id="slice"'+(percent > 50?' class="gt50"':'')+'><div class="pie"></div>'+(percent > 50?'<div class="pie fill"></div>':'')+'</div>');
-            } else {
-                $('div.timer').html('<button type="button" class="btn btn-default hole" id="button_play" onclick="buttonPlayPauseHandler(\'{{ file }}\');"><i class="fa fa-play"></i></button><div id="slice"'+(percent > 50?' class="gt50"':'')+'><div class="pie"></div>'+(percent > 50?'<div class="pie fill"></div>':'')+'</div>');
-            }
+            $('div.ring').html('<button type="button" class="btn btn-default hole" id="button_play" onclick="buttonPlayPauseHandler(\'{{ file }}\');"><i class="fa fa-pause"></i></button><div id="slice"'+(percent > 50?' class="gt50"':'')+'><div class="pie"></div>'+(percent > 50?'<div class="pie fill"></div>':'')+'</div>');
             var deg = 360/100*percent;
             $('#slice .pie').css({
                 '-moz-transform':'rotate('+deg+'deg)',
