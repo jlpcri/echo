@@ -246,12 +246,12 @@
                 $('#update_file_close').attr('disabled', 'disabled');
             }, 0);
         });
-        $.getJSON('{% url 'projects:project_progress' project.id %}', function(data){
+        $.getJSON('{% url "projects:project_progress" project.id %}', function(data){
             if ($("#update-disabled-link").hasClass("hidden") && data.running) {
                     $("#update-active-link").addClass("hidden");
                     $("#update-disabled-link").removeClass("hidden");
                 }
-        }
+        });
 
         function project_update_file_status() {
             event.preventDefault();
