@@ -10,6 +10,14 @@
             height: 124px;
         }
 
+        .timer {
+            margin: 0 0 0 0;
+            padding: 0;
+            position: absolute;
+            width: inherit;
+            height: inherit;
+        }
+
         .ring {
             margin: 0 0 0 0;
             padding: 0;
@@ -63,7 +71,7 @@
 
         .ring.fill > #slice > .pie {
             border: solid grey 1px;
-            background-color: cyan;
+            background-color: #2fa4e7;
             width: 1em;
             height: 1em;
         }
@@ -133,12 +141,14 @@
                 <div class="col-xs-4">
                     {% if browser != "ie9" %}
                         <div class="player">
-                            <div class="ring fill">
-                            <button type="button" class="btn btn-default hole" id="button_play"
-                                        onclick="buttonPlayPauseHandler('{{ file }}');"><i
-                                        class="fa fa-play"></i></button>
+                            <div class="timer">
+                                <div class="ring fill">
+                                <button type="button" class="btn btn-default hole" id="button_play"
+                                            onclick="buttonPlayPauseHandler('{{ file }}');"><i
+                                            class="fa fa-play"></i></button>
+                                </div>
+                                <input id="finish_listen" name="finish_listen" type="hidden" value="notyet" />
                             </div>
-                            <input id="finish_listen" name="finish_listen" type="hidden" value="notyet" />
                         </div>
                         <br>
                     {% else %}
