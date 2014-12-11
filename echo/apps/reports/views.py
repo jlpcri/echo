@@ -123,15 +123,11 @@ def report_project(request, pid):
                 if vuid.upload_date < vuid_upload_date:
                     vuid_upload_date = vuid.upload_date
 
-        # Progress of porject
+        # Progress of project
         # First check vuid upload_date
         if vuid_upload_date:
             # Second check Actions type
             vuid_upload_date = vuid_upload_date
-
-            # print vuid_upload_date
-            # print type(vuid_upload_date)
-            # print vuid_upload_date.tzinfo
 
             outputs = {
                 'date': [],
@@ -150,27 +146,6 @@ def report_project(request, pid):
                 start = datetime.fromtimestamp(float(request.GET.get('start')), tz=pytz.timezone('America/New_York'))
             except (TypeError, ValueError):
                 start = end - timedelta(days=10)
-
-            # if request.GET.get('end'):
-            #     end = request.GET.get('end')
-            # else:
-            #     end = timezone.now()
-            #
-            # if request.GET.get('start'):
-            #     start = request.GET.get('start')
-            # else:
-            #     start = end - timedelta(days=10)
-
-            # print start
-            # print type(start)
-            # print start.tzinfo
-            # print end
-            # print type(end)
-            # print end.tzinfo
-            # t = timezone.now()
-            # print t
-            # print type(t)
-            # print t.tzinfo
 
             days = (end - start).days
             if days == 0:
@@ -208,19 +183,6 @@ def report_project(request, pid):
                         break
         else:
             outputs = None
-
-        # print start
-        # print start.astimezone(tz=pytz.timezone('America/Chicago'))
-        # print time.mktime(start.timetuple())
-        # print time.mktime(start.utctimetuple())
-        # print time.mktime(start.astimezone(tz=pytz.timezone('America/Chicago')).timetuple()) # this passes the right timestamp
-        # print time.mktime(start.astimezone(tz=pytz.timezone('America/Chicago')).utctimetuple())
-        # print end
-        # print end.astimezone(tz=pytz.timezone('America/Chicago'))
-        # print time.mktime(end.timetuple())
-        # print time.mktime(end.utctimetuple())
-        # print time.mktime(end.astimezone(tz=pytz.timezone('America/Chicago')).timetuple()) # this passes the right timestamp
-        # print time.mktime(end.astimezone(tz=pytz.timezone('America/Chicago')).utctimetuple())
 
         context = RequestContext(request, {
             'project': project,

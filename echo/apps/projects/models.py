@@ -259,6 +259,9 @@ class VoiceSlot(models.Model):
     def filepath(self):
         return "{0}/{1}.wav".format(self.path, self.name)
 
+    def history_list(self):
+        return Action.objects.filter(scope__voiceslot=self)
+
     def download(self):
         """Downloads a file from the remote server and returns the path on the local server"""
         p = self.language.project
