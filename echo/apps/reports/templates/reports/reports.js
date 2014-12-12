@@ -58,8 +58,8 @@ function makeCollapsible() {
     $('ul table').hide();
 }
 
-var startDatetime;
-var endDatetime;
+var startDatetime = moment.tz(moment().valueOf(), 'America/New_York');
+var endDatetime = moment.tz(moment().valueOf(), 'America/New_York');
 
 function setStartDate(datetime) {
     startDatetime = moment.tz(moment(datetime*1000), 'America/New_York');
@@ -111,19 +111,19 @@ function attachDateRangePicker() {
                 'This Month': [moment.tz(moment().valueOf(), 'America/New_York').startOf('month').startOf('day'), moment.tz(moment().valueOf(), 'America/New_York').endOf('month').endOf('day')],
                 'Last Month': [moment.tz(moment().valueOf(), 'America/New_York').subtract('month', 1).startOf('month').startOf('day'), moment.tz(moment().valueOf(), 'America/New_York').subtract('month', 1).endOf('month').endOf('day')]
             },
-            startDate: startDatetime,
-            endDate: endDatetime,
+            startDate: moment.tz(startDatetime.valueOf(), 'America/New_York'),
+            endDate: moment.tz(endDatetime.valueOf(), 'America/New_York'),
             maxDate: moment.tz(moment().valueOf(), 'America/New_York').endOf('day'),
             timePicker: true,
             timePickerIncrement: 1
         },
         function (start, end) {
-            setStartDate(start);
-            setEndDate(end);
-            $('#report-range-display').html(startDatetime.format('MMMM D, YYYY HH:mm') + ' - ' + endDatetime.format('MMMM D, YYYY HH:mm'));
+            $('#report-range-display').html(moment.tz(start.valueOf(), 'America/New_York').format('MMMM D, YYYY HH:mm') + ' - ' + moment.tz(end.valueOf(), 'America/New_York').format('MMMM D, YYYY HH:mm'));
+            startDatetime = moment.tz(start.valueOf(), 'America/New_York');
+            endDatetime = moment.tz(end.valueOf(), 'America/New_York');
             loadRecords();
         });
-    $('#report-range-display').html(startDatetime.format('MMMM D, YYYY HH:mm') + ' - ' + endDatetime.format('MMMM D, YYYY HH:mm'));
+    $('#report-range-display').html(moment.tz(startDatetime.valueOf(), 'America/New_York').format('MMMM D, YYYY HH:mm') + ' - ' + moment.tz(endDatetime.valueOf(), 'America/New_York').format('MMMM D, YYYY HH:mm'));
 }
 
 $(document).ready(function () {

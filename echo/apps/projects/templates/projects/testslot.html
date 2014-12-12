@@ -333,6 +333,7 @@
                 var percent = 100-((seconds/timerSeconds)*100);
                 if (percent > 95) {
                     listened = true;
+                    document.getElementById('finish_listen').value = 'heard';
                 }
                 drawTimer(percent);
             }
