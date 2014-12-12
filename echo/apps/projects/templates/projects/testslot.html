@@ -91,6 +91,10 @@
             top: 11px;
             left: 11px;
         }
+
+        .hole:focus {
+            outline: 0;
+        }
     </style>
 {% endblock %}
 {% block content %}
@@ -117,7 +121,11 @@
                              style="width: {{ project.slots_missing_percent }}%; cursor: default;"
                              data-toggle="tooltip" data-placement="top"
                              title="{{ project.slots_missing }} missing">{{ project.slots_missing }}</div>
-                        <div id="untested_bar_{{ project.pk }}" class="progress-bar progress-bar-info"
+                        <div id="missing_bar_{{ project.pk }}" class="progress-bar progress-bar-info"
+                             style="width: {{ project.slots_ready_percent }}%; cursor: default;"
+                             data-toggle="tooltip" data-placement="top"
+                             title="{{ project.slots_ready }} ready to test">{{ project.slots_ready }}</div>
+                        <div id="untested_bar_{{ project.pk }}" class="progress-bar progress-bar-default"
                              style="width: {{ project.slots_untested_percent }}%; cursor: default;"
                              data-toggle="tooltip" data-placement="top"
                              title="{{ project.slots_untested }} untested">{{ project.slots_untested }}</div>
@@ -167,7 +175,13 @@
                         <label id="label-pass" class="btn btn-default pass" style="width: 50%;">
                             <input type="radio" id="pass" class="rg" name="slot_status" value="pass">Pass
                         </label>
-                        <label id="label-fail" class="btn btn-default fail" style="width: 50%;">
+                        <label id="label-fail" style="width: 50%;"
+                            {% if fail_select %}
+                               class="btn btn-danger fail activate"
+                            {% else %}
+                                class="btn btn-default fail"
+                            {% endif %}
+                                >
                             <input type="radio" id="fail" class="rg" name="slot_status" value="fail">Fail
                         </label>
                     </div>
@@ -253,6 +267,7 @@
                 clearInterval(timer);
             }else{
                 var percent = 100-((seconds/timerSeconds)*100);
+                    document.getElementById('finish_listen').value = 'heard';
                 drawTimer(percent);
             }
         }

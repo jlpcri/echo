@@ -81,6 +81,25 @@ class Project(models.Model):
     def slots_passed_and_failed(self):
         return self.voiceslots().filter(status=VoiceSlot.PASS).count() + self.voiceslots().filter(status=VoiceSlot.FAIL).count()
 
+    def slots_ready(self):
+        """
+        Returns count of voiceslots in "Ready" status
+
+        Primarily a convenience method for templates
+        """
+        return self.voiceslots().filter(status=VoiceSlot.READY).count()
+
+    def slots_ready_percent(self):
+        """
+        Percent of voiceslots in "Ready" status
+
+        Controls width of progress bars
+        """
+        if self.slots_total() != 0:
+            return float(self.slots_ready()) / self.slots_total() * 100
+        else:
+            return 0
+
     def slots_tested(self):
         return self.voiceslots().filter(status__in=(VoiceSlot.PASS, VoiceSlot.FAIL)).count()
 
@@ -94,6 +113,11 @@ class Project(models.Model):
         return self.voiceslots().count()
 
     def slots_untested(self):
+        """
+        Returns count of voiceslots in "New" status
+
+        Primarily a convenience method for templates
+        """
         return self.voiceslots().filter(status=VoiceSlot.NEW).count()
 
     def slots_untested_percent(self):
@@ -198,10 +222,11 @@ class Project(models.Model):
 class VoiceSlot(models.Model):
     """Represents a .wav file and its associated verbiage and testing status"""
     NEW = 'New'
+    READY = 'Ready'
     PASS = 'Pass'
     FAIL = 'Fail'
     MISSING = 'Missing'
-    VOICESLOT_STATUS_CHOICES = ((NEW, 'New'), (PASS, 'Pass'),
+    VOICESLOT_STATUS_CHOICES = ((NEW, 'New'), (READY, 'Ready'), (PASS, 'Pass'),
                                 (FAIL, 'Fail'), (MISSING, 'Missing'))
     vuid = models.ForeignKey('VUID', null=True, on_delete=models.SET_NULL)
     language = models.ForeignKey('Language')
@@ -270,3 +295,10 @@ class Language(models.Model):
 
     def voiceslots(self):
         return VoiceSlot.objects.filter(language=self)
+
+
+class UpdateStatus(models.Model):
+    project = models.ForeignKey('projects.Project')
+    last_run = models.DateTimeField(auto_now=True)
+    running = models.BooleanField(default=False)
+    query_id = models.TextField(default='')
