@@ -130,7 +130,6 @@ def report_project(request, pid):
         # First check vuid upload_date
         if vuid_upload_date:
             # Second check Actions type
-            vuid_upload_date = vuid_upload_date
 
             outputs = {
                 'date': [],
@@ -141,49 +140,24 @@ def report_project(request, pid):
             }
 
             try:
-                end = datetime.fromtimestamp(float(request.GET.get('end')), tz=pytz.timezone('America/New_York'))
+                end = date.fromtimestamp(float(request.GET.get('end')), tz=pytz.timezone('America/Chicago'))
             except (TypeError, ValueError):
-                end = datetime.now(tz=pytz.UTC)
+                end = datetime.now(tz=pytz.UTC).date()
 
             try:
-                start = datetime.fromtimestamp(float(request.GET.get('start')), tz=pytz.timezone('America/New_York'))
+                start = date.fromtimestamp(float(request.GET.get('start')), tz=pytz.timezone('America/Chicago'))
             except (TypeError, ValueError):
                 start = end - timedelta(days=10)
 
-            days = (end - start).days
-            if days == 0:
-                voiceslots = project.voiceslots()
-                tmp_statistics = get_voiceslot_statistics(voiceslots,
-                                                          start,
-                                                          vuid_upload_date,
-                                                          None)
+            while start <= end:
+                statuses = project.status_as_of(time.mktime(start.timetuple()))
+                outputs['date'].append(start.strftime("%Y-%m-%d"))
+                outputs['fail'].append(statuses[Action.TESTER_FAIL_SLOT] + statuses[Action.AUTO_FAIL_SLOT])
+                outputs['pass'].append(statuses[Action.TESTER_PASS_SLOT] + statuses[Action.AUTO_FAIL_SLOT])
+                outputs['new'].append(statuses[Action.AUTO_NEW_SLOT])
+                outputs['missing'].append(statuses[Action.AUTO_MISSING_SLOT])
+                start += timedelta(days=1)
 
-                outputs['date'].append(start.strftime('%Y-%m-%d'))
-                for key in settings.VOICESLOTS_METRICS.keys():
-                    outputs[key].append(tmp_statistics['statistics'][key])
-
-            else:
-                date_range = [start + timedelta(days=x) for x in range(0, days + 1)]
-
-                for day in date_range:
-                    if day < get_midnight_of_day(vuid_upload_date):
-                        outputs['date'].append(day.strftime('%Y-%m-%d'))
-                        for key in settings.VOICESLOTS_METRICS.keys():
-                            outputs[key].append(settings.VOICESLOTS_METRICS[key])
-                        continue
-
-                    break_flag = False  # flag to check if current day less than vuid upload date
-                    voiceslots = project.voiceslots()
-                    tmp_statistics = get_voiceslot_statistics(voiceslots,
-                                                              day,
-                                                              vuid_upload_date,
-                                                              break_flag)
-                    outputs['date'].append(day.strftime('%Y-%m-%d'))
-                    for key in settings.VOICESLOTS_METRICS.keys():
-                        outputs[key].append(tmp_statistics['statistics'][key])
-
-                    if tmp_statistics['flag']:
-                        break
         else:
             outputs = None
 
