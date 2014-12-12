@@ -72,8 +72,8 @@ def projects(request):
         except (TypeError, ValueError):
             start = end - timedelta(days=6)
 
-        print start
-        print end
+        #print start
+        #print end
 
         if sort in sort_types:
             return render(request, "usage/projects.html", contexts.projects_context(start, end, sort))
@@ -138,8 +138,8 @@ def users(request):
         except (TypeError, ValueError):
             start = end - timedelta(days=6)
 
-        print start
-        print end
+        #print start
+        #print end
 
         if sort in sort_types:
             return render(request, "usage/users.html", contexts.users_context(start, end, sort))

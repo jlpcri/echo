@@ -123,12 +123,12 @@ def users_context(start, end, sort=None):
         user_list = User.objects.all()
 
     users = []
-    print start
-    print type(start)
-    print end
-    print type(end)
+    # print start
+    # print type(start)
+    # print end
+    # print type(end)
     actions = Action.objects.filter(time__gte=start, time__lt=end)
-    print actions
+    # print actions
     for u in user_list:
         users.append(
             {
