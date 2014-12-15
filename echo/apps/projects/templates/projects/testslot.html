@@ -157,7 +157,7 @@
                                 <div class="ring fill"></div>
                                 <button type="button" class="btn btn-default hole" id="button_play"
                                             onclick="buttonPlayPauseHandler('{{ file }}');"><i
-                                            class="fa fa-play"></i></button>
+                                            class="fa fa-play fa-2x"></i></button>
                                 <input id="finish_listen" name="finish_listen" type="hidden" value="notyet" />
                             </div>
                         </div>
@@ -286,34 +286,28 @@
         }
 
         function soundLoad(secLoad, secTotal) {
-            console.log("soundLoad()");
             timerSeconds = secTotal;
         }
 
         function playerController(state, position) {
             if (state == "BUFFERING") {
-                console.log("BUFFERING");
                 // empty
             } else if (state == 'STOPPED') {
-                console.log("STOPPED");
                 listened = true;
                 clearInterval(timer);
                 timer = undefined;
                 $('#button_play').children().first().removeClass('fa-pause').addClass('fa-play');
             } else if (state == "PAUSED") {
-                console.log("PAUSED");
                 timerHold = timerFinish-(new Date().getTime());
                 clearInterval(timer);
                 timer = undefined;
                 $('#button_play').children().first().removeClass('fa-pause').addClass('fa-play');
             } else if (state == "PLAYING") {
-                console.log("PLAYING");
                 if (timerHold) {
                     console.log("check a");
                     timerFinish = new Date().getTime()+timerHold;
                     timerHold = undefined;
                 } else {
-                    console.log("check b");
                     timerFinish = new Date().getTime()+(timerSeconds*1000);
                     timerHold = undefined;
                 }
