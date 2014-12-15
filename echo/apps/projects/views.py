@@ -143,6 +143,10 @@ def new(request):
 def project(request, pid):
     if request.method == 'GET':
         p = get_object_or_404(Project, pk=pid)
+        # status = UpdateStatus.objects.get_or_create(project=p)[0]
+        # if status.running:
+        #     status.running = False
+        #     status.save()
         return render(request, "projects/project.html",
                       contexts.context_project(p, server_form=ServerForm(initial={'server': p.current_server_pk()})))
     elif request.method == 'POST':
