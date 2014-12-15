@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import datetime, timedelta
 import time
 import os
@@ -8,6 +9,7 @@ import pysftp
 from django.db import models
 from django.contrib.auth.models import User
 from django.conf import settings
+from django.db import connection
 
 from echo.apps.activity.models import Action
 
@@ -217,6 +219,43 @@ class Project(models.Model):
 
     def update_file_status_last_time(self):
         return self.actions().filter(type=Action.UPDATE_FILE_STATUSES).latest('time').time
+
+    def status_as_of(self, timestamp):
+        """Based on actions, determine the status of voiceslots on this project as of the passed timestamp"""
+        timestamp = int(timestamp)  # Protection against SQL injection
+        print timestamp
+        query = """select action.type, count(action.voiceslot_id) from
+            (
+            select scope.voiceslot_id, action.time as time, action.type
+            from activity_scope as scope
+            inner join activity_action as action
+            on action.scope_id = scope.id
+            where scope.project_id = {0}
+            and action.type in (1, 2, 3, 4, 5, 6)
+            ) as action
+            inner join
+            (
+            select scope.voiceslot_id, max(action.time) as time
+            from activity_scope as scope
+            inner join activity_action as action
+            on action.scope_id = scope.id
+            where scope.project_id = {0}
+            and action.type in (1, 2, 3, 4, 5, 6)
+            and action.time < (timestamp 'epoch' + {1} * interval '1 second')
+            group by scope.voiceslot_id) as max
+            on action.voiceslot_id = max.voiceslot_id
+            and action.time = max.time
+            group by action.type
+            order by action.type;""".format(self.id, timestamp)
+        cursor = connection.cursor()
+        cursor.execute(query)
+        result = cursor.fetchall()
+        cursor.close()
+        dict_result = defaultdict(int)
+        print result
+        for row in result:
+            dict_result[row[0]] = row[1]
+        return dict_result
 
 
 class VoiceSlot(models.Model):
