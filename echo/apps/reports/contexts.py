@@ -1,5 +1,6 @@
 import unicodecsv
-from echo.apps.projects.models import Project
+from echo.apps.activity.models import Action
+from echo.apps.projects.models import Project, VoiceSlot
 
 
 def failed(project):
@@ -9,9 +10,10 @@ def failed(project):
 def failed_csv(project, response):
     response['Content-Disposition'] = 'attachment; filename="{0}_failed.csv"'.format(project.name)
     writer = unicodecsv.writer(response)
-    writer.writerow(["Name", "Path", "Language", "Verbiage", "History"])
-    for slot in project.voiceslots_failed():
-        writer.writerow([slot.name, slot.path, slot.language.name, slot.verbiage, slot.history])
+    writer.writerow(["Name", "Path", "Language", "Verbiage", "Test Time", "Failure Cause"])
+    for slot in project.voiceslots().filter(status=VoiceSlot.FAIL):
+        action = Action.objects.filter(scope__voiceslot=slot, type__in=[Action.TESTER_FAIL_SLOT, Action.AUTO_FAIL_SLOT]).latest('time')
+        writer.writerow([slot.name, slot.path, slot.language.name, slot.verbiage, action.time, action.description])
     return response
 
 
