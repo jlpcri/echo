@@ -9,9 +9,9 @@ def failed(project):
 def failed_csv(project, response):
     response['Content-Disposition'] = 'attachment; filename="{0}_failed.csv"'.format(project.name)
     writer = unicodecsv.writer(response)
-    writer.writerow(["Name", "Path", "Language", "Verbiage", "History"])
+    writer.writerow(["Name", "Path", "Language", "Verbiage"])
     for slot in project.voiceslots_failed():
-        writer.writerow([slot.name, slot.path, slot.language.name, slot.verbiage, slot.history])
+        writer.writerow([slot.name, slot.path, slot.language.name, slot.verbiage])
     return response
 
 
