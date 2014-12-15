@@ -23,7 +23,7 @@ def failed(request, pid):
         project = get_object_or_404(Project, pk=pid)
         failing_slots = project.voiceslots().filter(status=VoiceSlot.FAIL)
         for slot in failing_slots:
-            action = Action.objects.filter(scope__voiceslot=slot, type__in=[Action.TESTER_FAIL_SLOT, Action.AUTO_FAIL_SLOT]).latest()
+            action = Action.objects.filter(scope__voiceslot=slot, type__in=[Action.TESTER_FAIL_SLOT, Action.AUTO_FAIL_SLOT]).latest('time')
             temp = {
                 'name': slot.name,
                 'language': slot.language.name,
