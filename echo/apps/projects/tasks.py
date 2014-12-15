@@ -54,10 +54,6 @@ def update_file_statuses(project_id, user_id):
                             slot.save()
                             Action.log(user, Action.AUTO_NEW_SLOT, "Slot changed and needs retesting", slot)
                             break
-            else:  # No matching slot in slot candidates
-                slot.status = VoiceSlot.MISSING
-                slot.save()
-                Action.log(user, Action.AUTO_MISSING_SLOT, "Slot not found in this language", slot)
 
     # Find and mark missing voiceslots
     vuid_set = set(slots.values_list('name', flat=True))

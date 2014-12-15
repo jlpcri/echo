@@ -140,22 +140,24 @@ def report_project(request, pid):
             }
 
             try:
-                end = date.fromtimestamp(float(request.GET.get('end')), tz=pytz.timezone('America/Chicago'))
+                end = date.fromtimestamp(float(request.GET.get('end')))
             except (TypeError, ValueError):
+                print "Exception raised"
                 end = datetime.now(tz=pytz.UTC).date()
 
             try:
-                start = date.fromtimestamp(float(request.GET.get('start')), tz=pytz.timezone('America/Chicago'))
+                start = date.fromtimestamp(float(request.GET.get('start')))
             except (TypeError, ValueError):
                 start = end - timedelta(days=10)
 
             while start <= end:
                 statuses = project.status_as_of(time.mktime(start.timetuple()))
+                print statuses
                 outputs['date'].append(start.strftime("%Y-%m-%d"))
-                outputs['fail'].append(statuses[Action.TESTER_FAIL_SLOT] + statuses[Action.AUTO_FAIL_SLOT])
-                outputs['pass'].append(statuses[Action.TESTER_PASS_SLOT] + statuses[Action.AUTO_FAIL_SLOT])
-                outputs['new'].append(statuses[Action.AUTO_NEW_SLOT])
-                outputs['missing'].append(statuses[Action.AUTO_MISSING_SLOT])
+                outputs['fail'].append(int(statuses[Action.TESTER_FAIL_SLOT] + statuses[Action.AUTO_FAIL_SLOT]))
+                outputs['pass'].append(int(statuses[Action.TESTER_PASS_SLOT] + statuses[Action.AUTO_FAIL_SLOT]))
+                outputs['new'].append(int(statuses[Action.AUTO_NEW_SLOT]))
+                outputs['missing'].append(int(statuses[Action.AUTO_MISSING_SLOT]))
                 start += timedelta(days=1)
 
         else:
@@ -164,8 +166,8 @@ def report_project(request, pid):
         context = RequestContext(request, {
             'project': project,
             'project_progress': outputs,
-            'start': time.mktime(start.astimezone(tz=pytz.timezone('America/Chicago')).timetuple()),
-            'end': time.mktime(end.astimezone(tz=pytz.timezone('America/Chicago')).timetuple()),
+            'start': float(request.GET.get('start', time.mktime(start.timetuple()))),
+            'end': float(request.GET.get('end', time.mktime(end.timetuple()))),
             'feed': Action.objects.filter(scope__project=project).order_by('-time')[0:10]
         })
         Action.log(request.user, Action.REPORT_GENERATION, 'Viewed progress report dashboard', project)
