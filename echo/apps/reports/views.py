@@ -142,22 +142,22 @@ def report_project(request, pid):
             try:
                 end = date.fromtimestamp(float(request.GET.get('end')))
             except (TypeError, ValueError):
-                print "Exception raised"
-                end = datetime.now(tz=pytz.UTC).date()
+                end = datetime.now().date() + timedelta(days=1)
 
             try:
                 start = date.fromtimestamp(float(request.GET.get('start')))
             except (TypeError, ValueError):
                 start = end - timedelta(days=10)
+            original_start = start
 
             start_original = start
 
             while start <= end:
-                statuses = project.status_as_of(time.mktime(start.timetuple()))
+                statuses = project.status_as_of(time.mktime(start.timetuple())-1)
                 print statuses
                 outputs['date'].append(start.strftime("%Y-%m-%d"))
                 outputs['fail'].append(int(statuses[Action.TESTER_FAIL_SLOT] + statuses[Action.AUTO_FAIL_SLOT]))
-                outputs['pass'].append(int(statuses[Action.TESTER_PASS_SLOT] + statuses[Action.AUTO_FAIL_SLOT]))
+                outputs['pass'].append(int(statuses[Action.TESTER_PASS_SLOT] + statuses[Action.AUTO_PASS_SLOT]))
                 outputs['new'].append(int(statuses[Action.AUTO_NEW_SLOT]))
                 outputs['missing'].append(int(statuses[Action.AUTO_MISSING_SLOT]))
                 start += timedelta(days=1)
@@ -169,7 +169,7 @@ def report_project(request, pid):
             'project': project,
             'project_progress': outputs,
             'start': float(request.GET.get('start', time.mktime(start_original.timetuple()))),
-            'end': float(request.GET.get('end', time.mktime(end.timetuple()))),
+            'end': time.mktime(end.timetuple())-3601,
             'feed': Action.objects.filter(scope__project=project).order_by('-time')[0:10]
         })
         Action.log(request.user, Action.REPORT_GENERATION, 'Viewed progress report dashboard', project)
