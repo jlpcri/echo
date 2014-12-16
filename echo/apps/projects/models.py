@@ -223,7 +223,6 @@ class Project(models.Model):
     def status_as_of(self, timestamp):
         """Based on actions, determine the status of voiceslots on this project as of the passed timestamp"""
         timestamp = int(timestamp)  # Protection against SQL injection
-        print timestamp
         query = """select action.type, count(action.voiceslot_id) from
             (
             select scope.voiceslot_id, action.time as time, action.type
@@ -252,7 +251,6 @@ class Project(models.Model):
         result = cursor.fetchall()
         cursor.close()
         dict_result = defaultdict(int)
-        print result
         for row in result:
             dict_result[row[0]] = row[1]
         return dict_result
