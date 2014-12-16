@@ -150,6 +150,8 @@ def report_project(request, pid):
             except (TypeError, ValueError):
                 start = end - timedelta(days=10)
 
+            start_original = start
+
             while start <= end:
                 statuses = project.status_as_of(time.mktime(start.timetuple()))
                 print statuses
@@ -166,7 +168,7 @@ def report_project(request, pid):
         context = RequestContext(request, {
             'project': project,
             'project_progress': outputs,
-            'start': float(request.GET.get('start', time.mktime(start.timetuple()))),
+            'start': float(request.GET.get('start', time.mktime(start_original.timetuple()))),
             'end': float(request.GET.get('end', time.mktime(end.timetuple()))),
             'feed': Action.objects.filter(scope__project=project).order_by('-time')[0:10]
         })
@@ -174,54 +176,54 @@ def report_project(request, pid):
         return render(request, "reports/report_project.html", context)
 
 
-def get_voiceslot_statistics(voiceslots, day, vuid_upload_date, break_flag):
-    tmp_statistics = settings.VOICESLOTS_METRICS.copy()
-    for vs in voiceslots:
-        try:
-            action = Action.objects.filter(time__gt=get_midnight_of_day(day),
-                                           time__lt=get_midnight_of_day(day)+timedelta(days=1),
-                                           scope__voiceslot=vs).latest('time')
-            if action.type in (Action.TESTER_FAIL_SLOT, Action.AUTO_FAIL_SLOT):
-                tmp_statistics['fail'] += 1
-            elif action.type in (Action.TESTER_PASS_SLOT, Action.AUTO_PASS_SLOT):
-                tmp_statistics['pass'] += 1
-            elif action.type == Action.AUTO_NEW_SLOT:
-                tmp_statistics['new'] += 1
-            elif action.type == Action.AUTO_MISSING_SLOT:
-                tmp_statistics['missing'] += 1
-
-        except ObjectDoesNotExist:
-            one_day_before = day - timedelta(days=1)
-            if one_day_before < get_midnight_of_day(vuid_upload_date):
-                break_flag = True
-                break
-            found_flag = False
-            while found_flag is False:
-                try:
-                    action = Action.objects.filter(time__gt=get_midnight_of_day(one_day_before),
-                                                   time__lt=get_midnight_of_day(one_day_before)+timedelta(days=1),
-                                                   scope__voiceslot=vs).latest('time')
-                    if action.type in (Action.TESTER_FAIL_SLOT, Action.AUTO_FAIL_SLOT):
-                        tmp_statistics['fail'] += 1
-                    elif action.type in (Action.TESTER_PASS_SLOT, Action.AUTO_PASS_SLOT):
-                        tmp_statistics['pass'] += 1
-                    elif action.type == Action.AUTO_NEW_SLOT:
-                        tmp_statistics['new'] += 1
-                    elif action.type == Action.AUTO_MISSING_SLOT:
-                        tmp_statistics['missing'] += 1
-                    found_flag = True
-                except ObjectDoesNotExist:
-                    one_day_before -= timedelta(days=1)
-                    if one_day_before < get_midnight_of_day(vuid_upload_date):
-                        break
-            if found_flag is True:
-                continue
-
-    return {
-        'flag': break_flag,
-        'statistics': tmp_statistics
-    }
-
-
-def get_midnight_of_day(day):
-    return day.replace(hour=0, minute=0, second=0, microsecond=0)
+# def get_voiceslot_statistics(voiceslots, day, vuid_upload_date, break_flag):
+#     tmp_statistics = settings.VOICESLOTS_METRICS.copy()
+#     for vs in voiceslots:
+#         try:
+#             action = Action.objects.filter(time__gt=get_midnight_of_day(day),
+#                                            time__lt=get_midnight_of_day(day)+timedelta(days=1),
+#                                            scope__voiceslot=vs).latest('time')
+#             if action.type in (Action.TESTER_FAIL_SLOT, Action.AUTO_FAIL_SLOT):
+#                 tmp_statistics['fail'] += 1
+#             elif action.type in (Action.TESTER_PASS_SLOT, Action.AUTO_PASS_SLOT):
+#                 tmp_statistics['pass'] += 1
+#             elif action.type == Action.AUTO_NEW_SLOT:
+#                 tmp_statistics['new'] += 1
+#             elif action.type == Action.AUTO_MISSING_SLOT:
+#                 tmp_statistics['missing'] += 1
+#
+#         except ObjectDoesNotExist:
+#             one_day_before = day - timedelta(days=1)
+#             if one_day_before < get_midnight_of_day(vuid_upload_date):
+#                 break_flag = True
+#                 break
+#             found_flag = False
+#             while found_flag is False:
+#                 try:
+#                     action = Action.objects.filter(time__gt=get_midnight_of_day(one_day_before),
+#                                                    time__lt=get_midnight_of_day(one_day_before)+timedelta(days=1),
+#                                                    scope__voiceslot=vs).latest('time')
+#                     if action.type in (Action.TESTER_FAIL_SLOT, Action.AUTO_FAIL_SLOT):
+#                         tmp_statistics['fail'] += 1
+#                     elif action.type in (Action.TESTER_PASS_SLOT, Action.AUTO_PASS_SLOT):
+#                         tmp_statistics['pass'] += 1
+#                     elif action.type == Action.AUTO_NEW_SLOT:
+#                         tmp_statistics['new'] += 1
+#                     elif action.type == Action.AUTO_MISSING_SLOT:
+#                         tmp_statistics['missing'] += 1
+#                     found_flag = True
+#                 except ObjectDoesNotExist:
+#                     one_day_before -= timedelta(days=1)
+#                     if one_day_before < get_midnight_of_day(vuid_upload_date):
+#                         break
+#             if found_flag is True:
+#                 continue
+#
+#     return {
+#         'flag': break_flag,
+#         'statistics': tmp_statistics
+#     }
+#
+#
+# def get_midnight_of_day(day):
+#     return day.replace(hour=0, minute=0, second=0, microsecond=0)
