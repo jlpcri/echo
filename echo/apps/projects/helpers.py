@@ -207,6 +207,7 @@ def upload_vuid(uploaded_file, user, project):
         return result
     Action.log(user, Action.UPLOAD_VUID, 'Prompt list {0} uploaded'.format(uploaded_file.name), project)
     status = UpdateStatus.objects.get_or_create(project=project)[0]
+    print project.pk
     query_item = update_file_statuses.delay(project_id=project.pk, user_id=user.id)
     status.query_id = query_item
     status.running = True

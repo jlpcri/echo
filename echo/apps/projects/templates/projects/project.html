@@ -100,7 +100,7 @@
                         {% endif %}
                         {% if project.bravo_server %}
                             <li class="list-group-item" id="update-active-link">
-                                <a href="#" onclick="project_update_file_status()"><b>Update File Statuses</b></a>
+                                <a href="#" onclick="project_update_file_status(event)"><b>Update File Statuses</b></a>
                             </li>
                             <li class="list-group-item hidden" id="update-disabled-link">
                                 <b class="text-muted">Update File Statuses</b>
@@ -253,7 +253,8 @@
                 }
         });
 
-        function project_update_file_status() {
+        function project_update_file_status(event) {
+            event = $.event.fix(event);
             event.preventDefault();
             $("#update-active-link").addClass("hidden");
             $("#update-disabled-link").removeClass("hidden");

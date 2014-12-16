@@ -142,16 +142,16 @@ def report_project(request, pid):
             try:
                 end = date.fromtimestamp(float(request.GET.get('end')))
             except (TypeError, ValueError):
-                print "Exception raised"
-                end = datetime.now(tz=pytz.UTC).date()
+                end = datetime.now().date() + timedelta(days=1)
 
             try:
                 start = date.fromtimestamp(float(request.GET.get('start')))
             except (TypeError, ValueError):
                 start = end - timedelta(days=10)
+            original_start = start
 
             while start <= end:
-                statuses = project.status_as_of(time.mktime(start.timetuple()))
+                statuses = project.status_as_of(time.mktime(start.timetuple())-1)
                 print statuses
                 outputs['date'].append(start.strftime("%Y-%m-%d"))
                 outputs['fail'].append(int(statuses[Action.TESTER_FAIL_SLOT] + statuses[Action.AUTO_FAIL_SLOT]))
@@ -166,8 +166,8 @@ def report_project(request, pid):
         context = RequestContext(request, {
             'project': project,
             'project_progress': outputs,
-            'start': float(request.GET.get('start', time.mktime(start.timetuple()))),
-            'end': float(request.GET.get('end', time.mktime(end.timetuple()))),
+            'start': time.mktime(original_start.timetuple())-3601,
+            'end': time.mktime(end.timetuple())-3601,
             'feed': Action.objects.filter(scope__project=project).order_by('-time')[0:10]
         })
         Action.log(request.user, Action.REPORT_GENERATION, 'Viewed progress report dashboard', project)
