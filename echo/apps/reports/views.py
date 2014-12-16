@@ -153,7 +153,7 @@ def report_project(request, pid):
 
             while start <= end:
                 statuses = project.status_as_of(time.mktime(start.timetuple())-1)
-                print start, end, statuses
+                #print start, end, statuses
                 if start == start_original:
                     start += timedelta(days=1)
                     continue
