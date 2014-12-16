@@ -155,7 +155,7 @@ def report_project(request, pid):
                 print statuses
                 outputs['date'].append(start.strftime("%Y-%m-%d"))
                 outputs['fail'].append(int(statuses[Action.TESTER_FAIL_SLOT] + statuses[Action.AUTO_FAIL_SLOT]))
-                outputs['pass'].append(int(statuses[Action.TESTER_PASS_SLOT] + statuses[Action.AUTO_FAIL_SLOT]))
+                outputs['pass'].append(int(statuses[Action.TESTER_PASS_SLOT] + statuses[Action.AUTO_PASS_SLOT]))
                 outputs['new'].append(int(statuses[Action.AUTO_NEW_SLOT]))
                 outputs['missing'].append(int(statuses[Action.AUTO_MISSING_SLOT]))
                 start += timedelta(days=1)
