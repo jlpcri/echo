@@ -7,6 +7,7 @@
 {% block content %}
     <div class="container">
         <div class="col-md-3"></div>
+    {% if browser != "ie9" %}
         <div class="col-md-6">
             <br><div class="row text-center"><img src="{% static 'echo/img/PhemeLogo110x260.png' %}">&nbsp;&nbsp;&nbsp;</div>
             <div class="well" id="landing-well" style="margin-top: 25px;">
@@ -37,6 +38,21 @@
                 </div>
             </div>
         </div>
+    {% else %}
+        <div class="col-md-6">
+            <br><div class="row text-center"><img src="{% static 'echo/img/PhemeLogo110x260.png' %}">&nbsp;&nbsp;&nbsp;</div>
+            <div class="well" id="landing-well" style="margin-top: 25px;">
+                <h4 class="text-center">This browser is not supported</h4>
+                <br>
+                <div style="width: 160px; margin: 0px auto 0px auto;">
+                    <b>Please use</b><br>
+                    Internet Explorer 11<br>
+                    Chrome<br>
+                    Firefox
+                </div>
+            </div>
+        </div>
+    {% endif %}
         <div class="col-md-3"></div>
     </div>
 {% endblock %}

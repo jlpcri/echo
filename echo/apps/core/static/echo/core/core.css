@@ -173,3 +173,7 @@ color: darkgray;
 .file-icons a:hover {
     text-decoration: underline;
 }
+
+.progress-bar-warning {
+    background-color: #f5870d;
+}
