@@ -63,12 +63,12 @@ def projects(request):
         sort = sort if sort else 'project_name'
 
         try:
-            end = datetime.fromtimestamp(float(request.GET.get('end')), tz=pytz.timezone('America/New_York'))
+            end = datetime.fromtimestamp(float(request.GET.get('end')), tz=pytz.timezone('America/Chicago'))
         except (TypeError, ValueError):
             end = datetime.now(tz=pytz.UTC)
 
         try:
-            start = datetime.fromtimestamp(float(request.GET.get('start')), tz=pytz.timezone('America/New_York'))
+            start = datetime.fromtimestamp(float(request.GET.get('start')), tz=pytz.timezone('America/Chicago'))
         except (TypeError, ValueError):
             start = end - timedelta(days=6)
 
@@ -129,12 +129,12 @@ def users(request):
         sort = sort if sort else 'username'
 
         try:
-            end = datetime.fromtimestamp(float(request.GET.get('end')), tz=pytz.timezone('America/New_York'))
+            end = datetime.fromtimestamp(float(request.GET.get('end')), tz=pytz.timezone('America/Chicago'))
         except (TypeError, ValueError):
             end = datetime.now(tz=pytz.UTC)
 
         try:
-            start = datetime.fromtimestamp(float(request.GET.get('start')), tz=pytz.timezone('America/New_York'))
+            start = datetime.fromtimestamp(float(request.GET.get('start')), tz=pytz.timezone('America/Chicago'))
         except (TypeError, ValueError):
             start = end - timedelta(days=6)
 

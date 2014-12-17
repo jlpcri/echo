@@ -44,8 +44,8 @@ def update_file_statuses(project_id, user_id):
                         slot.bravo_time = datetime.utcfromtimestamp(float(fs.modified)).replace(tzinfo=pytz.utc)
                         slot.status = VoiceSlot.READY
                         slot.save()
-                        if slot.status in (VoiceSlot.NEW, VoiceSlot.READY):
-                            Action.log(user, Action.AUTO_NEW_SLOT, "Slot ready for testing", slot)
+                        Action.log(user, Action.AUTO_NEW_SLOT, "Slot ready for testing", slot)
+                        break
                     elif slot.status in (VoiceSlot.PASS, VoiceSlot.FAIL):
                         if fs.md5 != slot.bravo_checksum:
                             slot.bravo_checksum = fs.md5
@@ -53,6 +53,7 @@ def update_file_statuses(project_id, user_id):
                             slot.status = VoiceSlot.READY
                             slot.save()
                             Action.log(user, Action.AUTO_NEW_SLOT, "Slot changed and needs retesting", slot)
+                            break
 
     # Find and mark missing voiceslots
     vuid_set = set(slots.values_list('name', flat=True))

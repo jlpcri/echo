@@ -15,3 +15,11 @@ STATICFILES_DIRS = ('/opt/static/',)
 # }
 
 PRIVATE_KEY = '/home/sliu/.ssh/id_rsa'
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'pheme',
+        'USER': 'sliu',
+    }
+}
