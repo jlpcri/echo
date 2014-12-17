@@ -54,7 +54,12 @@ def home(request):
 
 def form(request):
     if request.method == 'GET':
+        browser_type = None
+        browser = request.user_agent.browser
+        if browser:
+            if browser.family and browser.version_string:
+                browser_type = "{0}{1}".format(browser.family.lower(), browser.version_string.lower())
         if request.user.is_authenticated():
             return redirect('core:home')
-        return render(request, "core/form.html", {})
+        return render(request, "core/form.html", {'browser': browser_type})
     return HttpResponseNotFound()

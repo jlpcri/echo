@@ -3,6 +3,10 @@
 {% load staticfiles %}
 {% block headscript %}
     <style>
+        .progress-bar-warning {
+            background-color: #f5e625;
+        }
+
         .player {
             margin: 0 0 0 0;
             padding: 0;
@@ -77,20 +81,19 @@
             height: 1em;
         }
 
-        .hole {
+        .btn.hole {
+            outline: 0;
             margin: 0 0 0 0;
             padding: 0 0 0 0;
             z-index: 2;
-            background-color: #eceeec;
-            border: solid grey 1px;
             height: 80%;
             width: 80%;
             -moz-border-radius: 50%;
             -webkit-border-radius: 50%;
             border-radius: 50%;
             position: absolute;
-            top: 10%;
-            left: 10%;
+            top: 11px;
+            left: 11px;
         }
 
         .hole:focus {
@@ -154,7 +157,7 @@
                                 <div class="ring fill"></div>
                                 <button type="button" class="btn btn-default hole" id="button_play"
                                             onclick="buttonPlayPauseHandler('{{ file }}');"><i
-                                            class="fa fa-play"></i></button>
+                                            class="fa fa-play fa-2x"></i></button>
                                 <input id="finish_listen" name="finish_listen" type="hidden" value="notyet" />
                             </div>
                         </div>
@@ -243,75 +246,12 @@
 {% endblock %}
 {% block endscript %}
     <script type="text/javascript">
-        var playerInfo = undefined;
-        var playerTime = undefined;
         var playerState = "STOPPED";
-        var soundLength = 0;
-        var soundPosition = 0;
-        var last = undefined;
-        var timer = undefined;
         var listened = false;
-
-        var timerCurrent;
+        var timer = undefined;
         var timerFinish;
+        var timerHold;
         var timerSeconds;
-
-        function getPlayer(pid) {
-            var obj = document.getElementById(pid);
-            if (obj.doPlay) return obj;
-            for (i = 0; i < obj.childNodes.length; i++) {
-                var child = obj.childNodes[i];
-                if (child.tagName == "EMBED") return child;
-            }
-        }
-
-        function buttonPlayPauseHandler(fname) {
-            var player = getPlayer('player');
-            if (playerState == 'PLAYING') {
-                player.doPause();
-            } else if (playerState == 'PAUSED') {
-                player.doResume();
-            } else {
-                player.doPlay(fname);
-            }
-        }
-
-        function buttonStopHandler() {
-            var player = getPlayer('player');
-            player.doStop();
-        }
-
-        function setVolume(v) {
-            var player = getPlayer('player');
-            player.setVolume(v);
-        }
-
-        function getPercent(a, b) {
-            return ((b == 0 ? 0.0 : a / b) * 100).toFixed(2);
-        }
-
-        function soundLoad(secLoad, secTotal) {
-            soundLength = secTotal;
-            timerSeconds = secTotal;
-            timerCurrent = 0;
-            timerFinish = new Date().getTime()+(timerSeconds*1000);
-        }
-
-        function inform() {
-            if (last != undefined) {
-                var now = new Date();
-                t = now.getTime() - last.getTime();
-                soundPosition += t / 1000;
-                if (soundPosition > soundLength) {
-                    listened = true;
-                    document.getElementById('finish_listen').value = 'heard';
-                }
-                last = now;
-            }
-            drawTimer(0);
-            playerInfo.innerHTML = playerState;
-            playerTime.innerHTML = soundPosition.toFixed(0) + '/' + soundLength.toFixed(0) + ' SEC';
-        }
 
         function drawTimer(percent){
             $('div.ring').html('<div id="slice"'+(percent > 50?' class="gt50"':'')+'><div class="pie"></div>'+(percent > 50?'<div class="pie fill"></div>':'')+'</div>');
@@ -331,55 +271,48 @@
                 clearInterval(timer);
             }else{
                 var percent = 100-((seconds/timerSeconds)*100);
-                if (percent > 95) {
-                    listened = true;
                     document.getElementById('finish_listen').value = 'heard';
-                }
                 drawTimer(percent);
             }
         }
 
-        $('input[type=button]#percent').click(function(e){
-            e.preventDefault();
-            drawTimer($('input[type=text]#percent').val());
-        });
-
-        $('input[type=button]#size').click(function(e){
-            e.preventDefault();
-            $('.timer').css('font-size',$('input[type=text]#size').val()+'px');
-        });
-
-        $('input[type=button]#watch').click(function(e){
-            e.preventDefault();
-            if($('input[type=button]#watch').val() == 'Start'){
-                $('input[type=button]#watch').val('Stop');
-                timerSeconds = $('input[type=text]#watch').val();
-                timerCurrent = 0;
-                timerFinish = new Date().getTime()+(timerSeconds*1000);
-                timer = setInterval('stopWatch()',50);
-            }else{
-                $('input[type=button]#watch').val('Start');
-                clearInterval(timer);
+        function getPlayer(pid) {
+            var obj = document.getElementById(pid);
+            if (obj.doPlay) return obj;
+            for (i = 0; i < obj.childNodes.length; i++) {
+                var child = obj.childNodes[i];
+                if (child.tagName == "EMBED") return child;
             }
-        });
+        }
+
+        function soundLoad(secLoad, secTotal) {
+            timerSeconds = secTotal;
+        }
 
         function playerController(state, position) {
-            if (position != undefined) soundPosition = position;
             if (state == "BUFFERING") {
                 // empty
             } else if (state == 'STOPPED') {
-                $('#button_play').children().first().removeClass('fa-pause').addClass('fa-play');
+                listened = true;
                 clearInterval(timer);
-                last = undefined;
                 timer = undefined;
-            } else if (state == "PAUSED") {
                 $('#button_play').children().first().removeClass('fa-pause').addClass('fa-play');
+            } else if (state == "PAUSED") {
+                timerHold = timerFinish-(new Date().getTime());
                 clearInterval(timer);
-                timer = undefined
+                timer = undefined;
+                $('#button_play').children().first().removeClass('fa-pause').addClass('fa-play');
             } else if (state == "PLAYING") {
-                $('#button_play').children().first().removeClass('fa-play').addClass('fa-pause');
-                last = new Date();
+                if (timerHold) {
+                    console.log("check a");
+                    timerFinish = new Date().getTime()+timerHold;
+                    timerHold = undefined;
+                } else {
+                    timerFinish = new Date().getTime()+(timerSeconds*1000);
+                    timerHold = undefined;
+                }
                 timer = setInterval('stopWatch()',10);
+                $('#button_play').children().first().removeClass('fa-play').addClass('fa-pause');
             }
             playerState = state;
         }
@@ -394,14 +327,23 @@
                 player.attachHandler("PLAYER_PLAYING", "playerController", "PLAYING");
                 player.attachHandler("PLAYER_STOPPED", "playerController", "STOPPED");
                 player.attachHandler("PLAYER_PAUSED", "playerController", "PAUSED");
-                playerInfo = document.getElementById('player_info');
-                playerTime = document.getElementById('player_time');
             }
         }
 
         {% if browser != "ie9" %}
             init();
         {% endif %}
+
+        function buttonPlayPauseHandler(fname) {
+            var player = getPlayer('player');
+            if (playerState == 'PLAYING') {
+                player.doPause();
+            } else if (playerState == 'PAUSED') {
+                player.doResume();
+            } else {
+                player.doPlay(fname);
+            }
+        }
 
         $(".rg").change(function () {
             if ($('input[name=slot_status]:checked', '#passfail').val() == 'pass') {
