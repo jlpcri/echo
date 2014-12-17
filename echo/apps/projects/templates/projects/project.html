@@ -292,10 +292,12 @@
                 $('#missing_bar_' + {{ project.id }}).css('width', data['missing_percent'] + '%');
                 $('#missing_bar_' + {{ project.id }}).html(data['missing']);
                 $('#missing_bar_' + {{ project.id }}).attr('data-original-title', data['missing']+' missing');
+                $('#missing_bar_' + {{ project.id }}).tooltip();
 
                 $('#ready_bar_' + {{ project.id }}).css('width', data['ready_percent'] + '%');
                 $('#ready_bar_' + {{ project.id }}).html(data['ready']);
                 $('#ready_bar_' + {{ project.id }}).attr('data-original-title', data['ready']+' ready');
+                $('#ready_bar_' + {{ project.id }}).tooltip();
 
                 $('#new_bar_' + {{ project.id }}).css('width', data['new_percent'] + '%');
                 $('#new_bar_' + {{ project.id }}).html(data['new']);
