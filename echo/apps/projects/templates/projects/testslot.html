@@ -379,5 +379,25 @@
                 $('#wrapper').prepend(msg);
             }
         });
+
+        {% if project.slots_total > 0 %}
+            {% if project.slots_passed %}
+                $('#passed_bar_' + {{ project.id }}).tooltip();
+            {% endif %}
+            {% if project.slots_failed %}
+                $('#defective_bar_' + {{ project.id }}).tooltip();
+            {% endif %}
+            {% if project.slots_missing %}
+                $('#missing_bar_' + {{ project.id }}).tooltip();
+            {% endif %}
+            {% if project.slots_ready %}
+                $('#ready_bar_' + {{ project.id }}).tooltip();
+            {% endif %}
+            {% if project.slots_untested %}
+                $('#new_bar_' + {{ project.id }}).tooltip();
+            {% endif %}
+        {% else %}
+            $('#progress_' + {{ project.id }}).tooltip();
+        {% endif %}
     </script>
 {% endblock %}
