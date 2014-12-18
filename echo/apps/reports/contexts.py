@@ -31,7 +31,7 @@ def missing_csv(project, response):
 
 
 def reports_context(sort=None):
-    projects = Project.objects.all()
+    projects = Project.objects.all().exclude(status=Project.CLOSED)
     if sort == 'project_name':
         projects = projects.order_by('name')
     elif sort == '-project_name':

@@ -6,7 +6,7 @@ import unicodecsv
 
 
 def context_home(user, sort=None):
-    projects = Project.objects.filter(users__pk=user.pk)
+    projects = Project.objects.filter(users__pk=user.pk).exclude(status=Project.CLOSED)
     if sort:
         if sort == 'project_name':
             projects = projects.order_by('name')
