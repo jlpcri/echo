@@ -4,7 +4,11 @@
 {% block headscript %}
     <style>
         .progress-bar-warning {
-            background-color: #f5e625;
+            background-color: goldenrod;
+        }
+
+        .progress-bar-info {
+            background-color: gray;
         }
 
         .player {
@@ -125,11 +129,11 @@
                              style="width: {{ project.slots_missing_percent }}%; cursor: default;"
                              data-toggle="tooltip" data-placement="top"
                              title="{{ project.slots_missing }} missing">{{ project.slots_missing }}</div>
-                        <div id="missing_bar_{{ project.pk }}" class="progress-bar progress-bar-info"
+                        <div id="missing_bar_{{ project.pk }}" class="progress-bar progress-bar-default"
                              style="width: {{ project.slots_ready_percent }}%; cursor: default;"
                              data-toggle="tooltip" data-placement="top"
                              title="{{ project.slots_ready }} ready to test">{{ project.slots_ready }}</div>
-                        <div id="untested_bar_{{ project.pk }}" class="progress-bar progress-bar-default"
+                        <div id="untested_bar_{{ project.pk }}" class="progress-bar progress-bar-info"
                              style="width: {{ project.slots_untested_percent }}%; cursor: default;"
                              data-toggle="tooltip" data-placement="top"
                              title="{{ project.slots_untested }} untested">{{ project.slots_untested }}</div>
@@ -233,8 +237,6 @@
             <param name="quality" value="high"/>
             <embed src="{% static 'common/flash-wav-player/wavplayer.swf' %}?gui=none"
                    bgcolor="#ffffff"
-                   width="1000"
-                   height="1000"
                    name="player"
                    quality="high"
                    allowScriptAccess="always"
