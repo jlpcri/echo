@@ -3,6 +3,11 @@
 {% load staticfiles %}
 {% block headscript %}
     <link rel="stylesheet" type="text/css" href="{% static 'echo/core/core.css' %}"/>
+            background-color: goldenrod;
+        }
+
+        .progress-bar-info {
+            background-color: gray;
 {% endblock %}
 {% block content %}
     <div class="container">
@@ -107,14 +112,14 @@
                                             {% endif %}
                                             {% if project.slots_ready %}
                                                 <div id="ready_bar_{{ project.pk }}"
-                                                     class="progress-bar progress-bar-info"
+                                                     class="progress-bar progress-bar-default"
                                                      style="width: {{ project.slots_ready_percent }}%; cursor: default;"
                                                      data-toggle="tooltip" data-placement="top"
                                                      title="{{ project.slots_ready }} ready to test">{{ project.slots_ready }}</div>
                                             {% endif %}
                                             {% if project.slots_untested %}
                                                 <div id="new_bar_{{ project.pk }}"
-                                                     class="progress-bar progress-bar-default"
+                                                     class="progress-bar progress-bar-info"
                                                      style="width: {{ project.slots_untested_percent }}%; cursor: default;"
                                                      data-toggle="tooltip" data-placement="top"
                                                      title="{{ project.slots_untested }} untested">{{ project.slots_untested }}</div>
