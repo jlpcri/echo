@@ -3,11 +3,14 @@
 {% load staticfiles %}
 {% block headscript %}
     <style>
+        .progress-bar-warning {
             background-color: goldenrod;
         }
 
         .progress-bar-info {
             background-color: gray;
+        }
+
         .player {
             margin: 0 0 0 0;
             padding: 0;
@@ -126,11 +129,11 @@
                              style="width: {{ project.slots_missing_percent }}%; cursor: default;"
                              data-toggle="tooltip" data-placement="top"
                              title="{{ project.slots_missing }} missing">{{ project.slots_missing }}</div>
-                        <div id="missing_bar_{{ project.pk }}" class="progress-bar progress-bar-default"
+                        <div id="ready_bar_{{ project.pk }}" class="progress-bar progress-bar-default"
                              style="width: {{ project.slots_ready_percent }}%; cursor: default;"
                              data-toggle="tooltip" data-placement="top"
                              title="{{ project.slots_ready }} ready to test">{{ project.slots_ready }}</div>
-                        <div id="untested_bar_{{ project.pk }}" class="progress-bar progress-bar-info"
+                        <div id="new_bar_{{ project.pk }}" class="progress-bar progress-bar-info"
                              style="width: {{ project.slots_untested_percent }}%; cursor: default;"
                              data-toggle="tooltip" data-placement="top"
                              title="{{ project.slots_untested }} untested">{{ project.slots_untested }}</div>
@@ -376,5 +379,25 @@
                 $('#wrapper').prepend(msg);
             }
         });
+
+        {% if project.slots_total > 0 %}
+            {% if project.slots_passed %}
+                $('#passed_bar_' + {{ project.id }}).tooltip();
+            {% endif %}
+            {% if project.slots_failed %}
+                $('#defective_bar_' + {{ project.id }}).tooltip();
+            {% endif %}
+            {% if project.slots_missing %}
+                $('#missing_bar_' + {{ project.id }}).tooltip();
+            {% endif %}
+            {% if project.slots_ready %}
+                $('#ready_bar_' + {{ project.id }}).tooltip();
+            {% endif %}
+            {% if project.slots_untested %}
+                $('#new_bar_' + {{ project.id }}).tooltip();
+            {% endif %}
+        {% else %}
+            $('#progress_' + {{ project.id }}).tooltip();
+        {% endif %}
     </script>
 {% endblock %}
