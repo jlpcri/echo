@@ -55,7 +55,7 @@
                             <tr>
                                 <th colspan="1" style="border-bottom: 0px;"></th>
                                 <th colspan="4" class="text-center" style="border-bottom: 0px; background-color: #EEF3E2;"><small>Manual</small></th>
-                                <th colspan="5" class="text-center" style="border-bottom: 0px; background-color: #FCF8DC;"><small>Automatic</small></th>
+                                <th colspan="5" class="text-center" style="border-bottom: 0px; background-color: #FCF8DC;"><small>Pheme</small></th>
                             </tr>
                             <tr>
                                 <th class="col-xs-2 text-left" style="border-top: 0px;">
@@ -70,7 +70,7 @@
                                         Project Name</a>&nbsp;<i class="fa fa-sort"></i></small>
                                 {% endif %}
                                 </th>
-                                <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #EEF3E2;">
+                                <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #EEF3E2;" title="Count of recordings downloaded and tested">
                                 {% if sort == 'total' %}
                                     <small><a href="#" class="sort-field" data-field="-total">
                                         Total</a>&nbsp;<i class="fa fa-sort-asc"></i></small>
@@ -82,7 +82,7 @@
                                         Total</a>&nbsp;<i class="fa fa-sort"></i></small>
                                 {% endif %}
                                 </th>
-                                <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #EEF3E2;">
+                                <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #EEF3E2;" title="Count of recordings downloaded and passed">
                                 {% if sort == 'passed' %}
                                     <small><a href="#" class="sort-field" data-field="-passed">
                                         Passed</a>&nbsp;<i class="fa fa-sort-asc"></i></small>
@@ -94,7 +94,7 @@
                                         Passed</a>&nbsp;<i class="fa fa-sort"></i></small>
                                 {% endif %}
                                 </th>
-                                <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #EEF3E2;">
+                                <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #EEF3E2;" title="Count of recordings downloaded and failed">
                                 {% if sort == 'defective' %}
                                     <small><a href="#" class="sort-field" data-field="-defective">
                                         Defective</a>&nbsp;<i class="fa fa-sort-asc"></i></small>
@@ -106,7 +106,7 @@
                                         Defective</a>&nbsp;<i class="fa fa-sort"></i></small>
                                 {% endif %}
                                 </th>
-                                <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #EEF3E2;">
+                                <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #EEF3E2;" title="Ratio between manual tests run and slots tested. Higher number indicates more rework.">
                                 {% if sort == 'rework_ratio' %}
                                     <small><a href="#" class="sort-field" data-field="-rework_ratio">
                                         Rework</a>&nbsp;<i class="fa fa-sort-asc"></i></small>
@@ -118,7 +118,7 @@
                                         Rework</a>&nbsp;<i class="fa fa-sort"></i></small>
                                 {% endif %}
                                 </th>
-                                <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #FCF8DC;">
+                                <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #FCF8DC;" title="Count of times Pheme changed the status of a prompt without a tester downloading the recording.">
                                 {% if sort == 'auto_total' %}
                                     <small><a href="#" class="sort-field" data-field="-auto_total">
                                         Total</a>&nbsp;<i class="fa fa-sort-asc"></i></small>
@@ -130,7 +130,7 @@
                                         Total</a>&nbsp;<i class="fa fa-sort"></i></small>
                                 {% endif %}
                                 </th>
-                                <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #FCF8DC;">
+                                <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #FCF8DC;" title="Number of times Pheme automatically passed a slot (e.g., when the checksums matched).">
                                 {% if sort == 'auto_passed' %}
                                     <small><a href="#" class="sort-field" data-field="-auto_passed">
                                         Passed</a>&nbsp;<i class="fa fa-sort-asc"></i></small>
@@ -142,7 +142,7 @@
                                         Passed</a>&nbsp;<i class="fa fa-sort"></i></small>
                                 {% endif %}
                                 </th>
-                                <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #FCF8DC;">
+                                <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #FCF8DC;" title="Number of times Pheme automatically failed a slot (e.g., when the checksums matched).">
                                 {% if sort == 'auto_defective' %}
                                     <small><a href="#" class="sort-field" data-field="-auto_defective">
                                         Defective</a>&nbsp;<i class="fa fa-sort-asc"></i></small>
@@ -154,7 +154,7 @@
                                         Defective</a>&nbsp;<i class="fa fa-sort"></i></small>
                                 {% endif %}
                                 </th>
-                                <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #FCF8DC;">
+                                <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #FCF8DC;" title="Number of times Pheme marked a new or previously found slot as missing.">
                                 {% if sort == 'auto_missing' %}
                                     <small><a href="#" class="sort-field" data-field="-auto_missing">
                                         Missing</a>&nbsp;<i class="fa fa-sort-asc"></i></small>
@@ -166,7 +166,7 @@
                                         Missing</a>&nbsp;<i class="fa fa-sort"></i></small>
                                 {% endif %}
                                 </th>
-                                <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #FCF8DC;">
+                                <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #FCF8DC;" title="Ratio between automatic tests run and manual tests run. Higher number indicates more automation.">
                                 {% if sort == 'auto_ratio' %}
                                     <small><a href="#" class="sort-field" data-field="-auto_ratio">
                                         Ratio</a>&nbsp;<i class="fa fa-sort-asc"></i></small>
