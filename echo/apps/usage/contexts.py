@@ -30,7 +30,6 @@ def overall():
     }
 
 
-
 def projects_context(start, end, sort=None):
     if sort == 'project_name':
         project_list = Project.objects.all().order_by('name')

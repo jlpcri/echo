@@ -1,6 +1,6 @@
 <div class="row">
             <div class="col-xs-12">
-                <h4>All-Time Overall</h4>
+                <h4>All-Time Usage</h4>
             </div>
         </div>
         <div class="row">
@@ -8,15 +8,19 @@
             <table class="table">
                 <thead>
                 <tr>
-                    <th class="col-xs-1 text-center">Total</th>
-                    <th class="col-xs-1 text-center">Passed</th>
-                    <th class="col-xs-1 text-center">Defective</th>
-                    <th class="col-xs-1 text-center">Auto Total</th>
-                    <th class="col-xs-1 text-center">Auto Passed</th>
-                    <th class="col-xs-1 text-center">Auto Defective</th>
-                    <th class="col-xs-1 text-center">Auto Missing</th>
-                    <th class="col-xs-1 text-center">Rework Ratio</th>
-                    <th class="col-xs-1 text-center">Auto Ratio</th>
+                    <th colspan="4" class="text-center" style="border-bottom: 0px; background-color: #FFF0F5;" title="Human"><small>Manual</small></th>
+                    <th colspan="5" class="text-center" style="border-bottom: 0px; background-color: #F0F8FF;" title="Computer"><small>Automatic</small></th>
+                </tr>
+                <tr>
+                    <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #FFF0F5;" title="Human run passed and failed count"><small>Total</small></th>
+                    <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #FFF0F5;" title="Human run passed count"><small>Passed</small></th>
+                    <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #FFF0F5;" title="Human run defective count"><small>Defective</small></th>
+                    <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #FFF0F5;" title="Total "><small>Rework</small></th>
+                    <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #F0F8FF;" title="Computer run passed, defective, and missing count"><small>Total</small></th>
+                    <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #F0F8FF;" title="Computer run passed count"><small>Passed</small></th>
+                    <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #F0F8FF;" title="Computer run defective count"><small>Defective</small></th>
+                    <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #F0F8FF;" title="Computer run missing count"><small>Missing</small></th>
+                    <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #F0F8FF;" title="Automatic total against Manual Total"><small>Ratio</small></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -24,11 +28,11 @@
                         <td class="text-center">{{ overall.total }}</td>
                         <td class="text-center">{{ overall.passed }}</td>
                         <td class="text-center">{{ overall.defective }}</td>
+                        <td class="text-center">{{ overall.rework_ratio|floatformat:2 }}</td>
                         <td class="text-center">{{ overall.auto_total }}</td>
                         <td class="text-center">{{ overall.auto_passed }}</td>
                         <td class="text-center">{{ overall.auto_defective }}</td>
                         <td class="text-center">{{ overall.auto_missing }}</td>
-                        <td class="text-center">{{ overall.rework_ratio|floatformat:2 }}</td>
                         <td class="text-center">{{ overall.auto_ratio|floatformat:2 }}</td>
                     </tr>
                 </tbody>
