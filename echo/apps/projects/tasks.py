@@ -25,12 +25,16 @@ def update_file_statuses(project_id, user_id):
                               ' -exec md5sum {} \; -exec stat -c"%Y" {} \;')
 
     FileStatus = namedtuple('FileStatus', 'md5 path modified')
+    file_statuses = []
     try:
-        file_statuses = [FileStatus(*result[i].split() + [result[i + 1].strip(), ]) for i in range(0, len(result), 2)]
+        for i in range(0, len(result), 2):
+            md5 = result[i].split()[0]
+            filename = ' '.join(result[i].split()[1:])
+            modified = result[i+1].strip()
+            file_statuses.append(FileStatus(md5, filename, modified))
     except IndexError:
-        print "Result:"
+        print "Update IndexError Result:"
         print repr(result)
-        file_statuses = []
 
     # Find and update matching voiceslots
     slots = project.voiceslots()
