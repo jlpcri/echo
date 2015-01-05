@@ -118,7 +118,7 @@ def parse_vuid(vuid):
     wb = load_workbook(vuid.file.path)
     ws = wb.active
 
-    headers = [i.value.lower() for i in ws.rows[0]]
+    headers = [str(i.value).lower() for i in ws.rows[0]]
     try:
         prompt_name_i = headers.index(PROMPT_NAME)
         prompt_text_i = headers.index(PROMPT_TEXT)
@@ -239,7 +239,7 @@ def verify_vuid_headers(vuid):
     ws = wb.active
     if len(ws.rows) >= 2:
         try:
-            headers = set([i.value.lower() for i in ws.rows[0]])
+            headers = set([str(i.value).lower() for i in ws.rows[0]])
         except AttributeError:
             return False
         i = unicode(ws['A2'].value).strip().find('/')
@@ -252,16 +252,25 @@ def verify_vuid_headers_empty(vuid):
     wb = load_workbook(vuid.file.path)
     ws = wb.active
     try:
-        headers = set([i.value.lower() for i in ws.rows[0]])
+        print "aaa"
+        for i in ws.rows[0]:
+            print "i = " + str(i.value)
+        headers = set([str(i.value).lower() for i in ws.rows[0]])
+        print "bbb"
     except AttributeError:
+        print "ccc"
         return False
 
     try:
+        print "ddd"
         index = unicode(ws['A2'].value).strip().find('/')
+        print "eee"
         vuid_path = ws['A2'].value.strip()[index:]
+        print "fff"
     except AttributeError:
+        print "ggg"
         return False
-
+    print "hhh"
     return True
 
 
