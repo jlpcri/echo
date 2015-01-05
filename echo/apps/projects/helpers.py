@@ -207,7 +207,6 @@ def upload_vuid(uploaded_file, user, project):
         return result
     Action.log(user, Action.UPLOAD_VUID, 'Prompt list {0} uploaded'.format(uploaded_file.name), project)
     status = UpdateStatus.objects.get_or_create(project=project)[0]
-    print project.pk
     query_item = update_file_statuses.delay(project_id=project.pk, user_id=user.id)
     status.query_id = query_item
     status.running = True
@@ -252,25 +251,16 @@ def verify_vuid_headers_empty(vuid):
     wb = load_workbook(vuid.file.path)
     ws = wb.active
     try:
-        print "aaa"
-        for i in ws.rows[0]:
-            print "i = " + str(i.value)
         headers = set([str(i.value).lower() for i in ws.rows[0]])
-        print "bbb"
     except AttributeError:
-        print "ccc"
         return False
 
     try:
-        print "ddd"
         index = unicode(ws['A2'].value).strip().find('/')
-        print "eee"
         vuid_path = ws['A2'].value.strip()[index:]
-        print "fff"
     except AttributeError:
-        print "ggg"
         return False
-    print "hhh"
+
     return True
 
 
