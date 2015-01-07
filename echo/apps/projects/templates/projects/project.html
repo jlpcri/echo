@@ -10,6 +10,11 @@
         .progress-bar-info {
             background-color: gray;
         }
+        .jira-tag {
+            margin-left: 3em;
+            width: 7em;
+            font-weight: bold;
+        }
     </style>
 {% endblock %}
 {% block content %}
@@ -75,11 +80,13 @@
                     <label class="control-label" for="language_list">Prompts by Language</label>
                     <ul id="language_list" class="list-group">
                         {% for language in languages %}
-                            <li class="list-group-item">
+                            <li class="list-group-item" id="prompts-{{language.name}}">
                                 <span class="badge">{{ language.voiceslot_count }}</span>
                                 <a href="{% url "projects:voiceslots" project.pk %}?language={{ language.name|lower }}">
                                     <b>{{ language.name|capfirst }}</b>
                                 </a>
+                                <div class="jira-tag">Missing: <div style="display:inline-block;float:right" class="missing-jira"></div></div>
+                                <div class="jira-tag">Defective: <div style="display:inline-block;float:right" class="defective-jira"></div></div>
 
                             </li>
                         {% endfor %}
@@ -260,6 +267,39 @@
                     $("#update-disabled-link").removeClass("hidden");
                 }
         });
+
+        function getJiraIcon(percent) {
+            var root = 'http://jira.west.com/images/icons/priorities/';
+            if (percent==0) {
+                return 'http://jira.west.com/images/icons/accept.png';
+            }
+            else if (percent <= .05) {
+                return root + 'minor.png';
+            }
+            else if (percent <= .2) {
+                return root + 'minor.png';
+            }
+            else if (percent <= .4) {
+                return root + 'major.png';
+            }
+            else if (percent <= .7) {
+                return root + 'critical.png';
+            }
+            else {
+                return root + 'blocker.png';
+            }
+        }
+
+        function updateJiraStatus(missing, defective, total, id) {
+            var missingPercent = missing/total;
+            var defectivePercent = defective/total;
+            $(id + " .missing-jira").html('<img src="' + getJiraIcon(missing/total) + '">')
+            $(id + " .defective-jira").html('<img src="' + getJiraIcon(defective/total) + '">')
+        }
+
+        {% for language in languages %}
+        updateJiraStatus({{language.voiceslot_missing|default:0}}, {{language.voiceslot_defective|default:0}}, {{language.voiceslot_count|default:1}}, "#prompts-{{language.name}}");
+        {% endfor %}
 
         function project_update_file_status(event) {
             event = $.event.fix(event);
