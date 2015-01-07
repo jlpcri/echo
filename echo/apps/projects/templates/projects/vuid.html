@@ -19,7 +19,11 @@
                     <thead>
                     <tr>
                         {% for header in headers %}
-                            <th class="col-xs-2">{{ header }}</th>
+                            {% if header != None %}
+                                <th class="col-xs-2">{{ header }}</th>
+                            {% else %}
+                                <th class="col-xs-1"></th>
+                            {% endif %}
                         {% endfor %}
                     </tr>
                     </thead>
@@ -27,7 +31,11 @@
                     {% for record in records %}
                         <tr>
                             {% for i in record %}
-                                <td>{{ i.value }}</td>
+                                {% if i.value != None %}
+                                    <td>{{ i.value }}</td>
+                                {% else %}
+                                    <td></td>
+                                {% endif %}
                             {% endfor %}
                         </tr>
                     {% endfor %}
