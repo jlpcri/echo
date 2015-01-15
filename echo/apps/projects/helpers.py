@@ -133,6 +133,9 @@ def parse_vuid(vuid):
         no_language = True
 
     v = unicode(ws['A2'].value).strip()
+    # if endswith '/', remove it
+    if v[-1] == '/':
+        v = v[:-1]
     i = v.find('/')
     path = v[i:].strip()
     slots = []
