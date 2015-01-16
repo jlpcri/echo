@@ -110,8 +110,9 @@ def new(request):
                 if root_path and not os.path.isabs(root_path):
                     messages.danger(request, 'Bravo Server Root Path Format Incorrect')
                     return render(request, 'projects/new.html', contexts.context_new(form))
+
                 # remove last slash of root path
-                if root_path and root_path[-1] == '/':
+                while root_path and root_path[-1] == '/':
                     root_path = root_path[:-1]
 
                 p = Project(name=n)
@@ -210,13 +211,13 @@ def project(request, pid):
             if form.is_valid():
                 root_path = form.cleaned_data['root_path']
 
-                #remove last slash of root path
-                if root_path and root_path[-1] == '/':
-                    root_path = root_path[:-1]
-
                 if not os.path.isabs(root_path):
                     messages.danger(request, 'Bravo Server Root Path Format Incorrect')
                     return redirect('projects:project', pid=pid)
+
+                #remove last slash of root path
+                while root_path and root_path[-1] == '/':
+                    root_path = root_path[:-1]
 
                 if p.root_path and not helpers.verify_update_root_path(p, root_path):
                     messages.danger(request, 'New root path not allowed')
