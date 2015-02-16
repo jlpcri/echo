@@ -118,7 +118,7 @@ def parse_vuid(vuid):
     wb = load_workbook(vuid.file.path)
     ws = wb.active
 
-    headers = [i.value.lower() for i in ws.rows[0]]
+    headers = [str(i.value).lower() for i in ws.rows[0]]
     try:
         prompt_name_i = headers.index(PROMPT_NAME)
         prompt_text_i = headers.index(PROMPT_TEXT)
@@ -133,6 +133,9 @@ def parse_vuid(vuid):
         no_language = True
 
     v = unicode(ws['A2'].value).strip()
+    # if endswith '/', remove it
+    if v[-1] == '/':
+        v = v[:-1]
     i = v.find('/')
     path = v[i:].strip()
     slots = []
@@ -207,7 +210,6 @@ def upload_vuid(uploaded_file, user, project):
         return result
     Action.log(user, Action.UPLOAD_VUID, 'Prompt list {0} uploaded'.format(uploaded_file.name), project)
     status = UpdateStatus.objects.get_or_create(project=project)[0]
-    print project.pk
     query_item = update_file_statuses.delay(project_id=project.pk, user_id=user.id)
     status.query_id = query_item
     status.running = True
@@ -239,7 +241,7 @@ def verify_vuid_headers(vuid):
     ws = wb.active
     if len(ws.rows) >= 2:
         try:
-            headers = set([i.value.lower() for i in ws.rows[0]])
+            headers = set([str(i.value).lower() for i in ws.rows[0]])
         except AttributeError:
             return False
         i = unicode(ws['A2'].value).strip().find('/')
@@ -252,7 +254,7 @@ def verify_vuid_headers_empty(vuid):
     wb = load_workbook(vuid.file.path)
     ws = wb.active
     try:
-        headers = set([i.value.lower() for i in ws.rows[0]])
+        headers = set([str(i.value).lower() for i in ws.rows[0]])
     except AttributeError:
         return False
 

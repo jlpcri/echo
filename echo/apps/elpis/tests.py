@@ -13,11 +13,12 @@ User = get_user_model()
 
 class TestDashboardView(test.TestCase):
     def setUp(self):
-        self.client = test.Client()
+        p = Project.objects.create(name='Test Project')
         User.objects.create_user(username='test_user', password='test')
+        self.client = test.Client()
         self.client.login(username='test_user', password='test')
-        self.url = reverse('elpis:dashboard', args=(1,))
-        Project.objects.create(name='Test Project')
+        self.url = reverse('elpis:dashboard', args=(p.id, ))
+
 
     def test_dashboard_loads(self):
         response = self.client.get(self.url)
@@ -34,9 +35,9 @@ class TestSetServerView(test.TestCase):
         PreprodServer.objects.create(name='linux4095', address='linux4095.wic.west.com', account='wicqacip',
                                      application_type=PreprodServer.PRODUCER)
         PreprodServer.objects.create(name='Prompt Store Placeholder', application_type=PreprodServer.NATIVE_VXML)
-        Project.objects.create(name='Test Project', bravo_server=Server.objects.first())
+        p = Project.objects.create(name='Test Project', bravo_server=Server.objects.first())
         self.client.login(username='test_user', password='test')
-        self.url = reverse('elpis:set_server', args=(1,))
+        self.url = reverse('elpis:set_server', args=(p.id,))
 
     def test_set_producer(self):
         """Test that the Producer server returns success and a list of paths"""
@@ -58,10 +59,10 @@ class TestSetPathView(test.TestCase):
         PreprodServer.objects.create(name='linux4095', address='linux4095.wic.west.com', account='wicqacip',
                                      application_type=PreprodServer.PRODUCER)
         PreprodServer.objects.create(name='Prompt Store Placeholder', application_type=PreprodServer.NATIVE_VXML)
-        Project.objects.create(name='Test Project', bravo_server=Server.objects.first())
+        p = Project.objects.create(name='Test Project', bravo_server=Server.objects.first())
         self.client.login(username='test_user', password='test')
-        self.set_server_url = reverse('elpis:set_server', args=(1,))
-        self.set_path_url = reverse('elpis:set_path', args=(1,))
+        self.set_server_url = reverse('elpis:set_server', args=(p.id,))
+        self.set_path_url = reverse('elpis:set_path', args=(p.id,))
 
     def test_set_producer_path(self):
         """Fetch paths for the producer server, then set one"""
@@ -88,10 +89,10 @@ class TestVerifyView(test.TestCase):
         # TODO: Mock preprod servers
         pps = PreprodServer.objects.create(name='linux4095', address='linux4095.wic.west.com', account='wicqacip',
                                            application_type=PreprodServer.PRODUCER)
-        Project.objects.create(name='Test Project', preprod_server=pps,
+        p = Project.objects.create(name='Test Project', preprod_server=pps,
                                preprod_path='/usr/local/tuvox/public/Projects/21cent')
         self.client.login(username='test_user', password='test')
-        self.url = reverse('elpis:verify', args=(1,))
+        self.url = reverse('elpis:verify', args=(p.id,))
 
     def test_verify_get_apps(self):
         """GET on URL should return a JSON list of applications for client"""
@@ -107,11 +108,11 @@ class TestCheckRunningView(test.TestCase):
         User.objects.create_user(username='test_user', password='test')
         pps = PreprodServer.objects.create(name='linux4095', address='linux4095.wic.west.com', account='wicqacip',
                                            application_type=PreprodServer.PRODUCER)
-        Project.objects.create(name='Test Project', preprod_server=pps,
+        p = Project.objects.create(name='Test Project', preprod_server=pps,
                                preprod_path='/usr/local/tuvox/public/Projects/21cent')
-        self.es = ElpisStatus.objects.create(project=Project.objects.get(pk=1))
+        self.es = ElpisStatus.objects.create(project=p)
         self.client.login(username='test_user', password='test')
-        self.url = reverse('elpis:check', args=(1,))
+        self.url = reverse('elpis:check', args=(p.id,))
 
     def test_running(self):
         """If running, return JSON {running: True}"""
@@ -138,11 +139,11 @@ class TestFetchView(test.TestCase):
         User.objects.create_user(username='test_user', password='test')
         pps = PreprodServer.objects.create(name='linux4095', address='linux4095.wic.west.com', account='wicqacip',
                                            application_type=PreprodServer.PRODUCER)
-        Project.objects.create(name='Test Project', preprod_server=pps,
+        p = Project.objects.create(name='Test Project', preprod_server=pps,
                                preprod_path='/usr/local/tuvox/public/Projects/21cent')
-        self.es = ElpisStatus.objects.create(project=Project.objects.get(pk=1))
+        self.es = ElpisStatus.objects.create(project=p)
         self.client.login(username='test_user', password='test')
-        self.url = reverse('elpis:fetch', args=(1,))
+        self.url = reverse('elpis:fetch', args=(p.id,))
 
     def test_response_when_not_run(self):
         """Empty response if no content has been set by a previous run"""
