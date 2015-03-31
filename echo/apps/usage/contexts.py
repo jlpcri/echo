@@ -68,42 +68,16 @@ def projects_context(start, end, sort=None):
         )
 
     if sort:
-        if sort == 'total':
-            projects = sorted(projects, key=lambda p: p['total'])
-        elif sort == '-total':
-            projects = sorted(projects, key=lambda p: p['total'], reverse=True)
-        elif sort == 'passed':
-            projects = sorted(projects, key=lambda p: p['passed'])
-        elif sort == '-passed':
-            projects = sorted(projects, key=lambda p: p['passed'], reverse=True)
-        elif sort == 'defective':
-            projects = sorted(projects, key=lambda p: p['defective'])
-        elif sort == '-defective':
-            projects = sorted(projects, key=lambda p: p['defective'], reverse=True)
-        elif sort == 'auto_total':
-            projects = sorted(projects, key=lambda p: p['auto_total'])
-        elif sort == '-auto_total':
-            projects = sorted(projects, key=lambda p: p['auto_total'], reverse=True)
-        elif sort == 'auto_passed':
-            projects = sorted(projects, key=lambda p: p['auto_passed'])
-        elif sort == '-auto_passed':
-            projects = sorted(projects, key=lambda p: p['auto_passed'], reverse=True)
-        elif sort == 'auto_defective':
-            projects = sorted(projects, key=lambda p: p['auto_defective'])
-        elif sort == '-auto_defective':
-            projects = sorted(projects, key=lambda p: p['auto_defective'], reverse=True)
-        elif sort == 'auto_missing':
-            projects = sorted(projects, key=lambda p: p['auto_missing'])
-        elif sort == '-auto_missing':
-            projects = sorted(projects, key=lambda p: p['auto_missing'], reverse=True)
-        elif sort == 'rework_ratio':
-            projects = sorted(projects, key=lambda p: p['rework_ratio'])
-        elif sort == '-rework_ratio':
-            projects = sorted(projects, key=lambda p: p['rework_ratio'], reverse=True)
-        elif sort == 'auto_ratio':
-            projects = sorted(projects, key=lambda p: p['auto_ratio'])
-        elif sort == '-auto_ratio':
-            projects = sorted(projects, key=lambda p: p['auto_ratio'], reverse=True)
+        if sort[0] == '-':
+            reverse = True
+            sort = sort[1:]
+        else:
+            reverse = False
+        try:
+            sorted_projects = sorted(projects, key=lambda p: p[sort], reverse=reverse)
+            projects = sorted_projects
+        except Exception:
+            pass
 
     return {
         'overall': overall(),
