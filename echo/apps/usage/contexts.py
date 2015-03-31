@@ -97,12 +97,7 @@ def users_context(start, end, sort=None):
         user_list = User.objects.all()
 
     users = []
-    # print start
-    # print type(start)
-    # print end
-    # print type(end)
     actions = Action.objects.filter(time__gte=start, time__lt=end)
-    # print actions
     for u in user_list:
         users.append(
             {
@@ -117,30 +112,16 @@ def users_context(start, end, sort=None):
         )
 
     if sort:
-        if sort == 'total':
-            users = sorted(users, key=lambda u: u['total'])
-        elif sort == '-total':
-            users = sorted(users, key=lambda u: u['total'], reverse=True)
-        elif sort == 'passed':
-            users = sorted(users, key=lambda u: u['passed'])
-        elif sort == '-passed':
-            users = sorted(users, key=lambda u: u['passed'], reverse=True)
-        elif sort == 'defective':
-            users = sorted(users, key=lambda u: u['defective'])
-        elif sort == '-defective':
-            users = sorted(users, key=lambda u: u['defective'], reverse=True)
-        elif sort == 'reports':
-            users = sorted(users, key=lambda u: u['reports'])
-        elif sort == '-reports':
-            users = sorted(users, key=lambda u: u['reports'], reverse=True)
-        elif sort == 'uploads':
-            users = sorted(users, key=lambda u: u['uploads'])
-        elif sort == '-uploads':
-            users = sorted(users, key=lambda u: u['uploads'], reverse=True)
-        elif sort == 'projects':
-            users = sorted(users, key=lambda u: u['projects'])
-        elif sort == '-projects':
-            users = sorted(users, key=lambda u: u['projects'], reverse=True)
+        if sort[0] == '-':
+            reverse = True
+            sort = sort[1:]
+        else:
+            reverse = False
+        try:
+            sorted_users = sorted(users, key=lambda p: p[sort], reverse=reverse)
+            users = sorted_users
+        except Exception:
+            pass
 
     return {
         'overall': overall(),
