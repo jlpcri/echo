@@ -48,128 +48,134 @@
                         </div>
                         <div class="clearfix"></div>
                     </div>
+                <br>
                     <div class="col-xs-12">
                         <table class="table table-striped table-hover">
                             <thead>
                             <tr>
-                                <th class="col-xs-2 text-left">
+                                <th colspan="1" style="border-bottom: 0px;"></th>
+                                <th colspan="4" class="text-center" style="border-bottom: 0px; background-color: #EEF3E2;"><small>Manual</small></th>
+                                <th colspan="5" class="text-center" style="border-bottom: 0px; background-color: #FCF8DC;"><small>Pheme</small></th>
+                            </tr>
+                            <tr>
+                                <th class="col-xs-2 text-left" style="border-top: 0px;">
                                 {% if sort == 'project_name' %}
-                                    <a href="#" class="sort-field" data-field="-project_name">
-                                        Project Name</a>&nbsp;<i class="fa fa-sort-asc"></i>
+                                    <small><a href="#" class="sort-field" data-field="-project_name">
+                                        Project Name</a>&nbsp;<i class="fa fa-sort-asc"></i></small>
                                 {% elif sort == '-project_name' %}
-                                    <a href="#" class="sort-field" data-field="project_name">
-                                        Project Name</a>&nbsp;<i class="fa fa-sort-desc"></i>
+                                    <small><a href="#" class="sort-field" data-field="project_name">
+                                        Project Name</a>&nbsp;<i class="fa fa-sort-desc"></i></small>
                                 {% else %}
-                                    <a href="#" class="sort-field" data-field="project_name">
-                                        Project Name</a>&nbsp;<i class="fa fa-sort"></i>
+                                    <small><a href="#" class="sort-field" data-field="project_name">
+                                        Project Name</a>&nbsp;<i class="fa fa-sort"></i></small>
                                 {% endif %}
                                 </th>
-                                <th class="col-xs-1 text-center">
+                                <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #EEF3E2;" title="Count of recordings downloaded and tested">
                                 {% if sort == 'total' %}
-                                    <a href="#" class="sort-field" data-field="-total">
-                                        Total</a>&nbsp;<i class="fa fa-sort-asc"></i>
+                                    <small><a href="#" class="sort-field" data-field="-total">
+                                        Total</a>&nbsp;<i class="fa fa-sort-asc"></i></small>
                                 {% elif sort == '-total' %}
-                                    <a href="#" class="sort-field" data-field="total">
-                                        Total</a>&nbsp;<i class="fa fa-sort-desc"></i>
+                                    <small><a href="#" class="sort-field" data-field="total">
+                                        Total</a>&nbsp;<i class="fa fa-sort-desc"></i></small>
                                 {% else %}
-                                    <a href="#" class="sort-field" data-field="total">
-                                        Total</a>&nbsp;<i class="fa fa-sort"></i>
+                                    <small><a href="#" class="sort-field" data-field="total">
+                                        Total</a>&nbsp;<i class="fa fa-sort"></i></small>
                                 {% endif %}
                                 </th>
-                                <th class="col-xs-1 text-center">
+                                <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #EEF3E2;" title="Count of recordings downloaded and passed">
                                 {% if sort == 'passed' %}
-                                    <a href="#" class="sort-field" data-field="-passed">
-                                        Passed</a>&nbsp;<i class="fa fa-sort-asc"></i>
+                                    <small><a href="#" class="sort-field" data-field="-passed">
+                                        Passed</a>&nbsp;<i class="fa fa-sort-asc"></i></small>
                                 {% elif sort == '-passed' %}
-                                    <a href="#" class="sort-field" data-field="passed">
-                                        Passed</a>&nbsp;<i class="fa fa-sort-desc"></i>
+                                    <small><a href="#" class="sort-field" data-field="passed">
+                                        Passed</a>&nbsp;<i class="fa fa-sort-desc"></i></small>
                                 {% else %}
-                                    <a href="#" class="sort-field" data-field="passed">
-                                        Passed</a>&nbsp;<i class="fa fa-sort"></i>
+                                    <small><a href="#" class="sort-field" data-field="passed">
+                                        Passed</a>&nbsp;<i class="fa fa-sort"></i></small>
                                 {% endif %}
                                 </th>
-                                <th class="col-xs-1 text-center">
+                                <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #EEF3E2;" title="Count of recordings downloaded and failed">
                                 {% if sort == 'defective' %}
-                                    <a href="#" class="sort-field" data-field="-defective">
-                                        Defective</a>&nbsp;<i class="fa fa-sort-asc"></i>
+                                    <small><a href="#" class="sort-field" data-field="-defective">
+                                        Defective</a>&nbsp;<i class="fa fa-sort-asc"></i></small>
                                 {% elif sort == '-defective' %}
-                                    <a href="#" class="sort-field" data-field="defective">
-                                        Defective</a>&nbsp;<i class="fa fa-sort-desc"></i>
+                                    <small><a href="#" class="sort-field" data-field="defective">
+                                        Defective</a>&nbsp;<i class="fa fa-sort-desc"></i></small>
                                 {% else %}
-                                    <a href="#" class="sort-field" data-field="defective">
-                                        Defective</a>&nbsp;<i class="fa fa-sort"></i>
+                                    <small><a href="#" class="sort-field" data-field="defective">
+                                        Defective</a>&nbsp;<i class="fa fa-sort"></i></small>
                                 {% endif %}
                                 </th>
-                                <th class="col-xs-1 text-center">
-                                {% if sort == 'auto_total' %}
-                                    <a href="#" class="sort-field" data-field="-auto_total">
-                                        Auto Total</a>&nbsp;<i class="fa fa-sort-asc"></i>
-                                {% elif sort == '-auto_total' %}
-                                    <a href="#" class="sort-field" data-field="auto_total">
-                                        Auto Total</a>&nbsp;<i class="fa fa-sort-desc"></i>
-                                {% else %}
-                                    <a href="#" class="sort-field" data-field="auto_total">
-                                        Auto Total</a>&nbsp;<i class="fa fa-sort"></i>
-                                {% endif %}
-                                </th>
-                                <th class="col-xs-1 text-center">
-                                {% if sort == 'auto_passed' %}
-                                    <a href="#" class="sort-field" data-field="-auto_passed">
-                                        Auto Passed</a>&nbsp;<i class="fa fa-sort-asc"></i>
-                                {% elif sort == '-auto_passed' %}
-                                    <a href="#" class="sort-field" data-field="auto_passed">
-                                        Auto Passed</a>&nbsp;<i class="fa fa-sort-desc"></i>
-                                {% else %}
-                                    <a href="#" class="sort-field" data-field="auto_passed">
-                                        Auto Passed</a>&nbsp;<i class="fa fa-sort"></i>
-                                {% endif %}
-                                </th>
-                                <th class="col-xs-1 text-center">
-                                {% if sort == 'auto_defective' %}
-                                    <a href="#" class="sort-field" data-field="-auto_defective">
-                                        Auto Defective</a>&nbsp;<i class="fa fa-sort-asc"></i>
-                                {% elif sort == '-auto_defective' %}
-                                    <a href="#" class="sort-field" data-field="auto_defective">
-                                        Auto Defective</a>&nbsp;<i class="fa fa-sort-desc"></i>
-                                {% else %}
-                                    <a href="#" class="sort-field" data-field="auto_defective">
-                                        Auto Defective</a>&nbsp;<i class="fa fa-sort"></i>
-                                {% endif %}
-                                </th>
-                                <th class="col-xs-1 text-center">
-                                {% if sort == 'auto_missing' %}
-                                    <a href="#" class="sort-field" data-field="-auto_missing">
-                                        Auto Missing</a>&nbsp;<i class="fa fa-sort-asc"></i>
-                                {% elif sort == '-auto_missing' %}
-                                    <a href="#" class="sort-field" data-field="auto_missing">
-                                        Auto Missing</a>&nbsp;<i class="fa fa-sort-desc"></i>
-                                {% else %}
-                                    <a href="#" class="sort-field" data-field="auto_missing">
-                                        Auto Missing</a>&nbsp;<i class="fa fa-sort"></i>
-                                {% endif %}
-                                </th>
-                                <th class="col-xs-1 text-center">
+                                <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #EEF3E2;" title="Ratio between manual tests run and slots tested. Higher number indicates more rework.">
                                 {% if sort == 'rework_ratio' %}
-                                    <a href="#" class="sort-field" data-field="-rework_ratio">
-                                        Rework Ratio</a>&nbsp;<i class="fa fa-sort-asc"></i>
+                                    <small><a href="#" class="sort-field" data-field="-rework_ratio">
+                                        Rework</a>&nbsp;<i class="fa fa-sort-asc"></i></small>
                                 {% elif sort == '-rework_ratio' %}
-                                    <a href="#" class="sort-field" data-field="rework_ratio">
-                                        Rework Ratio</a>&nbsp;<i class="fa fa-sort-desc"></i>
+                                    <small><a href="#" class="sort-field" data-field="rework_ratio">
+                                        Rework</a>&nbsp;<i class="fa fa-sort-desc"></i></small>
                                 {% else %}
-                                    <a href="#" class="sort-field" data-field="rework_ratio">
-                                        Rework Ratio</a>&nbsp;<i class="fa fa-sort"></i>
+                                    <small><a href="#" class="sort-field" data-field="rework_ratio">
+                                        Rework</a>&nbsp;<i class="fa fa-sort"></i></small>
                                 {% endif %}
                                 </th>
-                                <th class="col-xs-1 text-center">
-                                {% if sort == 'auto_ratio' %}
-                                    <a href="#" class="sort-field" data-field="-auto_ratio">
-                                        Auto Ratio</a>&nbsp;<i class="fa fa-sort-asc"></i>
-                                {% elif sort == '-auto_ratio' %}
-                                    <a href="#" class="sort-field" data-field="auto_ratio">
-                                        Auto Ratio</a>&nbsp;<i class="fa fa-sort-desc"></i>
+                                <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #FCF8DC;" title="Count of times Pheme changed the status of a prompt without a tester downloading the recording.">
+                                {% if sort == 'auto_total' %}
+                                    <small><a href="#" class="sort-field" data-field="-auto_total">
+                                        Total</a>&nbsp;<i class="fa fa-sort-asc"></i></small>
+                                {% elif sort == '-auto_total' %}
+                                    <small><a href="#" class="sort-field" data-field="auto_total">
+                                        Total</a>&nbsp;<i class="fa fa-sort-desc"></i></small>
                                 {% else %}
-                                    <a href="#" class="sort-field" data-field="auto_ratio">
-                                        Auto Ratio</a>&nbsp;<i class="fa fa-sort"></i>
+                                    <small><a href="#" class="sort-field" data-field="auto_total">
+                                        Total</a>&nbsp;<i class="fa fa-sort"></i></small>
+                                {% endif %}
+                                </th>
+                                <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #FCF8DC;" title="Number of times Pheme automatically passed a slot (e.g., when the checksums matched).">
+                                {% if sort == 'auto_passed' %}
+                                    <small><a href="#" class="sort-field" data-field="-auto_passed">
+                                        Passed</a>&nbsp;<i class="fa fa-sort-asc"></i></small>
+                                {% elif sort == '-auto_passed' %}
+                                    <small><a href="#" class="sort-field" data-field="auto_passed">
+                                        Passed</a>&nbsp;<i class="fa fa-sort-desc"></i></small>
+                                {% else %}
+                                    <small><a href="#" class="sort-field" data-field="auto_passed">
+                                        Passed</a>&nbsp;<i class="fa fa-sort"></i></small>
+                                {% endif %}
+                                </th>
+                                <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #FCF8DC;" title="Number of times Pheme automatically failed a slot (e.g., when the checksums matched).">
+                                {% if sort == 'auto_defective' %}
+                                    <small><a href="#" class="sort-field" data-field="-auto_defective">
+                                        Defective</a>&nbsp;<i class="fa fa-sort-asc"></i></small>
+                                {% elif sort == '-auto_defective' %}
+                                    <small><a href="#" class="sort-field" data-field="auto_defective">
+                                        Defective</a>&nbsp;<i class="fa fa-sort-desc"></i></small>
+                                {% else %}
+                                    <small><a href="#" class="sort-field" data-field="auto_defective">
+                                        Defective</a>&nbsp;<i class="fa fa-sort"></i></small>
+                                {% endif %}
+                                </th>
+                                <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #FCF8DC;" title="Number of times Pheme marked a new or previously found slot as missing.">
+                                {% if sort == 'auto_missing' %}
+                                    <small><a href="#" class="sort-field" data-field="-auto_missing">
+                                        Missing</a>&nbsp;<i class="fa fa-sort-asc"></i></small>
+                                {% elif sort == '-auto_missing' %}
+                                    <small><a href="#" class="sort-field" data-field="auto_missing">
+                                        Missing</a>&nbsp;<i class="fa fa-sort-desc"></i></small>
+                                {% else %}
+                                    <small><a href="#" class="sort-field" data-field="auto_missing">
+                                        Missing</a>&nbsp;<i class="fa fa-sort"></i></small>
+                                {% endif %}
+                                </th>
+                                <th class="col-xs-1 text-center" style="border-top: 0px; background-color: #FCF8DC;" title="Ratio between automatic tests run and manual tests run. Higher number indicates more automation.">
+                                {% if sort == 'auto_ratio' %}
+                                    <small><a href="#" class="sort-field" data-field="-auto_ratio">
+                                        Ratio</a>&nbsp;<i class="fa fa-sort-asc"></i></small>
+                                {% elif sort == '-auto_ratio' %}
+                                    <small><a href="#" class="sort-field" data-field="auto_ratio">
+                                        Ratio</a>&nbsp;<i class="fa fa-sort-desc"></i></small>
+                                {% else %}
+                                    <small><a href="#" class="sort-field" data-field="auto_ratio">
+                                        Ratio</a>&nbsp;<i class="fa fa-sort"></i></small>
                                 {% endif %}
                                 </th>
                             </tr>
@@ -185,11 +191,11 @@
                                 <td class="text-center">{{ p.total }}</td>
                                 <td class="text-center">{{ p.passed }}</td>
                                 <td class="text-center">{{ p.defective }}</td>
+                                <td class="text-center">{{ p.rework_ratio|floatformat:2 }}</td>
                                 <td class="text-center">{{ p.auto_total }}</td>
                                 <td class="text-center">{{ p.auto_passed }}</td>
                                 <td class="text-center">{{ p.auto_defective }}</td>
                                 <td class="text-center">{{ p.auto_missing }}</td>
-                                <td class="text-center">{{ p.rework_ratio|floatformat:2 }}</td>
                                 <td class="text-center">{{ p.auto_ratio|floatformat:2 }}</td>
                             </tr>
                             {% endfor %}

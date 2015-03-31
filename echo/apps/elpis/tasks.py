@@ -21,7 +21,7 @@ def verify_file_transfer(project_id, apps):
     for language in language_list:
         lang_name = normalize_language(language.name, files.keys())
         if not lang_name:
-            return {'missing_slots': (language.name + "not found on server", )}
+            continue
 
         file_name_count = Counter([f.filename.split('/')[-1] for f in files[lang_name]])
 

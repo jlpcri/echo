@@ -30,7 +30,6 @@ def overall():
     }
 
 
-
 def projects_context(start, end, sort=None):
     if sort == 'project_name':
         project_list = Project.objects.all().order_by('name')
@@ -102,7 +101,7 @@ def users_context(start, end, sort=None):
         users.append(
             {
                 'user': u,
-                'total': actions.filter(actor=u, type=Action.TESTER_PASS_SLOT).count() + Action.objects.filter(actor=u, type=Action.TESTER_FAIL_SLOT).count(),
+                'total': actions.filter(actor=u, type=Action.TESTER_PASS_SLOT).count() + actions.filter(actor=u, type=Action.TESTER_FAIL_SLOT).count(),
                 'passed': actions.filter(actor=u, type=Action.TESTER_PASS_SLOT).count(),
                 'defective': actions.filter(actor=u, type=Action.TESTER_FAIL_SLOT).count(),
                 'reports': actions.filter(actor=u, type=Action.REPORT_GENERATION).count(),

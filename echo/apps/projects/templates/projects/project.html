@@ -113,6 +113,9 @@
                             </ul>
                         </li>
                         {% endif %}
+                        <li class="list-group-item">
+                            <a href="{% url "reports:report_project" project.id %}"><b>View Report</b></a>
+                        </li>
                         {% if project.bravo_server %}
                             <li class="list-group-item" id="update-active-link">
                                 <a href="#" onclick="project_update_file_status(event)"><b>Update File Statuses</b></a>
