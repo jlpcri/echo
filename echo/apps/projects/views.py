@@ -526,8 +526,9 @@ def voiceslots(request, pid):
         p = get_object_or_404(Project, pk=pid)
         lang = request.GET.get('language', 'master').strip().lower()
         if lang == 'master' or lang in p.language_list():
+            vsid = request.POST.get('vsid', "")
+
             if "update_slot" in request.POST:
-                vsid = request.POST.get('vsid', "")
                 if vsid:
                     slot = get_object_or_404(VoiceSlot, pk=vsid)
                     is_checkedout = request.POST.get('is_checkedout', False)
@@ -546,14 +547,23 @@ def voiceslots(request, pid):
                     return response
                 messages.danger(request, "Unable to update voice slot")
                 return render(request, "projects/language.html", contexts.context_language(p, language_type=lang))
+
             elif "retest_slot" in request.POST:
-                vsid = request.POST.get('vsid', "")
                 if vsid:
                     slot = get_object_or_404(VoiceSlot, pk=vsid)
                     return redirect("projects:testslot", pid, vsid)
                 messages.danger(request, "Unable to find voice slot")
                 response = redirect("projects:voiceslots", pid=pid)
                 return response
+
+            elif "delete_slot" in request.POST:
+                if vsid:
+                    slot = get_object_or_404(VoiceSlot, pk=vsid)
+                    slot.delete()
+                    return render(request, "projects/language.html", contexts.context_language(request.user, p, language_type=lang))
+                messages.danger(request, "Unable to find voice slot")
+                return redirect("projects:voiceslots", pik=pid)
+
     return HttpResponseNotFound()
 
 
