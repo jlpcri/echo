@@ -33,6 +33,23 @@ class SettingsViewTests(TestCase):
         self.url_servers_preprod = reverse('settings:servers_preprod')
         self.url_users = reverse('settings:users')
 
+        self.server1 = Server.objects.create(name='Server1',
+                                             address='10.0.0.1',
+                                             account='server_account',
+                                             active=True)
+        self.server2 = Server.objects.create(name='Server2',
+                                             address='10.0.0.2',
+                                             account='server_account')
+
+        self.server_preprod1 = PreprodServer.objects.create(name='Preprod Server1',
+                                                            address='11.0.0.1',
+                                                            account='server_preprod_account',
+                                                            application_type=1)
+        self.server_preprod2 = PreprodServer.objects.create(name='Preprod Server2',
+                                                            address='11.0.0.2',
+                                                            account='server_preprod_account',
+                                                            application_type=1)
+
     def test_index_url_resolve_to_view(self):
         found = resolve(reverse('settings:index'))
         self.assertEqual(found.func, index)
@@ -54,19 +71,26 @@ class SettingsViewTests(TestCase):
             username=self.user_account_superuser['username'],
             password=self.user_account_superuser['password']
         )
-        server1 = Server.objects.create(name='Server1',
-                                        address='10.0.0.1',
-                                        account='server_account',
-                                        active=True)
-        server2 = Server.objects.create(name='Server2',
-                                        address='10.0.0.2',
-                                        account='server_account')
+
         response = self.client.get(self.url_servers, follow=True)
-        self.assertContains(response, server1.name, 1)
-        self.assertContains(response, server1.address, 1)
-        self.assertContains(response, server1.account, 2)
-        self.assertContains(response, server1.name, 1)
-        self.assertContains(response, server2.address, 1)
+        self.assertContains(response, self.server1.name, 1)
+        self.assertContains(response, self.server1.address, 1)
+        self.assertContains(response, self.server1.account, 2)
+        self.assertContains(response, self.server2.name, 1)
+        self.assertContains(response, self.server2.address, 1)
+
+    def test_servers_view_with_normal_user(self):
+        self.client.login(
+            username=self.user_account_normaluser['username'],
+            password=self.user_account_normaluser['password']
+        )
+
+        response = self.client.get(self.url_servers, follow=True)
+        self.assertNotContains(response, self.server1.name)
+        self.assertNotContains(response, self.server1.address)
+        self.assertNotContains(response, self.server1.account)
+        self.assertNotContains(response, self.server2.name)
+        self.assertNotContains(response, self.server2.address)
 
     def test_servers_preprod_url_resolve_to_view(self):
         found = resolve(reverse('settings:servers_preprod'))
@@ -75,6 +99,32 @@ class SettingsViewTests(TestCase):
     def test_servers_preprod_url_returns_status_200(self):
         response = self.client.get(self.url_servers_preprod, follow=True)
         self.assertEqual(response.status_code, 200)
+
+    def test_servers_preprod_view_contains_servers_list_with_superuser(self):
+        self.client.login(
+            username=self.user_account_superuser['username'],
+            password=self.user_account_superuser['password']
+        )
+
+        response = self.client.get(self.url_servers_preprod, follow=True)
+        self.assertContains(response, self.server_preprod1.name, 1)
+        self.assertContains(response, self.server_preprod1.address, 1)
+        self.assertContains(response, self.server_preprod1.account, 2)
+        self.assertContains(response, self.server_preprod2.name, 1)
+        self.assertContains(response, self.server_preprod2.address, 1)
+
+    def test_servers_preprod_view_with_normal_user(self):
+        self.client.login(
+            username=self.user_account_normaluser['username'],
+            password=self.user_account_normaluser['password']
+        )
+
+        response = self.client.get(self.url_servers_preprod, follow=True)
+        self.assertNotContains(response, self.server_preprod1.name)
+        self.assertNotContains(response, self.server_preprod1.address)
+        self.assertNotContains(response, self.server_preprod1.account)
+        self.assertNotContains(response, self.server_preprod2.name)
+        self.assertNotContains(response, self.server_preprod2.address)
 
     def test_users_url_resolve_to_view(self):
         found = resolve(reverse('settings:users'))
