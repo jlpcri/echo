@@ -88,8 +88,9 @@ def context_projects(user, tab, sort=None, page=None):
         projects = Project.objects.filter(users__pk=user.pk, status=Project.TESTING)
     elif tab == 'archive':
         projects = Project.objects.filter(status=Project.CLOSED)
-    else:
-        tab = 'all'
+    elif tab == 'csp':
+        projects = Project.objects.filter(status=Project.INITIAL)
+    elif tab == 'cep':
         projects = Project.objects.filter(status=Project.TESTING).exclude(users__pk=user.pk)
 
     if sort:
