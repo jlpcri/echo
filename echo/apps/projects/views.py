@@ -281,7 +281,8 @@ def projects(request):
     if request.method == 'GET':
         tab_types = [
             'my',
-            'all',
+            'csp',
+            'cep',
             'archive'
         ]
         sort_types = [
@@ -305,7 +306,7 @@ def projects(request):
             projects = Project.objects.filter(users__pk=request.user.pk, status=Project.TESTING)
             # if not join any project , navigate to All Projects tab
             if projects.count() == 0:
-                tab = 'all'
+                tab = 'csp'
             else:
                 tab = 'my'
 
