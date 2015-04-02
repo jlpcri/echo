@@ -104,6 +104,9 @@ def servers(request):
 
 @user_passes_test(user_is_superuser)
 def users(request):
+    """
+    Handles GET and POST requests for the user settings template users.html
+    """
     if request.method == 'GET':
         return render(request, "settings/users.html", {'users': QEIUser.objects.order_by('user__username')})
     elif request.method == 'POST':
