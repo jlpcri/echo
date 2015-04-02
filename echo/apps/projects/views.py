@@ -110,8 +110,9 @@ def new(request):
                 if root_path and not os.path.isabs(root_path):
                     messages.danger(request, 'Bravo Server Root Path Format Incorrect')
                     return render(request, 'projects/new.html', contexts.context_new(form))
+
                 # remove last slash of root path
-                if root_path and root_path[-1] == '/':
+                while root_path and root_path[-1] == '/':
                     root_path = root_path[:-1]
 
                 p = Project(name=n)
@@ -210,13 +211,13 @@ def project(request, pid):
             if form.is_valid():
                 root_path = form.cleaned_data['root_path']
 
-                #remove last slash of root path
-                if root_path and root_path[-1] == '/':
-                    root_path = root_path[:-1]
-
                 if not os.path.isabs(root_path):
                     messages.danger(request, 'Bravo Server Root Path Format Incorrect')
                     return redirect('projects:project', pid=pid)
+
+                #remove last slash of root path
+                while root_path and root_path[-1] == '/':
+                    root_path = root_path[:-1]
 
                 if p.root_path and not helpers.verify_update_root_path(p, root_path):
                     messages.danger(request, 'New root path not allowed')
@@ -525,8 +526,9 @@ def voiceslots(request, pid):
         p = get_object_or_404(Project, pk=pid)
         lang = request.GET.get('language', 'master').strip().lower()
         if lang == 'master' or lang in p.language_list():
+            vsid = request.POST.get('vsid', "")
+
             if "update_slot" in request.POST:
-                vsid = request.POST.get('vsid', "")
                 if vsid:
                     slot = get_object_or_404(VoiceSlot, pk=vsid)
                     is_checkedout = request.POST.get('is_checkedout', False)
@@ -545,14 +547,23 @@ def voiceslots(request, pid):
                     return response
                 messages.danger(request, "Unable to update voice slot")
                 return render(request, "projects/language.html", contexts.context_language(p, language_type=lang))
+
             elif "retest_slot" in request.POST:
-                vsid = request.POST.get('vsid', "")
                 if vsid:
                     slot = get_object_or_404(VoiceSlot, pk=vsid)
                     return redirect("projects:testslot", pid, vsid)
                 messages.danger(request, "Unable to find voice slot")
                 response = redirect("projects:voiceslots", pid=pid)
                 return response
+
+            elif "delete_slot" in request.POST:
+                if vsid:
+                    slot = get_object_or_404(VoiceSlot, pk=vsid)
+                    slot.delete()
+                    return render(request, "projects/language.html", contexts.context_language(request.user, p, language_type=lang))
+                messages.danger(request, "Unable to find voice slot")
+                return redirect("projects:voiceslots", pik=pid)
+
     return HttpResponseNotFound()
 
 
@@ -605,3 +616,23 @@ def initiate_status_update(request, pid):
     status.save()
     Action.log(request.user, Action.UPDATE_FILE_STATUSES, 'Updated file statuses', Project.objects.get(pk=pid))
     return HttpResponse(json.dumps({'success': True}), content_type="application/json")
+
+
+@login_required
+@csrf_exempt
+def delete_slot(request, slot_id):
+    if request.method == 'GET':
+        raise Http404
+    if request.method == 'POST':
+        try:
+            slot = get_object_or_404(VoiceSlot, pk=slot_id)
+            slot.delete()
+            messages.success(request, 'Voice Slot \"{0}\" has been deleted.'.format(slot.name))
+            return HttpResponse(json.dumps({
+                'success': True
+            }))
+        except Exception as e:
+            return HttpResponse(json.dumps({
+                'success': False,
+                'error': e.message
+            }))
