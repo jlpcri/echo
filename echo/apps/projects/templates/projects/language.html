@@ -60,7 +60,7 @@
                                                 class="btn btn-success btn-xs" {% if not project.bravo_server %}disabled {% endif %}>
                                             <i class="fa fa-play fa-fw"></i>
                                         </button>
-                                        <button type="button" name="delete_slot"
+                                        <button type="button" name="delete_slot" onclick="deleteSlotConfirm('{{ slot.id }}', '{{ slot.name }}')"
                                                 class="btn btn-danger btn-xs">
                                             <i class="fa fa-trash-o fa-fw"></i>
                                         </button>

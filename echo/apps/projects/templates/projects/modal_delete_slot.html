@@ -5,7 +5,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                    <h4 class="modal-title">Delete Slot</h4>
+                    <h4 class="modal-title">Delete Voice Slot Confirmation</h4>
                 </div>
                 <div class="modal-body">
 
@@ -13,17 +13,16 @@
                         <div class="form-group">
                             <label for="modal_edit_client_input_name">
                                 Voice Slot Name
-                                <span class="text-red">*</span>
                             </label>
-                            AAAAAA
+                            <p id="voice_slot_name"></p>
+                            <input type="hidden" id="voice_slot_id" value="">
 
                         </div>
                     </div>
-
-                    <br>
                     <div class="col-lg-12">
-                        <p id="modal_create_client_error" style="color: red"></p>
+                        <p id="modal_delete_slot_error" style="color: red"></p>
                     </div>
+
                     {% csrf_token %}
                 </div>
                 <div class="modal-footer">

@@ -616,3 +616,23 @@ def initiate_status_update(request, pid):
     status.save()
     Action.log(request.user, Action.UPDATE_FILE_STATUSES, 'Updated file statuses', Project.objects.get(pk=pid))
     return HttpResponse(json.dumps({'success': True}), content_type="application/json")
+
+
+@login_required
+@csrf_exempt
+def delete_slot(request, slot_id):
+    if request.method == 'GET':
+        raise Http404
+    if request.method == 'POST':
+        try:
+            slot = get_object_or_404(VoiceSlot, pk=slot_id)
+            slot.delete()
+            messages.success(request, 'Voice Slot \"{0}\" has been deleted.'.format(slot.name))
+            return HttpResponse(json.dumps({
+                'success': True
+            }))
+        except Exception as e:
+            return HttpResponse(json.dumps({
+                'success': False,
+                'error': e.message
+            }))
