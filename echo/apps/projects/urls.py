@@ -20,4 +20,6 @@ urlpatterns = patterns('',
     url(r'^projects/voiceslots/(?P<vsid>\d+)/submit$', views.submitslot, name='submitslot'),
     url(r'^projects/temp/$', views.temp, name='temp'),
     url(r'^projects/(?P<pid>\d+)/update/$', views.initiate_status_update, name='initiate_status_update'),
+
+    url(r'^voiceslots/(?P<slot_id>\d+)/delete$', views.delete_slot, name="delete_slot"),
 )
