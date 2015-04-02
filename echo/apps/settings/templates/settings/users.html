@@ -42,6 +42,7 @@
                             </thead>
                             <tbody>
                             {% for u in users %}
+                                <p>{{ u }}</p>
                             {% if u.last_name %}
                                 <tr>
                                     <form method="POST" action="{% url "settings:users" %}">

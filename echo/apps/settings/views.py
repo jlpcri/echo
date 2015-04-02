@@ -105,7 +105,8 @@ def servers(request):
 @user_passes_test(user_is_superuser)
 def users(request):
     if request.method == 'GET':
-        return render(request, "settings/users.html", {'users': User.objects.all().order_by('username')})
+        print User.objects.order_by('username')
+        return render(request, "settings/users.html", {'users': User.objects.order_by('username')})
     elif request.method == 'POST':
         if "update_user" in request.POST:
             uid = request.POST.get('uid', "")
@@ -118,7 +119,7 @@ def users(request):
                 messages.success(request, "Updated user \"{0}\"".format(user.username))
                 return redirect("settings:users")
             messages.danger(request, "Unable to delete user")
-            return render(request, "settings/users.html", {'users': User.objects.all().order_by("username")})
+            return render(request, "settings/users.html", {'users': User.objects.order_by("username")})
         elif "delete_user" in request.POST:
             uid = request.POST.get('uid', "")
             if uid:
@@ -127,7 +128,7 @@ def users(request):
                 messages.success(request, "User \"{0}\" has been deleted".format(user.username))
                 return redirect("settings:users")
             messages.danger(request, "Unable to delete user")
-            return render(request, "settings/users.html", {'users': User.objects.all().order_by("username")})
+            return render(request, "settings/users.html", {'users': User.objects.order_by("username")})
     return HttpResponseNotFound()
 
 
