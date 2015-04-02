@@ -2,6 +2,8 @@ from base import *
 
 DEBUG = False
 
+PRIVATE_KEY = '/home/wicqacip/.ssh/id_rsa'
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
