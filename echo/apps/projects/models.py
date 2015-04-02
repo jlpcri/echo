@@ -20,9 +20,10 @@ def vuid_location(instance, filename):
 
 class Project(models.Model):
     """Contains data regarding testing and the Bravo server in use"""
+    INITIAL = 'Initial'
     TESTING = 'Testing'
     CLOSED = 'Closed'
-    PROJECT_STATUS_CHOICES = ((TESTING, 'Testing'), (CLOSED, 'Closed'))
+    PROJECT_STATUS_CHOICES = ((INITIAL, 'Initial'), (TESTING, 'Testing'), (CLOSED, 'Closed'))
     name = models.TextField(unique=True)
     users = models.ManyToManyField(User, blank=True)
     tests_run = models.IntegerField(default=0)
@@ -31,7 +32,7 @@ class Project(models.Model):
     root_path = models.TextField(blank=True, null=True)
     preprod_server = models.ForeignKey('settings.PreprodServer', blank=True, null=True, on_delete=models.SET_NULL)
     preprod_path = models.TextField(blank=True, null=True)
-    status = models.TextField(choices=PROJECT_STATUS_CHOICES, default=TESTING)
+    status = models.TextField(choices=PROJECT_STATUS_CHOICES, default=INITIAL)
 
     def current_server_pk(self):
         return self.bravo_server.pk if self.bravo_server else 0
