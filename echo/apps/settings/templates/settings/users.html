@@ -42,35 +42,34 @@
                             </thead>
                             <tbody>
                             {% for u in users %}
-                                <p>{{ u }}</p>
-                            {% if u.last_name %}
+                            {% if u.user.last_name %}
                                 <tr>
                                     <form method="POST" action="{% url "settings:users" %}">
                                         {% csrf_token %}
                                         <input type="hidden" name="uid" value="{{ u.pk }}">
-                                        <td>{{ u.username }}</td>
-                                        <td>{{ u.first_name }}</td>
-                                        <td>{{ u.last_name }}</td>
-                                        <td>{{ u.last_login }}</td>
+                                        <td>{{ u.user.username }}</td>
+                                        <td>{{ u.user.first_name }}</td>
+                                        <td>{{ u.user.last_name }}</td>
+                                        <td>{{ u.user.last_login }}</td>
                                         <td class="text-center">
                                             <input type="checkbox" name="is_active"
-                                                   {% if u.is_active %}checked{% endif %}>
+                                                   {% if u.user.is_active %}checked{% endif %}>
                                         </td>
                                         <td class="text-center">
                                             <input type="checkbox" name="is_staff"
-                                                   {% if u.is_staff %}checked{% endif %}>
+                                                   {% if u.user.is_staff %}checked{% endif %}>
                                         </td>
                                         <td class="text-center">
                                             <input type="checkbox" name="is_superuser"
-                                                   {% if u.is_superuser %}checked{% endif %}>
+                                                   {% if u.user.is_superuser %}checked{% endif %}>
                                         </td>
                                         <td class="text-center">
                                             <input type="checkbox" name="is_creative_services"
-                                                   {% if u.is_creative_services %}checked{% endif %}>
+                                                   {% if u.creative_services %}checked{% endif %}>
                                         </td>
                                         <td class="text-center">
                                             <input type="checkbox" name="is_project_manager"
-                                                   {% if u.is_project_manager %}checked{% endif %}>
+                                                   {% if u.project_manager %}checked{% endif %}>
                                         </td>
                                         <td>
                                             <div class="pull-right">
@@ -80,7 +79,7 @@
                                                 </button>
                                                 <button type="submit" id="delete_user" name="delete_user"
                                                         class="btn btn-danger btn-xs" title="Delete User"
-                                                        {% if u.username == user.username %}disabled{% endif %}>
+                                                        {% if u.user.username == user.username %}disabled{% endif %}>
                                                     <i class="fa fa-trash-o fa-fw"></i>
                                                 </button>
                                             </div>
