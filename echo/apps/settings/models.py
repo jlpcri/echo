@@ -3,6 +3,7 @@ import os
 
 import pysftp
 
+from django.contrib.auth.models import User
 from django.conf import settings
 from django.db import models
 
@@ -83,7 +84,8 @@ class PreprodServer(models.Model):
                         for entry in language_candidates:
                             if conn.isdir(os.path.join(voice_root, entry)):
 
-                                to_split = conn.execute("find " + os.path.join(voice_root, entry) + ' -name "*.wav" -exec md5sum {} \;')
+                                to_split = conn.execute(
+                                    "find " + os.path.join(voice_root, entry) + ' -name "*.wav" -exec md5sum {} \;')
                                 for f in to_split:
                                     try:
                                         md5sum, filename = f.split(None, 1)
@@ -100,3 +102,9 @@ class PreprodServer(models.Model):
             return files
         elif self.application_type == self.NATIVE_VXML:
             raise NotImplementedError
+
+
+class QEIUser(models.Model):
+    user = models.OneToOneField(User)
+    creative_services = models.BooleanField(default=False)
+    project_manager = models.BooleanField(default=False)
