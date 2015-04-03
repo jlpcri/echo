@@ -113,6 +113,7 @@ def users(request):
                 user = get_object_or_404(User, pk=uid)
                 user.is_active = request.POST.get('is_active', False)
                 user.is_staff = request.POST.get('is_staff', False)
+                #user.usersettings.creative_services = request.POST.get('is_cs', False)
                 user.is_superuser = request.POST.get('is_superuser', False)
                 user.save()
                 messages.success(request, "Updated user \"{0}\"".format(user.username))
