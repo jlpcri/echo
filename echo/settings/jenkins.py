@@ -2,7 +2,7 @@ from base import *
 
 DEBUG = False
 
-PRIVATE_KEY = '/var/lib/jenkins/.ssh/id_rsa'
+PRIVATE_KEY = '/var/lib/jenkins/.ssh/id_rsa_pheme'
 
 DATABASES = {
     'default': {
