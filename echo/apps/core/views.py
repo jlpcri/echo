@@ -3,8 +3,9 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseNotFound
 from django.shortcuts import redirect, render
-from echo.apps.projects import contexts
 
+from echo.apps.projects import contexts
+from echo.apps.settings.models import UserSettings
 
 def signin(request):
     if request.method == 'GET':
@@ -16,6 +17,10 @@ def signin(request):
         if user:
             if user.is_active:
                 login(request, user)
+                try:
+                    UserSettings.objects.get(user=user)
+                except UserSettings.DoesNotExist:
+                    UserSettings.objects.create(user=user)
                 if request.GET.get('next'):
                     return redirect(request.GET['next'])
                 return redirect('core:home')
