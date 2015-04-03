@@ -1,5 +1,6 @@
 from collections import defaultdict, namedtuple
 import os
+from django.contrib.auth.models import User
 
 import pysftp
 
@@ -100,3 +101,10 @@ class PreprodServer(models.Model):
             return files
         elif self.application_type == self.NATIVE_VXML:
             raise NotImplementedError
+
+
+class UserPermissions(models.Model):
+    user = models.OneToOneField(User)
+
+    creative_services = models.BooleanField(default=False)
+    project_manager = models.BooleanField(default=False)
