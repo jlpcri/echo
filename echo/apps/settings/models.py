@@ -103,8 +103,9 @@ class PreprodServer(models.Model):
             raise NotImplementedError
 
 
-class UserPermissions(models.Model):
+class UserSettings(models.Model):
     user = models.OneToOneField(User)
 
     creative_services = models.BooleanField(default=False)
     project_manager = models.BooleanField(default=False)
+
