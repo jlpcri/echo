@@ -94,7 +94,8 @@ class Action(models.Model):
         LANGUAGE_TYPES = (cls.REPORT_GENERATION, )
         PROJECT_TYPES = (cls.UPLOAD_VUID, cls.UPDATE_FILE_STATUSES, cls.CREATE_PROJECT, cls.REPORT_GENERATION,
                          cls.ELPIS_RUN, cls.UPDATE_ROOT_PATH, cls.UPDATE_BRAVO_SERVER, cls.TESTER_JOIN_PROJECT,
-                         cls.TESTER_LEAVE_PROJECT, cls.ARCHIVE_PROJECT, cls.UN_ARCHIVE_PROJECT)
+                         cls.TESTER_LEAVE_PROJECT, cls.ARCHIVE_PROJECT, cls.UN_ARCHIVE_PROJECT,
+                         cls.PROJECT_CERTIFIED, cls.PROJECT_RECALLED)
         UNIVERSAL_TYPES = ()
 
         from echo.apps.projects.models import VoiceSlot, Language, Project
