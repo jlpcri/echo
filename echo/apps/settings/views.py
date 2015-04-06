@@ -104,6 +104,7 @@ def servers(request):
 
 @user_passes_test(user_is_superuser)
 def users(request):
+    """View for user management dashboard"""
     if request.method == 'GET':
         return render(request, "settings/users.html", {'users': User.objects.all().order_by('username')})
     elif request.method == 'POST':
