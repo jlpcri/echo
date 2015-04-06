@@ -9,7 +9,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from echo.apps.core import messages
 from echo.apps.settings.forms import ServerForm, ServerPreprodForm
-from echo.apps.settings.models import Server, PreprodServer, QEIUser
+from echo.apps.settings.models import Server, PreprodServer
 
 
 def user_is_superuser(user):
@@ -104,37 +104,33 @@ def servers(request):
 
 @user_passes_test(user_is_superuser)
 def users(request):
-    """
-    Handles GET and POST requests for the user settings template users.html
-    """
     if request.method == 'GET':
-        return render(request, "settings/users.html", {'users': QEIUser.objects.order_by('user__username')})
+        return render(request, "settings/users.html", {'users': User.objects.all().order_by('username')})
     elif request.method == 'POST':
         if "update_user" in request.POST:
             uid = request.POST.get('uid', "")
             if uid:
-                quser = get_object_or_404(QEIUser, pk=uid)
-                quser.user.is_active = request.POST.get('is_active', False)
-                quser.user.is_staff = request.POST.get('is_staff', False)
-                quser.user.is_superuser = request.POST.get('is_superuser', False)
-                quser.user.save()
-                quser.creative_services = request.POST.get('is_creative_services', False)
-                quser.project_manager = request.POST.get('is_project_manager', False)
-                quser.save()
-                messages.success(request, "Updated user \"{0}\"".format(quser.user.username))
+                user = get_object_or_404(User, pk=uid)
+                user.is_active = request.POST.get('is_active', False)
+                user.is_staff = request.POST.get('is_staff', False)
+                user.usersettings.creative_services = request.POST.get('is_cs', False)
+                user.usersettings.project_manager = request.POST.get('is_pm', False)
+                user.is_superuser = request.POST.get('is_superuser', False)
+                user.save()
+                user.usersettings.save()
+                messages.success(request, "Updated user \"{0}\"".format(user.username))
                 return redirect("settings:users")
             messages.danger(request, "Unable to delete user")
-            return render(request, "settings/users.html", {'users': QEIUser.objects.order_by("user__username")})
+            return render(request, "settings/users.html", {'users': User.objects.all().order_by("username")})
         elif "delete_user" in request.POST:
             uid = request.POST.get('uid', "")
             if uid:
-                quser = get_object_or_404(QEIUser, pk=uid)
-                quser.user.delete()
-                quser.delete()
-                messages.success(request, "User \"{0}\" has been deleted".format(quser.user.username))
+                user = get_object_or_404(User, pk=uid)
+                user.delete()
+                messages.success(request, "User \"{0}\" has been deleted".format(user.username))
                 return redirect("settings:users")
             messages.danger(request, "Unable to delete user")
-            return render(request, "settings/users.html", {'users': QEIUser.objects.order_by("user__username")})
+            return render(request, "settings/users.html", {'users': User.objects.all().order_by("username")})
     return HttpResponseNotFound()
 
 

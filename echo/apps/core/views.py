@@ -3,9 +3,9 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseNotFound
 from django.shortcuts import redirect, render
-from echo.apps.projects import contexts
-from echo.apps.settings.models import QEIUser
 
+from echo.apps.projects import contexts
+from echo.apps.settings.models import UserSettings
 
 def signin(request):
     if request.method == 'GET':
@@ -15,10 +15,12 @@ def signin(request):
     elif request.method == 'POST':
         user = authenticate(username=request.POST['username'], password=request.POST['password'])
         if user:
-            # only used to create a new QEIUser if this is first time logging in.
-            quser = QEIUser.objects.get_or_create(user=user)
             if user.is_active:
                 login(request, user)
+                try:
+                    UserSettings.objects.get(user=user)
+                except UserSettings.DoesNotExist:
+                    UserSettings.objects.create(user=user)
                 if request.GET.get('next'):
                     return redirect(request.GET['next'])
                 return redirect('core:home')

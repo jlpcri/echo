@@ -29,11 +29,13 @@
                             <thead>
                             <tr>
                                 <th class="col-xs-2">Username</th>
-                                <th class="col-xs-2">First Name</th>
-                                <th class="col-xs-2">Last Name</th>
+                                <th class="col-xs-1">First Name</th>
+                                <th class="col-xs-1">Last Name</th>
                                 <th class="col-xs-2">Last Login</th>
                                 <th class="col-xs-1 text-center">Active</th>
                                 <th class="col-xs-1 text-center">Staff</th>
+                                <th class="col-xs-1 text-center">Creative Services</th>
+                                <th class="col-xs-1 text-center">Project Manager</th>
                                 <th class="col-xs-1 text-center">Superuser</th>
                                 <th class="col-xs-1 text-center">Creative Services</th>
                                 <th class="col-xs-1 text-center">Project Manager</th>
@@ -58,6 +60,14 @@
                                         <td class="text-center">
                                             <input type="checkbox" name="is_staff"
                                                    {% if u.user.is_staff %}checked{% endif %}>
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="checkbox" name="is_cs"
+                                                   {% if u.usersettings.creative_services %}checked{% endif %}>
+                                        </td>
+                                        <td class="text-center">
+                                            <input type="checkbox" name="is_pm"
+                                                   {% if u.usersettings.project_manager %}checked{% endif %}>
                                         </td>
                                         <td class="text-center">
                                             <input type="checkbox" name="is_superuser"
