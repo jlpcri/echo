@@ -87,6 +87,7 @@
                             <tr>
                                 <td>
                                     <h4><a href="{% url "projects:project" project.pk %}">{{ project.name }}</a></h4>
+{#                                  if user in PM, Superuser #}
                                     {% if user.usersettings.project_manager or user.is_superuser %}
                                         {% if project.status == 'Initial' %}
                                             <p style="color:deepskyblue">Pending Creative Services</p>

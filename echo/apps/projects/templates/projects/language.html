@@ -61,6 +61,7 @@
                                                 class="btn btn-success btn-xs" {% if not project.bravo_server %}disabled {% endif %}>
                                             <i class="fa fa-play fa-fw"></i>
                                         </button>
+{#                                    if user not in CS, PM, Superuser cannot delete slots#}
                                         {% if user.usersettings.creative_services or user.usersettings.project_manager or user.is_superuser %}
                                         <button type="button" name="delete_slot" onclick="deleteSlotConfirm('{{ slot.id }}', '{{ slot.name }}')"
                                                 class="btn btn-danger btn-xs">
