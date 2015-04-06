@@ -6,6 +6,31 @@ from echo.apps.projects.models import Project
 from echo.apps.projects.views import projects
 
 
+class CertifyViewTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        self.url_certify = reverse('projects:certify')
+
+        self.project = {
+            'name:': 'Test Project'
+        }
+
+        self.user_superuser = {
+            'username': 'SuperUsername',
+            'password': 'SuperPassword'
+        }
+
+        self.user_creative_services = {
+            'username': 'CSUsername',
+            'password': 'CSPassword'
+        }
+
+        self.user_project_manager = {
+            'username': 'PMUsername',
+            'password': 'PMPassword'
+        }
+
+
 class ProjectsViewsTest(TestCase):
     def setUp(self):
         self.client = Client()

@@ -7,7 +7,7 @@ import pysftp
 
 from django.core.urlresolvers import reverse
 from django.db import transaction
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404, redirect, render
@@ -16,11 +16,42 @@ from django.views.decorators.csrf import csrf_exempt
 
 from echo.apps.activity.models import Action
 from echo.apps.core import messages
-from echo.apps.settings.models import Server
+from echo.apps.settings.models import Server, UserSettings
 from echo.apps.projects.forms import ProjectForm, ServerForm, UploadForm, ProjectRootPathForm
 from echo.apps.projects.models import Language, Project, VoiceSlot, VUID, UpdateStatus
 from echo.apps.projects import contexts, helpers
 from echo.apps.projects.tasks import update_file_statuses
+
+
+def user_is_superuser(user):
+    return user.is_superuser
+
+
+def user_is_creative_services(user):
+    u = UserSettings.objects.get_or_create(user=user)
+    return u.creative_services
+
+
+def user_is_project_manager(user):
+    u = UserSettings.objects.get_or_create(user=user)
+    return u.project_manager
+
+
+@login_required
+@csrf_exempt
+@user_passes_test(user_is_superuser)
+@user_passes_test(user_is_creative_services)
+@user_passes_test(user_is_project_manager)
+def certify(request, pid):
+    """
+    Certifies project ready for testing or returns error
+    """
+    if request.method == 'POST':
+        p = get_object_or_404(Project, pk=pid)
+        return HttpResponse(json.dumps({
+            'success': True
+        }))
+    return HttpResponseNotFound()
 
 
 @login_required
