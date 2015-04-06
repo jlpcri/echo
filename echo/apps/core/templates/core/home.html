@@ -87,6 +87,13 @@
                             <tr>
                                 <td>
                                     <h4><a href="{% url "projects:project" project.pk %}">{{ project.name }}</a></h4>
+                                    {% if user.usersettings.project_manager or user.is_superuser %}
+                                        {% if project.status == 'Initial' %}
+                                            <p style="color:deepskyblue">Pending Creative Services</p>
+                                        {% elif project.status == 'Testing' %}
+                                            <p style="color: cadetblue">Pending Client Engage</p>
+                                        {% endif %}
+                                    {% endif %}
                                 </td>
                                 <td class="text-center">
                                     {% if project.slots_total > 0 %}
