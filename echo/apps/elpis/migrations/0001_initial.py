@@ -7,6 +7,10 @@ from django.db import models
 
 class Migration(SchemaMigration):
 
+    depends_on = (
+        ("projects", "0001_initial.py"),
+    )
+
     def forwards(self, orm):
         # Adding model 'ElpisStatus'
         db.create_table(u'elpis_elpisstatus', (

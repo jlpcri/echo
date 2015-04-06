@@ -332,10 +332,15 @@ def queue(request, pid):
         lang = get_object_or_404(Language, project=p, name=request.GET.get('language', '__malformed').lower())
         slots_out = request.user.voiceslot_set
         # TODO check this block
-        if slots_out.count() < 0:
+        if slots_out.count() > 0:
             slot = slots_out.first()
             if slot.language.pk == lang.pk:
-                slot_file = slot.download()
+                try:
+                    slot_file = slot.download()
+                except IOError:
+                    slot.status = VoiceSlot.MISSING
+                    slot.save()
+                    return queue(request, pid)
                 return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, slot_file, finish_listen, fail_select))
             else:
                 for slot in slots_out:
@@ -350,7 +355,12 @@ def queue(request, pid):
             messages.warning(request, 'Please set default bravo server')
             return redirect('projects:project', pid=pid)
 
-        slot_file = slot.download()
+        try:
+            slot_file = slot.download()
+        except IOError:
+            slot.status = VoiceSlot.MISSING
+            slot.save()
+            return queue(request, pid)
         return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, slot_file, finish_listen, fail_select))
     elif request.method == 'POST':
         p = get_object_or_404(Project, pk=pid)
