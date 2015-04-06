@@ -49,6 +49,8 @@ class Action(models.Model):
     TESTER_LEAVE_PROJECT = 15
     ARCHIVE_PROJECT = 16
     UN_ARCHIVE_PROJECT = 17
+    PROJECT_CERTIFIED = 18
+    PROJECT_RECALLED = 19  # Project status from Testing to Initial
     TYPE_CHOICES = (
         (TESTER_PASS_SLOT, 'Tester passed slot'),
         (TESTER_FAIL_SLOT, 'Tester failed slot'),
@@ -66,7 +68,9 @@ class Action(models.Model):
         (TESTER_JOIN_PROJECT, 'Tester joined project'),
         (TESTER_LEAVE_PROJECT, 'Tester left project'),
         (ARCHIVE_PROJECT, 'Archive project'),
-        (UN_ARCHIVE_PROJECT, 'Un archive project')
+        (UN_ARCHIVE_PROJECT, 'Un archive project'),
+        (PROJECT_CERTIFIED, 'Project certified'),
+        (PROJECT_RECALLED, 'Project recalled')
     )
 
     actor = models.ForeignKey(User)
