@@ -625,15 +625,21 @@ def delete_slot(request, slot_id):
     if request.method == 'GET':
         raise Http404
     if request.method == 'POST':
-        try:
-            slot = get_object_or_404(VoiceSlot, pk=slot_id)
-            slot.delete()
-            messages.success(request, 'Voice Slot \"{0}\" has been deleted.'.format(slot.name))
-            return HttpResponse(json.dumps({
-                'success': True
-            }))
-        except Exception as e:
+        if request.user.usersettings.creative_services or request.user.usersettings.project_manager or request.user.is_superuser:
+            try:
+                slot = get_object_or_404(VoiceSlot, pk=slot_id)
+                slot.delete()
+                messages.success(request, 'Voice Slot \"{0}\" has been deleted.'.format(slot.name))
+                return HttpResponse(json.dumps({
+                    'success': True
+                }))
+            except Exception as e:
+                return HttpResponse(json.dumps({
+                    'success': False,
+                    'error': e.message
+                }))
+        else:
             return HttpResponse(json.dumps({
                 'success': False,
-                'error': e.message
+                'error': 'You have no authority to perform this operation.'
             }))

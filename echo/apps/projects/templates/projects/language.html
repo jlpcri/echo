@@ -10,6 +10,7 @@
             <div class="col-xs-9">
                 <h3><a href="{% url "projects:project" project.pk %}">{{ project.name }}</a>&nbsp;<i>({{ language_type }})</i></h3>
             </div>
+            {{ user.usersettings.creative_services }}
             <div class="col-xs-3">
                 <a href="{% url "projects:voiceslots" project.pk %}?export=csv&language={{ language_type }}" class="btn btn-info btn-sm pull-right" style="width: 100%;">
                     <i class="fa fa-download fa-fw"></i>&nbsp;Report
@@ -60,10 +61,12 @@
                                                 class="btn btn-success btn-xs" {% if not project.bravo_server %}disabled {% endif %}>
                                             <i class="fa fa-play fa-fw"></i>
                                         </button>
+                                        {% if user.usersettings.creative_services or user.usersettings.project_manager or user.is_superuser %}
                                         <button type="button" name="delete_slot" onclick="deleteSlotConfirm('{{ slot.id }}', '{{ slot.name }}')"
                                                 class="btn btn-danger btn-xs">
                                             <i class="fa fa-trash-o fa-fw"></i>
                                         </button>
+                                        {% endif %}
                                     </div>
                                 </td>
                             </form>
