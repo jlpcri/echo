@@ -49,6 +49,8 @@ class Action(models.Model):
     TESTER_LEAVE_PROJECT = 15
     ARCHIVE_PROJECT = 16
     UN_ARCHIVE_PROJECT = 17
+    PROJECT_CERTIFIED = 18
+    PROJECT_RECALLED = 19  # Project status from Testing to Initial
     TYPE_CHOICES = (
         (TESTER_PASS_SLOT, 'Tester passed slot'),
         (TESTER_FAIL_SLOT, 'Tester failed slot'),
@@ -66,7 +68,9 @@ class Action(models.Model):
         (TESTER_JOIN_PROJECT, 'Tester joined project'),
         (TESTER_LEAVE_PROJECT, 'Tester left project'),
         (ARCHIVE_PROJECT, 'Archive project'),
-        (UN_ARCHIVE_PROJECT, 'Un archive project')
+        (UN_ARCHIVE_PROJECT, 'Un archive project'),
+        (PROJECT_CERTIFIED, 'Project certified'),
+        (PROJECT_RECALLED, 'Project recalled')
     )
 
     actor = models.ForeignKey(User)
@@ -90,7 +94,8 @@ class Action(models.Model):
         LANGUAGE_TYPES = (cls.REPORT_GENERATION, )
         PROJECT_TYPES = (cls.UPLOAD_VUID, cls.UPDATE_FILE_STATUSES, cls.CREATE_PROJECT, cls.REPORT_GENERATION,
                          cls.ELPIS_RUN, cls.UPDATE_ROOT_PATH, cls.UPDATE_BRAVO_SERVER, cls.TESTER_JOIN_PROJECT,
-                         cls.TESTER_LEAVE_PROJECT, cls.ARCHIVE_PROJECT, cls.UN_ARCHIVE_PROJECT)
+                         cls.TESTER_LEAVE_PROJECT, cls.ARCHIVE_PROJECT, cls.UN_ARCHIVE_PROJECT,
+                         cls.PROJECT_CERTIFIED, cls.PROJECT_RECALLED)
         UNIVERSAL_TYPES = ()
 
         from echo.apps.projects.models import VoiceSlot, Language, Project
