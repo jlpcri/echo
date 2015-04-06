@@ -27,21 +27,21 @@ def user_is_superuser(user):
     return user.is_superuser
 
 
-def user_is_creative_services(user):
-    u = UserSettings.objects.get_or_create(user=user)
-    return u.creative_services
-
-
-def user_is_project_manager(user):
-    u = UserSettings.objects.get_or_create(user=user)
-    return u.project_manager
+# def user_is_creative_services(user):
+#     u = UserSettings.objects.get_or_create(user=user)
+#     return u.creative_services
+#
+#
+# def user_is_project_manager(user):
+#     u = UserSettings.objects.get_or_create(user=user)
+#     return u.project_manager
 
 
 @login_required
 @csrf_exempt
 @user_passes_test(user_is_superuser)
-@user_passes_test(user_is_creative_services)
-@user_passes_test(user_is_project_manager)
+# @user_passes_test(user_is_creative_services)
+# @user_passes_test(user_is_project_manager)
 def certify(request, pid):
     """
     Certifies project ready for testing or returns error

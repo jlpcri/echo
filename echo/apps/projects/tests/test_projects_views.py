@@ -3,32 +3,32 @@ from django.core.urlresolvers import reverse, resolve
 from django.contrib.auth.models import User
 
 from echo.apps.projects.models import Project
-from echo.apps.projects.views import projects
+from echo.apps.projects.views import certify, projects
+from echo.apps.settings.models import UserSettings
 
 
-class CertifyViewTest(TestCase):
+class TestViewCertify(TestCase):
     def setUp(self):
         self.client = Client()
-        self.url_certify = reverse('projects:certify')
-
-        self.project = {
-            'name:': 'Test Project'
+        self.project = Project.objects.create(name='Test Project')
+        self.url = reverse('projects:certify', args=(self.project.pk, ))
+        self.user = {
+            'username': 'TestUsername',
+            'password': 'TestPassword',
         }
+        User.objects.create_user(username=self.user['username'], password=self.user['password'], email='')
+        self.client.login(
+            username=self.user['username'],
+            password=self.user['password']
+        )
 
-        self.user_superuser = {
-            'username': 'SuperUsername',
-            'password': 'SuperPassword'
-        }
+    def test_certify_url_resolve_to_view(self):
+        found = resolve(self.url)
+        self.assertEqual(found.func, certify)
 
-        self.user_creative_services = {
-            'username': 'CSUsername',
-            'password': 'CSPassword'
-        }
-
-        self.user_project_manager = {
-            'username': 'PMUsername',
-            'password': 'PMPassword'
-        }
+    def test_get_certify_url_as_user_returns_404(self):
+        response = self.client.get(self.url, follow=True)
+        self.assertEqual(response.status_code, 200)
 
 
 class ProjectsViewsTest(TestCase):
