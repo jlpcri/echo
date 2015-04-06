@@ -34,7 +34,10 @@ def context_home(user, sort=None):
                 Action.CREATE_PROJECT,
                 Action.TESTER_JOIN_PROJECT,
                 Action.TESTER_LEAVE_PROJECT,
-                Action.UPLOAD_VUID]
+                Action.UPLOAD_VUID,
+                Action.PROJECT_CERTIFIED,
+                Action.PROJECT_RECALLED
+            ]
         ).order_by('-time')[0:10],
         'projects': projects,
         'sort': sort
@@ -85,7 +88,12 @@ def context_project(project, upload_form=UploadForm(), server_form=ServerForm(in
 
 def context_projects(user, tab, sort=None, page=None):
     if tab == 'my':
-        projects = Project.objects.filter(users__pk=user.pk, status=Project.TESTING)
+        if user.usersettings.creative_services and not(user.usersettings.project_manager or user.is_superuser):
+            projects = Project.objects.filter(users__pk=user.pk, status=Project.INITIAL)
+        if not (user.usersettings.creative_services or user.usersettings.project_manager or user.is_superuser):
+            projects = Project.objects.filter(users__pk=user.pk, status=Project.TESTING)
+        if user.usersettings.project_manager or user.is_superuser:
+            projects = Project.objects.filter(users__pk=user.pk, status=Project.INITIAL) | Project.objects.filter(users__pk=user.pk, status=Project.TESTING)
     elif tab == 'archive':
         projects = Project.objects.filter(status=Project.CLOSED)
     elif tab == 'csp':

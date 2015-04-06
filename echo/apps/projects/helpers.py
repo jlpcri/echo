@@ -209,6 +209,13 @@ def upload_vuid(uploaded_file, user, project):
         vuid.delete()
         return result
     Action.log(user, Action.UPLOAD_VUID, 'Prompt list {0} uploaded'.format(uploaded_file.name), project)
+
+    if project.status == Project.TESTING:
+        # set project status to "Initial"
+        project.status = Project.INITIAL
+        project.save()
+        Action.log(user, Action.PROJECT_RECALLED, 'Project is recalled', project)
+
     status = UpdateStatus.objects.get_or_create(project=project)[0]
     query_item = update_file_statuses.delay(project_id=project.pk, user_id=user.id)
     status.query_id = query_item

@@ -334,6 +334,11 @@ class Language(models.Model):
     def voiceslots(self):
         return VoiceSlot.objects.filter(language=self)
 
+    def voiceslot_missing(self):
+        return VoiceSlot.objects.filter(language=self, status=VoiceSlot.MISSING).count()
+
+    def voiceslot_defective(self):
+        return VoiceSlot.objects.filter(language=self, status=VoiceSlot.FAIL).count()
 
 class UpdateStatus(models.Model):
     project = models.ForeignKey('projects.Project')
