@@ -192,7 +192,10 @@ def project(request, pid):
             form = UploadForm(request.POST, request.FILES)
             p = get_object_or_404(Project, pk=pid)
             if form.is_valid():
-                if 'file' in request.FILES and request.FILES['file'].name.endswith('.xlsx'):
+                # if user not member in CS, PM, Superuser cannot upload
+                if not (request.user.usersettings.creative_services or request.user.usersettings.project_manager or request.user.is_superuser):
+                    messages.danger(request, 'You have no authority to upload.')
+                elif 'file' in request.FILES and request.FILES['file'].name.endswith('.xlsx'):
                     result = helpers.upload_vuid(form.cleaned_data['file'], request.user, p)
                     if result['valid']:
                         messages.success(request, result["message"])
@@ -332,10 +335,15 @@ def queue(request, pid):
         lang = get_object_or_404(Language, project=p, name=request.GET.get('language', '__malformed').lower())
         slots_out = request.user.voiceslot_set
         # TODO check this block
-        if slots_out.count() < 0:
+        if slots_out.count() > 0:
             slot = slots_out.first()
             if slot.language.pk == lang.pk:
-                slot_file = slot.download()
+                try:
+                    slot_file = slot.download()
+                except IOError:
+                    slot.status = VoiceSlot.MISSING
+                    slot.save()
+                    return queue(request, pid)
                 return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, slot_file, finish_listen, fail_select))
             else:
                 for slot in slots_out:
@@ -350,7 +358,12 @@ def queue(request, pid):
             messages.warning(request, 'Please set default bravo server')
             return redirect('projects:project', pid=pid)
 
-        slot_file = slot.download()
+        try:
+            slot_file = slot.download()
+        except IOError:
+            slot.status = VoiceSlot.MISSING
+            slot.save()
+            return queue(request, pid)
         return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, slot_file, finish_listen, fail_select))
     elif request.method == 'POST':
         p = get_object_or_404(Project, pk=pid)
