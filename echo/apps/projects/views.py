@@ -24,6 +24,13 @@ from echo.apps.projects.tasks import update_file_statuses
 
 
 @login_required
+def certify(request, pid):
+    if request.method == 'POST':
+        return HttpResponse(json.dumps({'success': True}))
+    return HttpResponseNotFound()
+
+
+@login_required
 def fetch(request, pid):
     if request.method == 'GET':
         p = get_object_or_404(Project, pk=pid)
