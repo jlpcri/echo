@@ -1,6 +1,8 @@
 from django import forms
 from models import PreprodServer
 
+from echo.apps.activity.models import DollarDashboardConfig
+
 
 class ServerForm(forms.Form):
     name = forms.CharField(max_length=50, required=True,
@@ -22,24 +24,18 @@ class ServerPreprodForm(forms.Form):
                                          choices=PreprodServer.APPLICATION_TYPE_CHOICES)
 
 
-class DollarsDashboardForm(forms.Form):
-    tester_pass_slot = forms.DecimalField(max_digits=12, required=True,
-                                          widget=forms.TextInput(attrs={'class': 'form-control input-sm'}))
-    tester_fail_slot = forms.DecimalField(max_digits=12, required=True,
-                                          widget=forms.TextInput(attrs={'class': 'form-control input-sm'}))
-    tester_new_slot = forms.DecimalField(max_digits=12, required=True,
-                                         widget=forms.TextInput(attrs={'class': 'form-control input-sm'}))
-    auto_new_slot = forms.DecimalField(max_digits=12, required=True,
-                                       widget=forms.TextInput(attrs={'class': 'form-control input-sm'}))
-    auto_pass_slot = forms.DecimalField(max_digits=12, required=True,
-                                        widget=forms.TextInput(attrs={'class': 'form-control input-sm'}))
-    auto_fail_slot = forms.DecimalField(max_digits=12, required=True,
-                                        widget=forms.TextInput(attrs={'class': 'form-control input-sm'}))
-    auto_missing_slot = forms.DecimalField(max_digits=12, required=True,
-                                           widget=forms.TextInput(attrs={'class': 'form-control input-sm'}))
-    update_file_status = forms.DecimalField(max_digits=12, required=True,
-                                            widget=forms.TextInput(attrs={'class': 'form-control input-sm'}))
-    elasticsearch_url = forms.CharField(max_length=100, required=True,
-                                        widget=forms.TextInput(attrs={'class': 'form-control input-sm'}))
-    elasticsearch_index = forms.CharField(max_length=40, required=True,
-                                          widget=forms.TextInput(attrs={'class': 'form-control input-sm'}))
+class DollarsDashboardForm(forms.ModelForm):
+    class Meta:
+        model = DollarDashboardConfig
+
+        widgets = {
+            'tester_pass_slot': forms.TextInput(attrs={'class': 'form-control input-sm'}),
+            'tester_fail_slot': forms.TextInput(attrs={'class': 'form-control input-sm'}),
+            'auto_new_slot': forms.TextInput(attrs={'class': 'form-control input-sm'}),
+            'auto_pass_slot': forms.TextInput(attrs={'class': 'form-control input-sm'}),
+            'auto_fail_slot': forms.TextInput(attrs={'class': 'form-control input-sm'}),
+            'auto_missing_slot': forms.TextInput(attrs={'class': 'form-control input-sm'}),
+            'update_file_status': forms.TextInput(attrs={'class': 'form-control input-sm'}),
+            'elasticsearch_url': forms.TextInput(attrs={'class': 'form-control input-sm'}),
+            'elasticsearch_index': forms.TextInput(attrs={'class': 'form-control input-sm'})
+        }

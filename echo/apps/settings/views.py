@@ -214,8 +214,9 @@ def servers_preprod(request):
 
 @user_passes_test(user_is_superuser)
 def dollar_dashboard_config(request):
+    dollar = DollarDashboardConfig.objects.all()[0]
+
     if request.method == 'GET':
-        dollar = DollarDashboardConfig.objects.all()[0]
 
         form = DollarsDashboardForm(initial={
             'tester_pass_slot': dollar.tester_pass_slot,
@@ -228,5 +229,15 @@ def dollar_dashboard_config(request):
             'elasticsearch_url': dollar.elasticsearch_url,
             'elasticsearch_index': dollar.elasticsearch_index
         })
+
+        return render(request, 'settings/dollar_dashboard_config.html', {'form': form})
+
+    if request.method == 'POST':
+        form = DollarsDashboardForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Dollar Dashboard Configuration saved.')
+        else:
+            messages.danger(request, 'Unable to save Dollar Dashboard Configuration.')
 
         return render(request, 'settings/dollar_dashboard_config.html', {'form': form})
