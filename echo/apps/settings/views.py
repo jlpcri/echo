@@ -210,3 +210,7 @@ def servers_preprod(request):
                 messages.success(request, "Connecting to preprod server \"{0}\"".format(server.name))
                 return redirect("settings:servers_preprod")
     return HttpResponseNotFound()
+
+@user_passes_test(user_is_superuser)
+def dollar_dashboard_config(request):
+    return HttpResponseNotFound()
