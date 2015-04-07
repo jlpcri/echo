@@ -8,8 +8,9 @@ from django.http import HttpResponseNotFound
 from django.shortcuts import get_object_or_404, redirect, render
 
 from echo.apps.core import messages
-from echo.apps.settings.forms import ServerForm, ServerPreprodForm
+from echo.apps.settings.forms import ServerForm, ServerPreprodForm, DollarsDashboardForm
 from echo.apps.settings.models import Server, PreprodServer
+from echo.apps.activity.models import DollarDashboardConfig
 
 
 def user_is_superuser(user):
@@ -213,4 +214,19 @@ def servers_preprod(request):
 
 @user_passes_test(user_is_superuser)
 def dollar_dashboard_config(request):
-    return HttpResponseNotFound()
+    if request.method == 'GET':
+        dollar = DollarDashboardConfig.objects.all()[0]
+
+        form = DollarsDashboardForm(initial={
+            'tester_pass_slot': dollar.tester_pass_slot,
+            'tester_fail_slot': dollar.tester_fail_slot,
+            'auto_new_slot': dollar.auto_new_slot,
+            'auto_pass_slot': dollar.auto_pass_slot,
+            'auto_fail_slot': dollar.auto_fail_slot,
+            'auto_missing_slot': dollar.auto_missing_slot,
+            'update_file_status': dollar.update_file_status,
+            'elasticsearch_url': dollar.elasticsearch_url,
+            'elasticsearch_index': dollar.elasticsearch_index
+        })
+
+        return render(request, 'settings/dollar_dashboard_config.html', {'form': form})

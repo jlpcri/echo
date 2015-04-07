@@ -26,81 +26,52 @@
             <div id="tab_content" class="tab-content">
                 <div class="tab-pane active">
                     <div class="col-xs-12">
-                        <table class="table">
-                            <tr>
-                                <form method="POST" action="{% url "settings:servers" %}">
-                                    {% csrf_token %}
-                                    <td class="col-xs-3" style="border: none;">
-                                        {{ server_form.name }}
-                                        {% if server_form.name.errors %}
-                                            <span class="text-danger">{{ server_form.name.errors|first }}</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="col-xs-3" style="border: none;">
-                                        {{ server_form.address }}
-                                        {% if server_form.address.errors %}
-                                            <span class="text-danger">{{ server_form.address.errors|first }}</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="col-xs-3" style="border: none;">
-                                        {{ server_form.account }}
-                                        {% if server_form.account.errors %}
-                                            <span class="text-danger">{{ server_form.account.errors|first }}</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="col-xs-2" style="border: none;"></td>
-                                    <td class="col-xs-1" style="border: none;">
-                                        <button type="submit" id="add_server" name="add_server"
-                                                class="btn btn-success btn-sm" style="width: 100%;" title="Add Server">
-                                            <i class="fa fa-plus fa-fw"></i>&nbsp;Server
-                                        </button>
-                                    </td>
-                                </form>
-                            </tr>
-                        </table>
+
                         <table class="table table-striped table-hover">
                             <thead>
                             <tr>
-                                <th class="col-xs-3">Server Name</th>
-                                <th class="col-xs-3">Server Address</th>
-                                <th class="col-xs-3">Service Account</th>
-                                <th class="col-xs-1">Default</th>
+                                <th class="col-xs-3">Metrics Name</th>
+                                <th class="col-xs-3">Metrics Value</th>
                                 <th class="col-xs-2"></th>
                             </tr>
                             </thead>
                             <tbody>
-                            {% for server in servers %}
                                 <tr>
-                                    <form method="POST" action="{% url "settings:servers" %}">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="sid" value="{{ server.pk }}">
-                                        <td>{{ server.name }}</td>
-                                        <td>{{ server.address }}</td>
-                                        <td>{{ server.account }}</td>
-                                        <td>
-                                            {% if server.active %}<i class="fa fa-check"></i>{% endif %}
-                                        </td>
-                                        <td>
-                                            <div class="pull-right">
-                                                <button type="submit" name="test_connection"
-                                                        class="btn btn-primary btn-xs" title="Test Connection">
-                                                    <i class="fa fa-play fa-fw"></i>
-                                                </button>
-                                                <button type="submit" name="update_active"
-                                                        class="btn btn-primary btn-xs" title="Update Default"
-                                                        {% if server.active %}disabled{% endif%}>
-                                                    <i class="fa fa-check fa-fw"></i>
-                                                </button>
-                                                <button type="submit" name="delete_server"
-                                                        class="btn btn-danger btn-xs" title="Delete Server"
-                                                        {% if server.active %}disabled{% endif%}>
-                                                    <i class="fa fa-trash-o fa-fw"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </form>
+                                    <td>Tester Pass Slot</td>
+                                    <td>{{ form.tester_pass_slot }}</td>
                                 </tr>
-                            {% endfor %}
+                                <tr>
+                                    <td>Tester Fail Slot</td>
+                                    <td>{{ form.tester_fail_slot }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Auto New Slot</td>
+                                    <td>{{ form.auto_new_slot }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Auto Pass Slot</td>
+                                    <td>{{ form.auto_pass_slot }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Auto Fail Slot</td>
+                                    <td>{{ form.auto_fail_slot }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Auto Missing Slot</td>
+                                    <td>{{ form.auto_missing_slot }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Update File Status</td>
+                                    <td>{{ form.update_file_status }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Elastic Search URL</td>
+                                    <td>{{ form.elasticsearch_url }}</td>
+                                </tr>
+                                <tr>
+                                    <td>Elastic Search Index</td>
+                                    <td>{{ form.elasticsearch_index }}</td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
