@@ -71,6 +71,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django_user_agents',
     'south',
+    'solo',
     'echo.apps.core',
     'echo.apps.projects',
     'echo.apps.reports',
