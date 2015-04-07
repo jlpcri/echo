@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+from solo.models import SingletonModel
+
 
 class Scope(models.Model):
     """Defines project objects impacted by Action"""
@@ -121,3 +123,20 @@ class Action(models.Model):
             raise ValueError('Invalid scope object')
         cls.objects.create(actor=actor, type=action_type, description=description, scope=sc)
 
+
+class DollarDashboardConfig(SingletonModel):
+    tester_pass_slot = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    tester_fail_slot = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    auto_new_slot = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    auto_pass_slot = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    auto_fail_slot = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    update_file_status = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+
+    elasticsearch_url = models.CharField(max_length=100, default='')
+    elasticsearch_index = models.CharField(max_length=40, default='')
+
+    def __unicode__(self):
+        return u"Dollar Dashboard Configuration"
+
+    class Meta:
+        verbose_name = "Dollar Dashboard Configuration"
