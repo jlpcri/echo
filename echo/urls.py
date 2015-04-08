@@ -19,6 +19,7 @@ urlpatterns = patterns('',
     url(r'^pheme/', include(reportsUrls, namespace="reports")),
     url(r'^pheme/settings/', include(settingsUrls, namespace="settings")),
     url(r'^pheme/', include(usageUrls, namespace="usage")),
+    url(r'^pheme/admin/', include(admin.site.urls))
 )
 
 urlpatterns += patterns('', (r'^pheme/media/(?P<path>.*)$', 'django.views.static.serve',
