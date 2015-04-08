@@ -140,18 +140,11 @@
                                     Project</b></a>
                             </li>
                         {% endif %}
-{#                        {% if user.usersettings.creative_services and project.status == 'Initial' %}#}
-                            {% if project.slots_missing > 0 %}
+                        {% if user.usersettings.creative_services and project.status == 'Initial' %}
                                 <li class="list-group-item">
                                 <a href="#" name="certify_project"><b>Certify Project</b></a>
                                 </li>
-                            {% else %}
-                                <li class="list-group-item">
-                                <a href="#" name="certify_project"><b>Certify Project</b></a>
-                                </li>
-                            {% endif %}
-                        </li>
-{#                        {% endif %}#}
+                        {% endif %}
                     </ul>
                     <br>
                 {% endif %}
@@ -416,7 +409,7 @@
                             var jsonData = JSON.parse(data);
                             var message = '';
                             if (jsonData['success'] === false) {
-                                message += '<div class="alert alert-dismissable alert-success">';
+                                message += '<div class="alert alert-dismissable alert-danger">';
                                 message += '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>';
                                 message += jsonData['reason'];
                                 message += '</div>';
