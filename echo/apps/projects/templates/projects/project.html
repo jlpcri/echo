@@ -99,7 +99,8 @@
                     <br>
                     <label class="control-label" for="action_list">Project Actions</label>
                     <ul id="action_list" class="list-group">
-                        {% if user.username in project.usernames and project.bravo_server%}
+                        {% if user.username in project.usernames and project.bravo_server %}
+                        {% if not user.usersettings.creative_services and project.status != Project.TESTING %}
                         <li class="list-group-item">
                             <b>Start Testing</b>
                             <ul>
@@ -113,6 +114,7 @@
                             </ul>
                         </li>
                         {% endif %}
+                        {% endif %}
                         <li class="list-group-item">
                             <a href="{% url "reports:report_project" project.id %}"><b>View Report</b></a>
                         </li>
@@ -125,17 +127,31 @@
                                 <i class="fa fa-spin fa-spinner" id="update_spinner"></i>
                             </li>
                         {% endif %}
-                        <li class="list-group-item"><a href="{% url 'elpis:dashboard' project.pk %}"><b>Verify File Transfer</b></a></li>
-                        <li class="list-group-item">
-                            {% if project.status == 'Testing' %}
-                                <a href="{% url "projects:archive_project" project.pk %}" title="Archive Project"><b>Archive Project</b></a>
-                            {% elif project.status == 'Closed' %}
-                                <a href="{% url "projects:archive_project" project.pk %}" title="Reactivate Project"><b>Reactivate Project</b></a>
+                        <li class="list-group-item"><a href="{% url 'elpis:dashboard' project.pk %}"><b>Verify File
+                            Transfer</b></a></li>
+                        {% if project.status == 'Testing' %}
+                            <li class="list-group-item">
+                                <a href="{% url "projects:archive_project" project.pk %}" title="Archive Project"><b>Archive
+                                    Project</b></a>
+                            </li>
+                        {% elif project.status == 'Closed' %}
+                            <li class="list-group-item">
+                                <a href="{% url "projects:archive_project" project.pk %}" title="Reactivate Project"><b>Reactivate
+                                    Project</b></a>
+                            </li>
+                        {% endif %}
+{#                        {% if user.usersettings.creative_services and project.status == 'Initial' %}#}
+                            {% if project.slots_missing > 0 %}
+                                <li class="list-group-item">
+                                <a href="#" name="certify_project"><b>Certify Project</b></a>
+                                </li>
+                            {% else %}
+                                <li class="list-group-item">
+                                <a href="#" name="certify_project"><b>Certify Project</b></a>
+                                </li>
                             {% endif %}
                         </li>
-                        <li>
-                            <a href="{% url "projects:certify" project.pk %}">Certify Project</a>
-                        </li>
+{#                        {% endif %}#}
                     </ul>
                     <br>
                 {% endif %}
@@ -155,9 +171,9 @@
                 {% endif %}
             </div>
             <div class="col-xs-8">
-                <form action="{% url 'projects:project' project.pk %}" method="post" enctype="multipart/form-data">
+                <form name="submit_to_server" action="{% url 'projects:project' project.pk %}" method="post" enctype="multipart/form-data">
                     {% csrf_token %}
-
+                    {% if user.is_superuser or user.usersettings.creative_services or user.usersettings.project_manager %}
                     <div class="form-group">
                         <label class="control-label">Upload Prompt List File (.xlsx format)</label>
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -177,6 +193,7 @@
                             </span>
                         </div>
                     </div>
+                    {% endif %}
                     {% if vuids %}
                         <table class="table">
                             <thead>
@@ -236,6 +253,7 @@
             </div>
         </div>
     </div>
+    {% include 'projects/modal_suspend_testing.html' %}
 {% endblock %}
 {% block endscript %}
     <script type="text/javascript">
@@ -367,6 +385,58 @@
                 }
             })
         }, 5000);
+
+        var upload_file = false;
+        $(function() {
+            $('form[name="submit_to_server"]').on('submit', function(e) {
+                if (upload_file === true) {
+                    event.preventDefault();
+                    upload_file = false;
+                    $('#modal_suspend_testing').modal('show');
+                }
+            });
+
+            $("#upload_file").on('click', function(e) {
+                upload_file = true;
+            });
+
+            $("#suspend_testing").on('click', function(e) {
+                var input = $("<input>")
+                    .attr("type", "hidden")
+                    .attr("name", "upload_file").val("upload_file");
+                $('form[name="submit_to_server"]').append($(input));
+                $('form[name="submit_to_server"]').submit();
+            })
+
+            $('a[name="certify_project"]').on('click', function (e) {
+                event.preventDefault();
+                var jqxhr = $.post("{% url 'projects:certify' project.pk %}", function () {
+                })
+                        .done(function (data) {
+                            var jsonData = JSON.parse(data);
+                            var message = '';
+                            if (jsonData['success'] === false) {
+                                message += '<div class="alert alert-dismissable alert-success">';
+                                message += '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>';
+                                message += jsonData['reason'];
+                                message += '</div>';
+                            } else {
+                                message += '<div class="alert alert-dismissable alert-success">';
+                                message += '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>';
+                                message += "Project has been certified";
+                                message += '</div>';
+                            }
+                            $('#messages').append(message);
+                        })
+                        .fail(function () {
+                            var message = '<div class="alert alert-dismissable alert-danger">';
+                            message += '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>';
+                            message += 'There was an error connecting to server';
+                            message += '</div>';
+                            $('#messages').append(message);
+                        });
+            });
+        });
 
     </script>
 {% endblock %}

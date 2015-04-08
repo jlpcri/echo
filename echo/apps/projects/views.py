@@ -42,12 +42,12 @@ def certify(request, pid):
             if p.status != Project.INITIAL:
                 return HttpResponse(json.dumps({
                     'success': False,
-                    'reason': 'Project not initial'
+                    'reason': 'Project status is not Initial'
                 }))
             if p.slots_missing() > 0:
                 return HttpResponse(json.dumps({
                     'success': False,
-                    'reason': 'Project missing files'
+                    'reason': 'Project has missing files'
                 }))
             p.status = Project.TESTING
             p.save()
