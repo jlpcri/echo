@@ -41,6 +41,16 @@ def fetch(request, pid):
                     if result['valid']:
                         messages.success(request, result["message"])
                         Action.log(request.user, Action.UPDATE_FILE_STATUSES, 'File status update ran', p)
+
+                        # send data to Elastic Search instance
+                        elastic_data = {
+                            'timestamp': str(datetime.now()),
+                            'project': p.name,
+                            'action': Action.UPDATE_FILE_STATUSES,
+                            'savings': dollar_config.update_file_status
+                        }
+                        requests.post(elastic_url, simplejson.dumps(elastic_data))
+
                     else:
                         messages.danger(request, result['message'])
                 return redirect("projects:project", pid)
@@ -253,6 +263,16 @@ def able_update_file_status(request, p):
             if result['valid']:
                 messages.success(request, result["message"])
                 Action.log(request.user, Action.UPDATE_FILE_STATUSES, 'File status update ran', p)
+
+                # send data to Elastic Search instance
+                elastic_data = {
+                    'timestamp': str(datetime.now()),
+                    'project': p.name,
+                    'action': Action.UPDATE_FILE_STATUSES,
+                    'savings': dollar_config.update_file_status
+                }
+                requests.post(elastic_url, simplejson.dumps(elastic_data))
+
                 return True
             else:
                 messages.danger(request, result['message'])
@@ -529,6 +549,16 @@ def testslot(request, pid, vsid):
                 slot.status = VoiceSlot.MISSING
                 slot.save()
                 Action.log(request.user, Action.AUTO_MISSING_SLOT, 'Slot found missing by individual slot test', slot)
+
+                # send data to Elastic Search instance
+                elastic_data = {
+                    'timestamp': str(datetime.now()),
+                    'project': p.name,
+                    'action': Action.AUTO_MISSING_SLOT,
+                    'savings': dollar_config.auto_missing_slot
+                }
+                requests.post(elastic_url, simplejson.dumps(elastic_data))
+
                 return redirect("projects:project", pid)
             except pysftp.ConnectionException:
                 messages.danger(request, "Connection error to server \"{0}\"".format(p.bravo_server.name))
@@ -655,6 +685,16 @@ def initiate_status_update(request, pid):
     status.running = True
     status.save()
     Action.log(request.user, Action.UPDATE_FILE_STATUSES, 'Updated file statuses', Project.objects.get(pk=pid))
+
+    # send data to Elastic Search instance
+    elastic_data = {
+        'timestamp': str(datetime.now()),
+        'project': project.name,
+        'action': Action.UPDATE_FILE_STATUSES,
+        'savings': dollar_config.update_file_status
+    }
+    requests.post(elastic_url, simplejson.dumps(elastic_data))
+
     return HttpResponse(json.dumps({'success': True}), content_type="application/json")
 
 
