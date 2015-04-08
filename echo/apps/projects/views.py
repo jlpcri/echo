@@ -7,7 +7,7 @@ import pysftp
 
 from django.core.urlresolvers import reverse
 from django.db import transaction
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404, redirect, render
@@ -16,7 +16,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from echo.apps.activity.models import Action
 from echo.apps.core import messages
-from echo.apps.settings.models import Server
+from echo.apps.settings.models import Server, UserSettings
 from echo.apps.projects.forms import ProjectForm, ServerForm, UploadForm, ProjectRootPathForm
 from echo.apps.projects.models import Language, Project, VoiceSlot, VUID, UpdateStatus
 from echo.apps.projects import contexts, helpers
@@ -24,9 +24,40 @@ from echo.apps.projects.tasks import update_file_statuses
 
 
 @login_required
+@csrf_exempt
 def certify(request, pid):
+    """
+    Certifies project ready for testing or returns error
+    """
     if request.method == 'POST':
-        return HttpResponse(json.dumps({'success': True}))
+        p = get_object_or_404(Project, pk=pid)
+        permission = False
+        if request.user.is_superuser:
+            permission = True
+        elif request.user.usersettings.creative_services:
+            permission = True
+        elif request.user.usersettings.project_manager:
+            permission = True
+        if permission:
+            if p.status != Project.INITIAL:
+                return HttpResponse(json.dumps({
+                    'success': False,
+                    'reason': 'Project not initial'
+                }))
+            if p.slots_missing() > 0:
+                return HttpResponse(json.dumps({
+                    'success': False,
+                    'reason': 'Project missing files'
+                }))
+            p.status = Project.TESTING
+            p.save()
+            return HttpResponse(json.dumps({
+                'success': True
+            }))
+        return HttpResponse(json.dumps({
+            'success': False,
+            'reason': "Invalid user permissions"
+        }))
     return HttpResponseNotFound()
 
 

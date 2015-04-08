@@ -133,6 +133,9 @@
                                 <a href="{% url "projects:archive_project" project.pk %}" title="Reactivate Project"><b>Reactivate Project</b></a>
                             {% endif %}
                         </li>
+                        <li>
+                            <a href="{% url "projects:certify" project.pk %}">Certify Project</a>
+                        </li>
                     </ul>
                     <br>
                 {% endif %}
