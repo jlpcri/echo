@@ -1,7 +1,9 @@
 from datetime import datetime, timedelta
 import json
+import simplejson
 import os
 import uuid
+import requests
 
 import pysftp
 
@@ -21,7 +23,11 @@ from echo.apps.projects.forms import ProjectForm, ServerForm, UploadForm, Projec
 from echo.apps.projects.models import Language, Project, VoiceSlot, VUID, UpdateStatus
 from echo.apps.projects import contexts, helpers
 from echo.apps.projects.tasks import update_file_statuses
+from echo.apps.activity.models import DollarDashboardConfig
 
+
+dollar_config = DollarDashboardConfig.objects.get()
+elastic_url = dollar_config.elasticsearch_url + dollar_config.elasticsearch_index
 
 @login_required
 def fetch(request, pid):
@@ -455,6 +461,16 @@ def submitslot(request, vsid):
                 slot.check_in(request.user)
                 slot.save()
                 Action.log(request.user, Action.TESTER_PASS_SLOT, '{0} passed by manual testing'.format(slot.name), slot)
+
+                # send data to Elastic Search instance
+                elastic_data = {
+                    'timestamp': str(datetime.now()),
+                    'project': p.name,
+                    'action': Action.TESTER_PASS_SLOT,
+                    'savings': dollar_config.tester_pass_slot
+                }
+                requests.post(elastic_url, simplejson.dumps(elastic_data))
+
                 # do updates to files here and get count for p pass
                 count = p.voiceslots_match(slot, request)
             else:
@@ -467,6 +483,16 @@ def submitslot(request, vsid):
                 slot.check_in(request.user)
                 slot.save()
                 Action.log(request.user, Action.TESTER_FAIL_SLOT, request.POST['notes'], slot)
+
+                # send data to Elastic Search instance
+                elastic_data = {
+                    'timestamp': str(datetime.now()),
+                    'project': p.name,
+                    'action': Action.TESTER_FAIL_SLOT,
+                    'savings': dollar_config.tester_fail_slot
+                }
+                requests.post(elastic_url, simplejson.dumps(elastic_data))
+
                 # do updates to files here and get count for p failure
                 count = p.voiceslots_match(slot, request)
                 p.failure_count += 1
