@@ -19,10 +19,12 @@
                 <h3>Projects</h3>
             </div>
             <div class="col-xs-3">
-                <a href="{% url "projects:new" %}" title="Add Project"
-                   class="btn btn-success btn-sm pull-right" style="width: 100%;">
-                    <i class="fa fa-plus fa-fw"></i>&nbsp;Project
-                </a>
+                {% if user.usersettings.project_manager or user.is_superuser %}
+                    <a href="{% url "projects:new" %}" title="Add Project"
+                       class="btn btn-success btn-sm pull-right" style="width: 100%;">
+                        <i class="fa fa-plus fa-fw"></i>&nbsp;Project
+                    </a>
+                {% endif %}
             </div>
         </div>
         <hr>
@@ -240,22 +242,22 @@
         {% for project in projects %}
             {% if project.slots_total > 0 %}
                 {% if project.slots_passed %}
-                    $('#passed_bar_{{ project.pk }}').tooltip();
+                    $('#passed_bar_' + {{ project.pk }}).tooltip();
                 {% endif %}
                 {% if project.slots_failed %}
-                    $('#defective_bar_{{ project.pk }}').tooltip();
+                    $('#defective_bar_' + {{ project.pk }}).tooltip();
                 {% endif %}
                 {% if project.slots_missing %}
-                    $('#missing_bar_{{ project.pk }}').tooltip();
+                    $('#missing_bar_' + {{ project.pk }}).tooltip();
                 {% endif %}
                     {% if project.slots_ready %}
-                    $('#ready_bar_{{ project.pk }}').tooltip();
+                    $('#ready_bar_' + {{ project.pk }}).tooltip();
                 {% endif %}
                 {% if project.slots_untested %}
-                    $('#new_bar_{{ project.pk }}').tooltip();
+                    $('#new_bar_' + {{ project.pk }}).tooltip();
                 {% endif %}
             {% else %}
-                $('#progress_{{ project.pk }}').tooltip();
+                $('#progress_' + {{ project.pk }}).tooltip();
             {% endif %}
         {% endfor %}
 
