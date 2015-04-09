@@ -168,7 +168,7 @@ class Project(models.Model):
                 elastic_data = {
                     'timestamp': str(datetime.now()),
                     'project': self.name,
-                    'action': Action.ATUO_PASS_SLOT,
+                    'action': Action.AUTO_PASS_SLOT,
                     'savings': dollar_config.auto_pass_slot
                 }
                 requests.post(elastic_url, simplejson.dumps(elastic_data))
