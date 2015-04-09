@@ -1,7 +1,9 @@
 from datetime import datetime, timedelta
 import json
+import simplejson
 import os
 import uuid
+import requests
 
 import pysftp
 
@@ -21,7 +23,11 @@ from echo.apps.projects.forms import ProjectForm, ServerForm, UploadForm, Projec
 from echo.apps.projects.models import Language, Project, VoiceSlot, VUID, UpdateStatus
 from echo.apps.projects import contexts, helpers
 from echo.apps.projects.tasks import update_file_statuses
+from echo.apps.activity.models import DollarDashboardConfig
 
+
+dollar_config = DollarDashboardConfig.objects.get()
+elastic_url = dollar_config.elasticsearch_url + dollar_config.elasticsearch_index
 
 @login_required
 def fetch(request, pid):
@@ -35,6 +41,16 @@ def fetch(request, pid):
                     if result['valid']:
                         messages.success(request, result["message"])
                         Action.log(request.user, Action.UPDATE_FILE_STATUSES, 'File status update ran', p)
+
+                        # send data to Elastic Search instance
+                        elastic_data = {
+                            'timestamp': str(datetime.now()),
+                            'project': p.name,
+                            'action': Action.UPDATE_FILE_STATUSES,
+                            'savings': dollar_config.update_file_status
+                        }
+                        requests.post(elastic_url, simplejson.dumps(elastic_data))
+
                     else:
                         messages.danger(request, result['message'])
                 return redirect("projects:project", pid)
@@ -192,7 +208,10 @@ def project(request, pid):
             form = UploadForm(request.POST, request.FILES)
             p = get_object_or_404(Project, pk=pid)
             if form.is_valid():
-                if 'file' in request.FILES and request.FILES['file'].name.endswith('.xlsx'):
+                # if user not member in CS, PM, Superuser cannot upload
+                if not (request.user.usersettings.creative_services or request.user.usersettings.project_manager or request.user.is_superuser):
+                    messages.danger(request, 'You have no authority to upload.')
+                elif 'file' in request.FILES and request.FILES['file'].name.endswith('.xlsx'):
                     result = helpers.upload_vuid(form.cleaned_data['file'], request.user, p)
                     if result['valid']:
                         messages.success(request, result["message"])
@@ -244,6 +263,16 @@ def able_update_file_status(request, p):
             if result['valid']:
                 messages.success(request, result["message"])
                 Action.log(request.user, Action.UPDATE_FILE_STATUSES, 'File status update ran', p)
+
+                # send data to Elastic Search instance
+                elastic_data = {
+                    'timestamp': str(datetime.now()),
+                    'project': p.name,
+                    'action': Action.UPDATE_FILE_STATUSES,
+                    'savings': dollar_config.update_file_status
+                }
+                requests.post(elastic_url, simplejson.dumps(elastic_data))
+
                 return True
             else:
                 messages.danger(request, result['message'])
@@ -452,6 +481,16 @@ def submitslot(request, vsid):
                 slot.check_in(request.user)
                 slot.save()
                 Action.log(request.user, Action.TESTER_PASS_SLOT, '{0} passed by manual testing'.format(slot.name), slot)
+
+                # send data to Elastic Search instance
+                elastic_data = {
+                    'timestamp': str(datetime.now()),
+                    'project': p.name,
+                    'action': Action.TESTER_PASS_SLOT,
+                    'savings': dollar_config.tester_pass_slot
+                }
+                requests.post(elastic_url, simplejson.dumps(elastic_data))
+
                 # do updates to files here and get count for p pass
                 count = p.voiceslots_match(slot, request)
             else:
@@ -464,6 +503,16 @@ def submitslot(request, vsid):
                 slot.check_in(request.user)
                 slot.save()
                 Action.log(request.user, Action.TESTER_FAIL_SLOT, request.POST['notes'], slot)
+
+                # send data to Elastic Search instance
+                elastic_data = {
+                    'timestamp': str(datetime.now()),
+                    'project': p.name,
+                    'action': Action.TESTER_FAIL_SLOT,
+                    'savings': dollar_config.tester_fail_slot
+                }
+                requests.post(elastic_url, simplejson.dumps(elastic_data))
+
                 # do updates to files here and get count for p failure
                 count = p.voiceslots_match(slot, request)
                 p.failure_count += 1
@@ -500,6 +549,16 @@ def testslot(request, pid, vsid):
                 slot.status = VoiceSlot.MISSING
                 slot.save()
                 Action.log(request.user, Action.AUTO_MISSING_SLOT, 'Slot found missing by individual slot test', slot)
+
+                # send data to Elastic Search instance
+                elastic_data = {
+                    'timestamp': str(datetime.now()),
+                    'project': p.name,
+                    'action': Action.AUTO_MISSING_SLOT,
+                    'savings': dollar_config.auto_missing_slot
+                }
+                requests.post(elastic_url, simplejson.dumps(elastic_data))
+
                 return redirect("projects:project", pid)
             except pysftp.ConnectionException:
                 messages.danger(request, "Connection error to server \"{0}\"".format(p.bravo_server.name))
@@ -626,6 +685,16 @@ def initiate_status_update(request, pid):
     status.running = True
     status.save()
     Action.log(request.user, Action.UPDATE_FILE_STATUSES, 'Updated file statuses', Project.objects.get(pk=pid))
+
+    # send data to Elastic Search instance
+    elastic_data = {
+        'timestamp': str(datetime.now()),
+        'project': project.name,
+        'action': Action.UPDATE_FILE_STATUSES,
+        'savings': dollar_config.update_file_status
+    }
+    requests.post(elastic_url, simplejson.dumps(elastic_data))
+
     return HttpResponse(json.dumps({'success': True}), content_type="application/json")
 
 
@@ -635,15 +704,21 @@ def delete_slot(request, slot_id):
     if request.method == 'GET':
         raise Http404
     if request.method == 'POST':
-        try:
-            slot = get_object_or_404(VoiceSlot, pk=slot_id)
-            slot.delete()
-            messages.success(request, 'Voice Slot \"{0}\" has been deleted.'.format(slot.name))
-            return HttpResponse(json.dumps({
-                'success': True
-            }))
-        except Exception as e:
+        if request.user.usersettings.creative_services or request.user.usersettings.project_manager or request.user.is_superuser:
+            try:
+                slot = get_object_or_404(VoiceSlot, pk=slot_id)
+                slot.delete()
+                messages.success(request, 'Voice Slot \"{0}\" has been deleted.'.format(slot.name))
+                return HttpResponse(json.dumps({
+                    'success': True
+                }))
+            except Exception as e:
+                return HttpResponse(json.dumps({
+                    'success': False,
+                    'error': e.message
+                }))
+        else:
             return HttpResponse(json.dumps({
                 'success': False,
-                'error': e.message
+                'error': 'You have no authority to perform this operation.'
             }))
