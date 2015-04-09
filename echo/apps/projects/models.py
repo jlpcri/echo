@@ -3,6 +3,8 @@ from datetime import datetime, timedelta
 import time
 import os
 import uuid
+import requests
+import simplejson
 
 import pysftp
 
@@ -11,7 +13,10 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from django.db import connection
 
-from echo.apps.activity.models import Action
+from echo.apps.activity.models import Action, DollarDashboardConfig
+
+dollar_config = DollarDashboardConfig.objects.get()
+elastic_url = dollar_config.elasticsearch_url + dollar_config.elasticsearch_index
 
 
 def vuid_location(instance, filename):
@@ -158,12 +163,32 @@ class Project(models.Model):
             if s.status == VoiceSlot.PASS:
                 a = Action.objects.filter(scope__voiceslot=slot, type=Action.TESTER_PASS_SLOT).order_by('-time')[0]
                 Action.log(a.actor, Action.AUTO_PASS_SLOT, 'Slot passed as identical to {0}'.format(slot.name), s)
+
+                # send data to Elastic Search instance
+                elastic_data = {
+                    'timestamp': str(datetime.now()),
+                    'project': self.name,
+                    'action': Action.ATUO_PASS_SLOT,
+                    'savings': dollar_config.auto_pass_slot
+                }
+                requests.post(elastic_url, simplejson.dumps(elastic_data))
+
             elif s.status == VoiceSlot.FAIL:
                 a = Action.objects.filter(scope__voiceslot=slot, type=Action.TESTER_FAIL_SLOT).order_by('-time')[0]
                 Action.log(a.actor,
                            Action.AUTO_FAIL_SLOT,
                            u'{0} (duplicate of {1})'.format(a.description, a.scope.voiceslot.name),
                            s)
+
+                # send data to Elastic Search instance
+                elastic_data = {
+                    'timestamp': str(datetime.now()),
+                    'project': self.name,
+                    'action': Action.AUTO_FAIL_SLOT,
+                    'savings': dollar_config.auto_fail_slot
+                }
+                requests.post(elastic_url, simplejson.dumps(elastic_data))
+
             s.save()
         return vs.count()
 

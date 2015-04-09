@@ -130,6 +130,7 @@ class DollarDashboardConfig(SingletonModel):
     auto_new_slot = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     auto_pass_slot = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     auto_fail_slot = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    auto_missing_slot = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     update_file_status = models.DecimalField(max_digits=12, decimal_places=2, default=0)
 
     elasticsearch_url = models.CharField(max_length=100, default='')
