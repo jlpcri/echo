@@ -1,6 +1,10 @@
+import datetime
+
+import requests
+import simplejson
+
 from django.db import models
 from django.contrib.auth.models import User
-
 from solo.models import SingletonModel
 
 
@@ -122,6 +126,31 @@ class Action(models.Model):
         else:
             raise ValueError('Invalid scope object')
         cls.objects.create(actor=actor, type=action_type, description=description, scope=sc)
+
+        #Send action to Elasticsearch
+        savings = 0
+        dollar_dashboard = DollarDashboardConfig.get_solo()
+        if action_type == cls.TESTER_PASS_SLOT:
+            savings = dollar_dashboard.tester_pass_slot
+        elif action_type == cls.TESTER_FAIL_SLOT:
+            savings = dollar_dashboard.tester_fail_slot
+        elif action_type == cls.AUTO_NEW_SLOT:
+            savings = dollar_dashboard.auto_new_slot
+        elif action_type == cls.AUTO_PASS_SLOT:
+            savings = dollar_dashboard.auto_pass_slot
+        elif action_type == cls.AUTO_FAIL_SLOT:
+            savings = dollar_dashboard.auto_fail_slot
+        elif action_type == cls.AUTO_MISSING_SLOT:
+            savings = dollar_dashboard.auto_missing_slot
+        elif action_type == cls.UPDATE_FILE_STATUSES:
+            savings = dollar_dashboard.update_file_statuses
+        elastic_data = {
+                        'timestamp': str(datetime.now()),
+                        'project': sc.project.name,
+                        'action': action_type,
+                        'savings': savings
+                       }
+        requests.post(dollar_dashboard.get_solo().elastic_url, simplejson.dumps(elastic_data))
 
 
 class DollarDashboardConfig(SingletonModel):
