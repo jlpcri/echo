@@ -74,7 +74,7 @@ class TestViewCertify(TestCase):
         response = self.client.post(self.url, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.content)['success'], False)
-        self.assertEqual(json.loads(response.content)['reason'], 'Project not initial')
+        self.assertEqual(json.loads(response.content)['reason'], 'Project status is not Initial')
         self.user.is_superuser = False
         self.user.save()
 
@@ -86,7 +86,7 @@ class TestViewCertify(TestCase):
         response = self.client.post(self.url, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.content)['success'], False)
-        self.assertEqual(json.loads(response.content)['reason'], 'Project not initial')
+        self.assertEqual(json.loads(response.content)['reason'], 'Project status is not Initial')
         self.user.usersettings.creative_services = False
         self.user.usersettings.save()
 
@@ -98,7 +98,7 @@ class TestViewCertify(TestCase):
         response = self.client.post(self.url, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(json.loads(response.content)['success'], False)
-        self.assertEqual(json.loads(response.content)['reason'], 'Project not initial')
+        self.assertEqual(json.loads(response.content)['reason'], 'Project status is not Initial')
         self.user.usersettings.project_manager = False
         self.user.usersettings.save()
 

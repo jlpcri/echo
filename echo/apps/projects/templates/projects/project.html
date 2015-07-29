@@ -100,7 +100,7 @@
                     <label class="control-label" for="action_list">Project Actions</label>
                     <ul id="action_list" class="list-group">
                         {% if user.username in project.usernames and project.bravo_server %}
-                        {% if not user.usersettings.creative_services and project.status != Project.TESTING %}
+                        {% if not user.usersettings.creative_services and project.status == 'Testing' %}
                         <li class="list-group-item">
                             <b>Start Testing</b>
                             <ul>
@@ -140,7 +140,7 @@
                                     Project</b></a>
                             </li>
                         {% endif %}
-                        {% if user.usersettings.creative_services and project.status == 'Initial' %}
+                        {% if project.status == 'Initial' and user.usersettings.creative_services or project.status == 'Initial' and user.is_superuser %}
                                 <li class="list-group-item">
                                 <a href="#" name="certify_project"><b>Certify Project</b></a>
                                 </li>
