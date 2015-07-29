@@ -1,8 +1,6 @@
 from django import forms
 from models import PreprodServer
 
-from echo.apps.activity.models import DollarDashboardConfig
-
 
 class ServerForm(forms.Form):
     name = forms.CharField(max_length=50, required=True,
@@ -23,19 +21,3 @@ class ServerPreprodForm(forms.Form):
     application_type = forms.ChoiceField(widget=forms.RadioSelect,
                                          choices=PreprodServer.APPLICATION_TYPE_CHOICES)
 
-
-class DollarsDashboardForm(forms.ModelForm):
-    class Meta:
-        model = DollarDashboardConfig
-
-        widgets = {
-            'tester_pass_slot': forms.TextInput(attrs={'class': 'form-control input-sm'}),
-            'tester_fail_slot': forms.TextInput(attrs={'class': 'form-control input-sm'}),
-            'auto_new_slot': forms.TextInput(attrs={'class': 'form-control input-sm'}),
-            'auto_pass_slot': forms.TextInput(attrs={'class': 'form-control input-sm'}),
-            'auto_fail_slot': forms.TextInput(attrs={'class': 'form-control input-sm'}),
-            'auto_missing_slot': forms.TextInput(attrs={'class': 'form-control input-sm'}),
-            'update_file_status': forms.TextInput(attrs={'class': 'form-control input-sm'}),
-            'elasticsearch_url': forms.TextInput(attrs={'class': 'form-control input-sm'}),
-            'elasticsearch_index': forms.TextInput(attrs={'class': 'form-control input-sm'})
-        }
