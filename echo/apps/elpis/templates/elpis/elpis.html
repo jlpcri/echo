@@ -27,7 +27,7 @@
             })
         }
         $(function() {
-            $("#server-select-modal-form").on( "submit", function() {
+            $("#server-select-modal-form").on( "submit", function(event) {
                 event.preventDefault();
                 $.post("{% url 'elpis:set_server' project.pk %}", $("#server-select-modal-form").serialize()).done(function(data) {
                     $("#preprod-server-display").text("Preprod server: " + $("#preprod-server-select").find("option[value='" + $("#preprod-server-select").val() + "']").text())
@@ -38,7 +38,7 @@
                     $("#preprod-path-modal").modal('show');
                 });
             });
-            $("#path-select-modal-form").on( "submit", function() {
+            $("#path-select-modal-form").on( "submit", function(event) {
                 event.preventDefault();
                 $.post("{% url 'elpis:set_path' project.pk %}", $("#path-select-modal-form").serialize()).done(function(data) {
                     $("#preprod-path-display").text("Preprod path: " + data.path);
@@ -58,7 +58,7 @@
                 });
 
             });
-            $("#run-applications-modal-form").on( "submit", function() {
+            $("#run-applications-modal-form").on( "submit", function(event) {
                 event.preventDefault();
                 $("#run-verify").attr('disabled', 'disabled').html("Running...")
                 $("#file-structure-div div").html('<i class="fa fa-spin fa-cog fa-2x"></i>');
