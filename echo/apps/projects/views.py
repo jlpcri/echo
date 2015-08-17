@@ -1,15 +1,13 @@
 from datetime import datetime, timedelta
 import json
-import simplejson
 import os
 import uuid
-import requests
 
 import pysftp
 
 from django.core.urlresolvers import reverse
 from django.db import transaction
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404, redirect, render
@@ -18,16 +16,50 @@ from django.views.decorators.csrf import csrf_exempt
 
 from echo.apps.activity.models import Action
 from echo.apps.core import messages
-from echo.apps.settings.models import Server
+from echo.apps.settings.models import Server, UserSettings
 from echo.apps.projects.forms import ProjectForm, ServerForm, UploadForm, ProjectRootPathForm
 from echo.apps.projects.models import Language, Project, VoiceSlot, VUID, UpdateStatus
 from echo.apps.projects import contexts, helpers
 from echo.apps.projects.tasks import update_file_statuses
-from echo.apps.activity.models import DollarDashboardConfig
 
 
-dollar_config = DollarDashboardConfig.objects.get()
-elastic_url = dollar_config.elasticsearch_url + dollar_config.elasticsearch_index
+@login_required
+@csrf_exempt
+def certify(request, pid):
+    """
+    Certifies project ready for testing or returns error
+    """
+    if request.method == 'POST':
+        p = get_object_or_404(Project, pk=pid)
+        permission = False
+        if request.user.is_superuser:
+            permission = True
+        elif request.user.usersettings.creative_services:
+            permission = True
+        elif request.user.usersettings.project_manager:
+            permission = True
+        if permission:
+            if p.status != Project.INITIAL:
+                return HttpResponse(json.dumps({
+                    'success': False,
+                    'reason': 'Project status is not Initial'
+                }))
+            if p.slots_missing() > 0:
+                return HttpResponse(json.dumps({
+                    'success': False,
+                    'reason': 'Project has missing files'
+                }))
+            p.status = Project.TESTING
+            p.save()
+            return HttpResponse(json.dumps({
+                'success': True
+            }))
+        return HttpResponse(json.dumps({
+            'success': False,
+            'reason': "Invalid user permissions"
+        }))
+    return HttpResponseNotFound()
+
 
 @login_required
 def fetch(request, pid):
@@ -41,15 +73,6 @@ def fetch(request, pid):
                     if result['valid']:
                         messages.success(request, result["message"])
                         Action.log(request.user, Action.UPDATE_FILE_STATUSES, 'File status update ran', p)
-
-                        # send data to Elastic Search instance
-                        elastic_data = {
-                            'timestamp': str(datetime.now()),
-                            'project': p.name,
-                            'action': Action.UPDATE_FILE_STATUSES,
-                            'savings': dollar_config.update_file_status
-                        }
-                        requests.post(elastic_url, simplejson.dumps(elastic_data))
 
                     else:
                         messages.danger(request, result['message'])
@@ -263,16 +286,6 @@ def able_update_file_status(request, p):
             if result['valid']:
                 messages.success(request, result["message"])
                 Action.log(request.user, Action.UPDATE_FILE_STATUSES, 'File status update ran', p)
-
-                # send data to Elastic Search instance
-                elastic_data = {
-                    'timestamp': str(datetime.now()),
-                    'project': p.name,
-                    'action': Action.UPDATE_FILE_STATUSES,
-                    'savings': dollar_config.update_file_status
-                }
-                requests.post(elastic_url, simplejson.dumps(elastic_data))
-
                 return True
             else:
                 messages.danger(request, result['message'])
@@ -307,6 +320,7 @@ def project_progress(request, pid):
 
 @login_required
 def projects(request):
+    """View for list of projects (/pheme/projects)"""
     if request.method == 'GET':
         tab_types = [
             'my',
@@ -482,15 +496,6 @@ def submitslot(request, vsid):
                 slot.save()
                 Action.log(request.user, Action.TESTER_PASS_SLOT, '{0} passed by manual testing'.format(slot.name), slot)
 
-                # send data to Elastic Search instance
-                elastic_data = {
-                    'timestamp': str(datetime.now()),
-                    'project': p.name,
-                    'action': Action.TESTER_PASS_SLOT,
-                    'savings': dollar_config.tester_pass_slot
-                }
-                requests.post(elastic_url, simplejson.dumps(elastic_data))
-
                 # do updates to files here and get count for p pass
                 count = p.voiceslots_match(slot, request)
             else:
@@ -503,15 +508,6 @@ def submitslot(request, vsid):
                 slot.check_in(request.user)
                 slot.save()
                 Action.log(request.user, Action.TESTER_FAIL_SLOT, request.POST['notes'], slot)
-
-                # send data to Elastic Search instance
-                elastic_data = {
-                    'timestamp': str(datetime.now()),
-                    'project': p.name,
-                    'action': Action.TESTER_FAIL_SLOT,
-                    'savings': dollar_config.tester_fail_slot
-                }
-                requests.post(elastic_url, simplejson.dumps(elastic_data))
 
                 # do updates to files here and get count for p failure
                 count = p.voiceslots_match(slot, request)
@@ -549,16 +545,6 @@ def testslot(request, pid, vsid):
                 slot.status = VoiceSlot.MISSING
                 slot.save()
                 Action.log(request.user, Action.AUTO_MISSING_SLOT, 'Slot found missing by individual slot test', slot)
-
-                # send data to Elastic Search instance
-                elastic_data = {
-                    'timestamp': str(datetime.now()),
-                    'project': p.name,
-                    'action': Action.AUTO_MISSING_SLOT,
-                    'savings': dollar_config.auto_missing_slot
-                }
-                requests.post(elastic_url, simplejson.dumps(elastic_data))
-
                 return redirect("projects:project", pid)
             except pysftp.ConnectionException:
                 messages.danger(request, "Connection error to server \"{0}\"".format(p.bravo_server.name))
@@ -685,15 +671,6 @@ def initiate_status_update(request, pid):
     status.running = True
     status.save()
     Action.log(request.user, Action.UPDATE_FILE_STATUSES, 'Updated file statuses', Project.objects.get(pk=pid))
-
-    # send data to Elastic Search instance
-    elastic_data = {
-        'timestamp': str(datetime.now()),
-        'project': project.name,
-        'action': Action.UPDATE_FILE_STATUSES,
-        'savings': dollar_config.update_file_status
-    }
-    requests.post(elastic_url, simplejson.dumps(elastic_data))
 
     return HttpResponse(json.dumps({'success': True}), content_type="application/json")
 
