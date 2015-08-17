@@ -33,6 +33,7 @@ class Project(models.Model):
     preprod_server = models.ForeignKey('settings.PreprodServer', blank=True, null=True, on_delete=models.SET_NULL)
     preprod_path = models.TextField(blank=True, null=True)
     status = models.TextField(choices=PROJECT_STATUS_CHOICES, default=INITIAL)
+    jira_key = models.CharField(max_length=12, blank=True)
 
     def current_server_pk(self):
         return self.bravo_server.pk if self.bravo_server else 0

@@ -320,6 +320,7 @@ def project_progress(request, pid):
 
 @login_required
 def projects(request):
+    """View for list of projects (/pheme/projects)"""
     if request.method == 'GET':
         tab_types = [
             'my',

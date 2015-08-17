@@ -99,7 +99,7 @@ def context_projects(user, tab, sort=None, page=None):
     elif tab == 'csp':
         projects = Project.objects.filter(status=Project.INITIAL)
     elif tab == 'cep':
-        projects = Project.objects.filter(status=Project.TESTING).exclude(users__pk=user.pk)
+        projects = Project.objects.filter(status=Project.TESTING)
 
     if sort:
         if sort == 'project_name':
