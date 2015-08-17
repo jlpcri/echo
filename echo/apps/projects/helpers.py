@@ -3,14 +3,12 @@ from itertools import izip, takewhile
 from django.conf import settings
 from django.utils import timezone
 from openpyxl import load_workbook
-import requests
-import simplejson
 
 from django.db import transaction
 import pysftp
 
 from echo.apps.projects.models import Language, Project, VoiceSlot, VUID, UpdateStatus
-from echo.apps.activity.models import Action, DollarDashboardConfig
+from echo.apps.activity.models import Action
 from echo.apps.projects.tasks import update_file_statuses
 
 
@@ -26,9 +24,6 @@ VUID_HEADER_NAME_SET = {
     PROMPT_TEXT,
     DATE_CHANGED
 }
-
-dollar_config = DollarDashboardConfig.objects.get()
-elastic_url = dollar_config.elasticsearch_url + dollar_config.elasticsearch_index
 
 
 class FileStatus(object):
@@ -65,14 +60,6 @@ def fetch_slots_from_server(project, sftp, user):
             slot.save()
             Action.log(user, Action.AUTO_MISSING_SLOT, 'Slot found missing during status check', slot)
 
-            # send data to Elastic Search instance
-            elastic_data = {
-                'timestamp': str(datetime.now()),
-                'project': project.name,
-                'action': Action.AUTO_MISSING_SLOT,
-                'savings': dollar_config.auto_missing_slot
-            }
-            requests.post(elastic_url, simplejson.dumps(elastic_data))
 
         return {"valid": False, "message": "All files missing on server, given path \"{0}\"".format(path)}
     elif len(result) == 1 and result[0].startswith('find:'):
@@ -100,15 +87,6 @@ def fetch_slots_from_server(project, sftp, user):
                     slot.save()
                     Action.log(user, Action.AUTO_MISSING_SLOT, 'Slot found missing during status check', slot)
 
-                    # send data to Elastic Search instance
-                    elastic_data = {
-                        'timestamp': str(datetime.now()),
-                        'project': project.name,
-                        'action': Action.AUTO_MISSING_SLOT,
-                        'savings': dollar_config.auto_missing_slot
-                    }
-                    requests.post(elastic_url, simplejson.dumps(elastic_data))
-
                 else:
                     # else slot in map, run additional tests
                     fs = map.get(slot.filepath())
@@ -122,30 +100,12 @@ def fetch_slots_from_server(project, sftp, user):
                         slot.save()
                         Action.log(user, Action.AUTO_NEW_SLOT, 'Slot discovered during status check', slot)
 
-                        # send data to Elastic Search instance
-                        elastic_data = {
-                            'timestamp': str(datetime.now()),
-                            'project': project.name,
-                            'action': Action.AUTO_NEW_SLOT,
-                            'savings': dollar_config.auto_new_slot
-                        }
-                        requests.post(elastic_url, simplejson.dumps(elastic_data))
-
                     elif slot.bravo_time is None or bravo_time < datetime.fromtimestamp(fs.mtime) and slot.bravo_checksum != fs.msum:
                         slot.status = VoiceSlot.READY
                         slot.bravo_checksum = fs.msum
                         slot.bravo_time = timezone.make_aware(datetime.fromtimestamp(fs.mtime), timezone.get_current_timezone())
                         slot.save()
                         Action.log(user, Action.AUTO_NEW_SLOT, 'Slot discovered during status check', slot)
-
-                        # send data to Elastic Search instance
-                        elastic_data = {
-                            'timestamp': str(datetime.now()),
-                            'project': project.name,
-                            'action': Action.AUTO_NEW_SLOT,
-                            'savings': dollar_config.auto_new_slot
-                        }
-                        requests.post(elastic_url, simplejson.dumps(elastic_data))
 
             return {"valid": True, "message": "Files from Bravo Server have been fetched"}
 

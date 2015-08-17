@@ -34,8 +34,8 @@
 <body>
 {% include 'core/header.html' %}
 <div id="wrapper">
-    {% if messages %}
-        <div class="container">
+{#    {% if messages %}#}
+        <div id="messages" class="container">
             {% for message in messages %}
                 <div class="alert alert-dismissable alert-{{ message.tags }}">
                     <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
@@ -43,7 +43,7 @@
                 </div>
             {% endfor %}
         </div>
-    {% endif %}
+{#    {% endif %}#}
     <div id="content">
     {% block content %}{% endblock %}
     </div>
