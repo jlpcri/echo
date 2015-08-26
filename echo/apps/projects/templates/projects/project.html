@@ -77,26 +77,6 @@
         <div class="row">
             <div class="col-xs-4">
                 {% if languages %}
-                    <label class="control-label" for="language_list">Prompts by Language</label>
-                    <ul id="language_list" class="list-group">
-                        {% for language in languages %}
-                            <li class="list-group-item" id="prompts-{{language.name}}">
-                                <span class="badge">{{ language.voiceslot_count }}</span>
-                                <a href="{% url "projects:voiceslots" project.pk %}?language={{ language.name|lower }}">
-                                    <b>{{ language.name|capfirst }}</b>
-                                </a>
-                                <div class="jira-tag">Missing: <div style="display:inline-block;float:right" class="missing-jira"></div></div>
-                                <div class="jira-tag">Defective: <div style="display:inline-block;float:right" class="defective-jira"></div></div>
-
-                            </li>
-                        {% endfor %}
-
-                        <li class="list-group-item">
-                            <span class="badge">{{ project.voiceslot_count }}</span>
-                            <a href="{% url "projects:voiceslots" project.pk %}?language=master"><b>Total</b></a>
-                        </li>
-                    </ul>
-                    <br>
                     <label class="control-label" for="action_list">Project Actions</label>
                     <ul id="action_list" class="list-group">
                         {% if user.username in project.usernames and project.bravo_server %}
@@ -127,6 +107,13 @@
                                 <i class="fa fa-spin fa-spinner" id="update_spinner"></i>
                             </li>
                         {% endif %}
+                        <li class="list-group-item">
+                            <form id="jira-form">
+                                <input type="hidden" name="jira-key" value="{{ project.jira_key }}">
+                                <input type="hidden" name="jira-version" value="">
+                            </form>
+                            <a href="#" onclick="sync_jira_tickets(event)"><b>Sync Jira tickets</b></a>
+                        </li>
                         <li class="list-group-item"><a href="{% url 'elpis:dashboard' project.pk %}"><b>Verify File
                             Transfer</b></a></li>
                         {% if project.status == 'Testing' %}
@@ -145,6 +132,23 @@
                                 <a href="#" name="certify_project"><b>Certify Project</b></a>
                                 </li>
                         {% endif %}
+                    </ul>
+                    <br>
+                    <label class="control-label" for="language_list">Prompts by Language</label>
+                    <ul id="language_list" class="list-group">
+                        {% for language in languages %}
+                            <li class="list-group-item" id="prompts-{{language.name}}">
+                                <span class="badge">{{ language.voiceslot_count }}</span>
+                                <a href="{% url "projects:voiceslots" project.pk %}?language={{ language.name|lower }}">
+                                    <b>{{ language.name|capfirst }}</b>
+                                </a>
+                            </li>
+                        {% endfor %}
+
+                        <li class="list-group-item">
+                            <span class="badge">{{ project.voiceslot_count }}</span>
+                            <a href="{% url "projects:voiceslots" project.pk %}?language=master"><b>Total</b></a>
+                        </li>
                     </ul>
                     <br>
                 {% endif %}
@@ -285,39 +289,6 @@
                 }
         });
 
-        function getJiraIcon(percent) {
-            var root = 'http://jira.west.com/images/icons/priorities/';
-            if (percent==0) {
-                return 'http://jira.west.com/images/icons/accept.png';
-            }
-            else if (percent <= .05) {
-                return root + 'minor.png';
-            }
-            else if (percent <= .2) {
-                return root + 'minor.png';
-            }
-            else if (percent <= .4) {
-                return root + 'major.png';
-            }
-            else if (percent <= .7) {
-                return root + 'critical.png';
-            }
-            else {
-                return root + 'blocker.png';
-            }
-        }
-
-        function updateJiraStatus(missing, defective, total, id) {
-            var missingPercent = missing/total;
-            var defectivePercent = defective/total;
-            $(id + " .missing-jira").html('<img src="' + getJiraIcon(missing/total) + '">')
-            $(id + " .defective-jira").html('<img src="' + getJiraIcon(defective/total) + '">')
-        }
-
-        {% for language in languages %}
-        updateJiraStatus({{language.voiceslot_missing|default:0}}, {{language.voiceslot_defective|default:0}}, {{language.voiceslot_count|default:1}}, "#prompts-{{language.name}}");
-        {% endfor %}
-
         function project_update_file_status(event) {
             event = $.event.fix(event);
             event.preventDefault();
@@ -338,7 +309,29 @@
                                 alert("Another file status check was already running.");
                             }
                         }
-                    });
+                    }
+            );
+        }
+
+        function sync_jira_tickets(event) {
+            var project_id = $('#jira-form input[name="jira-key"]').val()
+            if (project_id){
+                $.ajax("{% url 'jira:sync_tickets' %}", {
+                    type: "POST",
+                    data: {project_id: project_id, version: $("#jira-form input[name='jira-version']").val()},
+                    error: function() {
+                        alert("Could not sync Jira tickets. Please click Contact below and report this. Please include this page's URL.");
+                    },
+                    success: function() {
+                        alert("Tickets will be synced in the background. The update should complete shortly.")
+                    }
+
+                })
+            }
+            else {
+                alert("Need to get Jira key");
+            }
+
         }
 
 
