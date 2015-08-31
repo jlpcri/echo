@@ -250,6 +250,45 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="jira-project-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                    <h4 class="modal-title">Select Jira project</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 col-sm-12"><label>Enter Jira key<input class="form-control" name="jira-key-direct-input"></label></div>
+                        <div class="col-md-6 col-sm-12"><label>Or, select from this list<select id="jira-key-select" class="form-control" name="jira-key-select"></select></label></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="setJiraProject()">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="jira-version-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                    <h4 class="modal-title">Select Jira version</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12"><label>Available versions<select id="jira-version-select" class="form-control" name="jira-version-select"></select></label></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="setJiraVersion()">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
     {% include 'projects/modal_suspend_testing.html' %}
 {% endblock %}
 {% block endscript %}
@@ -316,22 +355,68 @@
         function sync_jira_tickets(event) {
             var project_id = $('#jira-form input[name="jira-key"]').val()
             if (project_id){
-                $.ajax("{% url 'jira:sync_tickets' %}", {
-                    type: "POST",
-                    data: {project_id: project_id, version: $("#jira-form input[name='jira-version']").val()},
-                    error: function() {
-                        alert("Could not sync Jira tickets. Please click Contact below and report this. Please include this page's URL.");
-                    },
-                    success: function() {
-                        alert("Tickets will be synced in the background. The update should complete shortly.")
-                    }
+                var version = $('#jira-form input[name="jira-version"').val()
+                if (version) {
+                    $.ajax("{% url 'jira:sync_tickets' %}", {
+                        type: "POST",
+                        data: {project_id: {{ project.id }}, version: $("#jira-form input[name='jira-version']").val()},
+                        error: function() {
+                            alert("Could not sync Jira tickets. Please click Contact below and report this. Please include this page's URL.");
+                        },
+                        success: function() {
+                            alert("Tickets will be synced in the background. The update should complete shortly.")
+                        }
 
-                })
+                    })
+                }
+                else {
+                    $.ajax("{% url 'jira:versions' '' %}" + $('#jira-form input[name="jira-version"').val(), {
+                        type: "GET",
+                        error: function() {
+                            alert("Failed to get list of Jira versions");
+                        },
+                        success: function(data) {
+                            alert(data);
+                        }
+                    })
+                }
+
             }
             else {
-                alert("Need to get Jira key");
+                $.ajax("{% url 'jira:project_list' %}", {
+                    type: "GET",
+                    error: function() {
+                        alert("There was a problem fetching the project list from Jira. Please click the Contact link below and report this. Please include this page's URL and the Jira project you want to be associated with this testing effort.");
+
+                    },
+                    success: function(data) {
+                        var options = [];
+                        var project_count = data.length;
+                        for (var i= 0; i < project_count; i++) {
+                            options[i] = '<option value="' + data[i].key + '">' + data[i].name + ' (' + data[i].key + ')' + '</option>';
+                        }
+                        $("#jira-key-select").get(0).innerHTML = options.join('')
+                        $("#jira-project-modal").modal('show');
+                    }
+                })
             }
 
+        }
+
+        function setJiraProject() {
+            $.ajax("{% url 'jira:set_key' %}", {
+                type: "POST",
+                data: {
+                    jira_key: $("#jira-key-select").val(),
+                    project_id: {{project.id}}
+                }
+            });
+            $("#jira-project-modal").modal('close');
+        }
+
+        function setjiraVersion() {
+            $('#jira-form input[name="jira-version"]').val($("#jira-version-select").val())
+            alert("Set version to " + $('#jira-form input[name="jira-version"').val())
         }
 
 
