@@ -11,18 +11,19 @@ class Ticket(models.Model):
 
     def open(self, version_name):
         """Open a new ticket for a voiceslot that has not had one previously."""
+        server = open_jira_connection()
+        language = self.voiceslot.language.name.title() if self.voiceslot.language.name.title() in ('English', 'Spanish') else 'Other'
+        components = [c.name for c in server.project(self.voiceslot.language.project.jira_key).components if c.name.endswith(language)]
         new_issue = {
             'project': self.voiceslot.language.project.jira_key,
             'summary': self.voiceslot.history_list().latest('time').description,
             'description': "{0} {1} prompt: {2}".format('Invalid', self.voiceslot.language.name, self.voiceslot.name),
             'issuetype': {'name': 'Bug'},
             'versions': [{'name': version_name}],
-            'components': [{'name': 'Voice Slot/{0}'.format(self.voiceslot.language.name.title()
-                                                            if self.voiceslot.language.name.title() in ('English', 'Spanish')
-                                                            else 'Other')}]
+            'components': [{'name': components[0]}]
         }
 
-        server = open_jira_connection()
+
         server.create_issue(fields=new_issue)
         return
 
