@@ -345,7 +345,7 @@
                             var json_data = $.parseJSON(data);
                             if (json_data.success == false)
                             {
-                                alert("Another file status check was already running.");
+                                bootstrapAlert("Another file status check is already running.", 'info');
                             }
                         }
                     }
@@ -361,10 +361,10 @@
                         type: "POST",
                         data: {project_id: {{ project.id }}, version: $("#jira-form input[name='jira-version']").val()},
                         error: function() {
-                            alert("Could not sync Jira tickets. Please click Contact below and report this. Please include this page's URL.");
+                            bootstrapAlert("Could not sync Jira tickets. Please click Contact below and report this. Please include this page's URL.", 'danger');
                         },
                         success: function() {
-                            alert("Tickets will be synced in the background. The update should complete shortly.")
+                            bootstrapAlert("Tickets will be synced in the background. The update should complete shortly.", 'success')
                         }
 
                     })
@@ -392,7 +392,7 @@
                 $.ajax("{% url 'jira:project_list' %}", {
                     type: "GET",
                     error: function() {
-                        alert("There was a problem fetching the project list from Jira. Please click the Contact link below and report this. Please include this page's URL and the Jira project you want to be associated with this testing effort.");
+                        bootstrapAlert("There was a problem fetching the project list from Jira. Please click the Contact link below and report this. Please include this page's URL and the Jira project you want to be associated with this testing effort.", 'danger');
 
                     },
                     success: function(data) {
@@ -415,14 +415,29 @@
                 data: {
                     jira_key: $("#jira-key-select").val(),
                     project_id: {{project.id}}
+                },
+                success: function(data) {
+                    $('#jira-form input[name="jira-key"]').val($("#jira-key-select").val());
+                    bootstrapAlert('Jira project key set to ' + $("#jira-key-select").val())
                 }
             });
-            $("#jira-project-modal").modal('close');
+            $("#jira-project-modal").modal('hide');
+            sync_jira_tickets()
         }
 
-        function setjiraVersion() {
+        function setJiraVersion() {
             $('#jira-form input[name="jira-version"]').val($("#jira-version-select").val())
-            alert("Set version to " + $('#jira-form input[name="jira-version"').val())
+            bootstrapAlert("Set version to " + $('#jira-form input[name="jira-version"').val(), 'success');
+            $("#jira-version-modal").modal('hide');
+            sync_jira_tickets()
+        }
+
+        function bootstrapAlert(message, severity) {
+            var body = '<div class="alert alert-dismissable alert-' + severity + '">';
+            body += '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>';
+            body += message
+            body += '</div>';
+            $('#messages').append(body);
         }
 
 
