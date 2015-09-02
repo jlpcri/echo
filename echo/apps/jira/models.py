@@ -16,8 +16,8 @@ class Ticket(models.Model):
         components = [c.name for c in server.project(self.voiceslot.language.project.jira_key).components if c.name.endswith(language)]
         new_issue = {
             'project': self.voiceslot.language.project.jira_key,
-            'summary': self.voiceslot.history_list().latest('time').description,
-            'description': "{0} {1} prompt: {2}".format('Invalid', self.voiceslot.language.name, self.voiceslot.name),
+            'description': self.voiceslot.history_list().latest('time').description,
+            'summary': "{0} {1} prompt: {2}".format('Invalid', self.voiceslot.language.name.title(), self.voiceslot.name),
             'issuetype': {'name': 'Bug'},
             'versions': [{'name': version_name}],
             'components': [{'name': components[0]}]
