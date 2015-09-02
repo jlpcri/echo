@@ -21,10 +21,10 @@ def sync_tickets(request):
     return HttpResponse(json.dumps({'success': True}), content_type="application/json")
 
 
-def get_versions_by_project(request, project_id):
+def get_versions_by_project(request):
     """Return version names for a given Jira project (not Pheme) in JSON array"""
     j = open_jira_connection()
-    project = j.project(project_id)
+    project = j.project(request.GET.get('p', '__NO_PROJECT_SELECTED'))
     return HttpResponse(json.dumps([version.name for version in project.versions]), content_type="application/json")
 
 

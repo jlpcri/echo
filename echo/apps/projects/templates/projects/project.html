@@ -370,13 +370,19 @@
                     })
                 }
                 else {
-                    $.ajax("{% url 'jira:versions' '' %}" + $('#jira-form input[name="jira-version"').val(), {
+                    $.ajax("{% url 'jira:versions' %}" + "?p=" + $('#jira-form input[name="jira-key"]').val(), {
                         type: "GET",
                         error: function() {
                             alert("Failed to get list of Jira versions");
                         },
                         success: function(data) {
-                            alert(data);
+                            $("#jira-version-modal").modal('show');
+                            var options = [];
+                            var version_count = data.length;
+                            for (var i= 0; i < version_count; i++) {
+                                options[i] = '<option value="' + data[i] + '">' + data[i] + '</option>';
+                            }
+                            $("#jira-version-select").get(0).innerHTML = options.join('')
                         }
                     })
                 }
