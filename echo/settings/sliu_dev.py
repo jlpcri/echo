@@ -23,3 +23,13 @@ PRIVATE_KEY = '/home/sliu/.ssh/id_rsa'
 #         'USER': 'sliu',
 #     }
 # }
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': 'pheme',
+        'USER': 'scorecard',
+        'HOST': 'qaci01.wic.west.com',
+        'PORT': '5433'
+    }
+}
