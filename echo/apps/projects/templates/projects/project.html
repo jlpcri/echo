@@ -418,11 +418,12 @@
                 },
                 success: function(data) {
                     $('#jira-form input[name="jira-key"]').val($("#jira-key-select").val());
-                    bootstrapAlert('Jira project key set to ' + $("#jira-key-select").val())
+                    bootstrapAlert('Jira project key set to ' + $("#jira-key-select").val());
+                    sync_jira_tickets();
                 }
             });
             $("#jira-project-modal").modal('hide');
-            sync_jira_tickets()
+
         }
 
         function setJiraVersion() {

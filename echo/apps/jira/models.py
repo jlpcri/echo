@@ -13,7 +13,7 @@ class Ticket(models.Model):
         """Open a new ticket for a voiceslot that has not had one previously."""
         new_issue = {
             'project': self.voiceslot.language.project.jira_key,
-            'summary': self.voiceslot.history_list.latest('time').description,
+            'summary': self.voiceslot.history_list().latest('time').description,
             'description': "{0} {1} prompt: {2}".format('Invalid', self.voiceslot.language.name, self.voiceslot.name),
             'issuetype': {'name': 'Bug'},
             'versions': [{'name': version_name}],
