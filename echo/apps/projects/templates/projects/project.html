@@ -77,26 +77,6 @@
         <div class="row">
             <div class="col-xs-4">
                 {% if languages %}
-                    <label class="control-label" for="language_list">Prompts by Language</label>
-                    <ul id="language_list" class="list-group">
-                        {% for language in languages %}
-                            <li class="list-group-item" id="prompts-{{language.name}}">
-                                <span class="badge">{{ language.voiceslot_count }}</span>
-                                <a href="{% url "projects:voiceslots" project.pk %}?language={{ language.name|lower }}">
-                                    <b>{{ language.name|capfirst }}</b>
-                                </a>
-                                <div class="jira-tag">Missing: <div style="display:inline-block;float:right" class="missing-jira"></div></div>
-                                <div class="jira-tag">Defective: <div style="display:inline-block;float:right" class="defective-jira"></div></div>
-
-                            </li>
-                        {% endfor %}
-
-                        <li class="list-group-item">
-                            <span class="badge">{{ project.voiceslot_count }}</span>
-                            <a href="{% url "projects:voiceslots" project.pk %}?language=master"><b>Total</b></a>
-                        </li>
-                    </ul>
-                    <br>
                     <label class="control-label" for="action_list">Project Actions</label>
                     <ul id="action_list" class="list-group">
                         {% if user.username in project.usernames and project.bravo_server %}
@@ -127,6 +107,13 @@
                                 <i class="fa fa-spin fa-spinner" id="update_spinner"></i>
                             </li>
                         {% endif %}
+                        <li class="list-group-item">
+                            <form id="jira-form">
+                                <input type="hidden" name="jira-key" value="{{ project.jira_key }}">
+                                <input type="hidden" name="jira-version" value="">
+                            </form>
+                            <a href="#" onclick="sync_jira_tickets(event)"><b>Sync Jira tickets</b></a>
+                        </li>
                         <li class="list-group-item"><a href="{% url 'elpis:dashboard' project.pk %}"><b>Verify File
                             Transfer</b></a></li>
                         {% if project.status == 'Testing' %}
@@ -145,6 +132,23 @@
                                 <a href="#" name="certify_project"><b>Certify Project</b></a>
                                 </li>
                         {% endif %}
+                    </ul>
+                    <br>
+                    <label class="control-label" for="language_list">Prompts by Language</label>
+                    <ul id="language_list" class="list-group">
+                        {% for language in languages %}
+                            <li class="list-group-item" id="prompts-{{language.name}}">
+                                <span class="badge">{{ language.voiceslot_count }}</span>
+                                <a href="{% url "projects:voiceslots" project.pk %}?language={{ language.name|lower }}">
+                                    <b>{{ language.name|capfirst }}</b>
+                                </a>
+                            </li>
+                        {% endfor %}
+
+                        <li class="list-group-item">
+                            <span class="badge">{{ project.voiceslot_count }}</span>
+                            <a href="{% url "projects:voiceslots" project.pk %}?language=master"><b>Total</b></a>
+                        </li>
                     </ul>
                     <br>
                 {% endif %}
@@ -246,6 +250,45 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="jira-project-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                    <h4 class="modal-title">Select Jira project</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 col-sm-12"><label>Enter Jira key<input class="form-control" name="jira-key-direct-input"></label></div>
+                        <div class="col-md-6 col-sm-12"><label>Or, select from this list<select id="jira-key-select" class="form-control" name="jira-key-select"></select></label></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="setJiraProject()">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="jira-version-modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                    <h4 class="modal-title">Select Jira version</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12"><label>Available versions<select id="jira-version-select" class="form-control" name="jira-version-select"></select></label></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="setJiraVersion()">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
     {% include 'projects/modal_suspend_testing.html' %}
 {% endblock %}
 {% block endscript %}
@@ -285,39 +328,6 @@
                 }
         });
 
-        function getJiraIcon(percent) {
-            var root = 'http://jira.west.com/images/icons/priorities/';
-            if (percent==0) {
-                return 'http://jira.west.com/images/icons/accept.png';
-            }
-            else if (percent <= .05) {
-                return root + 'minor.png';
-            }
-            else if (percent <= .2) {
-                return root + 'minor.png';
-            }
-            else if (percent <= .4) {
-                return root + 'major.png';
-            }
-            else if (percent <= .7) {
-                return root + 'critical.png';
-            }
-            else {
-                return root + 'blocker.png';
-            }
-        }
-
-        function updateJiraStatus(missing, defective, total, id) {
-            var missingPercent = missing/total;
-            var defectivePercent = defective/total;
-            $(id + " .missing-jira").html('<img src="' + getJiraIcon(missing/total) + '">')
-            $(id + " .defective-jira").html('<img src="' + getJiraIcon(defective/total) + '">')
-        }
-
-        {% for language in languages %}
-        updateJiraStatus({{language.voiceslot_missing|default:0}}, {{language.voiceslot_defective|default:0}}, {{language.voiceslot_count|default:1}}, "#prompts-{{language.name}}");
-        {% endfor %}
-
         function project_update_file_status(event) {
             event = $.event.fix(event);
             event.preventDefault();
@@ -335,10 +345,100 @@
                             var json_data = $.parseJSON(data);
                             if (json_data.success == false)
                             {
-                                alert("Another file status check was already running.");
+                                bootstrapAlert("Another file status check is already running.", 'info');
                             }
                         }
-                    });
+                    }
+            );
+        }
+
+        function sync_jira_tickets(event) {
+            var project_id = $('#jira-form input[name="jira-key"]').val()
+            if (project_id){
+                var version = $('#jira-form input[name="jira-version"').val()
+                if (version) {
+                    $.ajax("{% url 'jira:sync_tickets' %}", {
+                        type: "POST",
+                        data: {project_id: {{ project.id }}, version: $("#jira-form input[name='jira-version']").val()},
+                        error: function() {
+                            bootstrapAlert("Could not sync Jira tickets. Please click Contact below and report this. Please include this page's URL.", 'danger');
+                        },
+                        success: function() {
+                            bootstrapAlert("Tickets will be synced in the background. The update should complete shortly.", 'success')
+                        }
+
+                    })
+                }
+                else {
+                    $.ajax("{% url 'jira:versions' %}" + "?p=" + $('#jira-form input[name="jira-key"]').val(), {
+                        type: "GET",
+                        error: function() {
+                            alert("Failed to get list of Jira versions");
+                        },
+                        success: function(data) {
+                            $("#jira-version-modal").modal('show');
+                            var options = [];
+                            var version_count = data.length;
+                            for (var i= 0; i < version_count; i++) {
+                                options[i] = '<option value="' + data[i] + '">' + data[i] + '</option>';
+                            }
+                            $("#jira-version-select").get(0).innerHTML = options.join('')
+                        }
+                    })
+                }
+
+            }
+            else {
+                $.ajax("{% url 'jira:project_list' %}", {
+                    type: "GET",
+                    error: function() {
+                        bootstrapAlert("There was a problem fetching the project list from Jira. Please click the Contact link below and report this. Please include this page's URL and the Jira project you want to be associated with this testing effort.", 'danger');
+
+                    },
+                    success: function(data) {
+                        var options = [];
+                        var project_count = data.length;
+                        for (var i= 0; i < project_count; i++) {
+                            options[i] = '<option value="' + data[i].key + '">' + data[i].name + ' (' + data[i].key + ')' + '</option>';
+                        }
+                        $("#jira-key-select").get(0).innerHTML = options.join('')
+                        $("#jira-project-modal").modal('show');
+                    }
+                })
+            }
+
+        }
+
+        function setJiraProject() {
+            $.ajax("{% url 'jira:set_key' %}", {
+                type: "POST",
+                data: {
+                    jira_key: $("#jira-key-select").val(),
+                    project_id: {{project.id}}
+                },
+                success: function(data) {
+                    $('#jira-form input[name="jira-key"]').val($("#jira-key-select").val());
+                    bootstrapAlert('Jira project key set to ' + $("#jira-key-select").val());
+                    sync_jira_tickets();
+                }
+            });
+            $("#jira-project-modal").modal('hide');
+
+        }
+
+        function setJiraVersion() {
+            $('#jira-form input[name="jira-version"]').val($("#jira-version-select").val())
+            bootstrapAlert("Set version to " + $('#jira-form input[name="jira-version"').val(), 'success');
+            $("#jira-version-modal").modal('hide');
+            sync_jira_tickets()
+        }
+
+        function bootstrapAlert(message, severity) {
+            var body = '<div class="alert alert-dismissable alert-' + severity + '">';
+            body += '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>';
+            body += message
+            body += '</div>';
+            $('#messages').append(body);
         }
 
 
