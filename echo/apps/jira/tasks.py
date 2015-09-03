@@ -10,7 +10,7 @@ def sync_jira_to_ticket_status(voiceslot_id, version_name):
         if v.status == VoiceSlot.PASS:
             v.ticket_set.first().close()
         if v.status == VoiceSlot.FAIL or v.status == VoiceSlot.MISSING:
-            v.ticket_set.first().reopen()
+            v.ticket_set.first().reopen(version_name)
         return
     if v.status == VoiceSlot.MISSING or v.status == VoiceSlot.FAIL:
         t = Ticket.objects.create(voiceslot=v)
