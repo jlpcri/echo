@@ -44,3 +44,6 @@ class Ticket(models.Model):
             server.transition_issue(issue, '3')
 
         return
+
+    def __unicode__(self):
+        return self.voiceslot.language.project.jira_key
