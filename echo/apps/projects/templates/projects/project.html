@@ -355,7 +355,7 @@
         function sync_jira_tickets(event) {
             var project_id = $('#jira-form input[name="jira-key"]').val()
             if (project_id){
-                var version = $('#jira-form input[name="jira-version"').val()
+                var version = $('#jira-form input[name="jira-version"]').val()
                 if (version) {
                     $.ajax("{% url 'jira:sync_tickets' %}", {
                         type: "POST",
@@ -428,7 +428,7 @@
 
         function setJiraVersion() {
             $('#jira-form input[name="jira-version"]').val($("#jira-version-select").val())
-            bootstrapAlert("Set version to " + $('#jira-form input[name="jira-version"').val(), 'success');
+            bootstrapAlert("Set version to " + $('#jira-form input[name="jira-version"]').val(), 'success');
             $("#jira-version-modal").modal('hide');
             sync_jira_tickets()
         }
