@@ -109,3 +109,6 @@ class UserSettings(models.Model):
     creative_services = models.BooleanField(default=False)
     project_manager = models.BooleanField(default=False)
 
+    def __unicode__(self):
+        return "{0}, {1}".format(self.user.first_name, self.user.last_name)
+

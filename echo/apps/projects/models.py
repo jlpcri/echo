@@ -35,6 +35,9 @@ class Project(models.Model):
     status = models.TextField(choices=PROJECT_STATUS_CHOICES, default=INITIAL)
     jira_key = models.CharField(max_length=12, blank=True)
 
+    def __unicode__(self):
+        return self.name
+
     def current_server_pk(self):
         return self.bravo_server.pk if self.bravo_server else 0
 
@@ -282,6 +285,9 @@ class VoiceSlot(models.Model):
     vuid_time = models.DateField(blank=True, null=True)
     check_in_time = models.DateTimeField(blank=True, null=True)
 
+    def __unicode__(self):
+        return '{0}: {1}'.format(self.name, self.language.project.name)
+
     def check_in(self, user, forced=False):
         if self.checked_out is True:
             self.checked_out = False
@@ -324,6 +330,9 @@ class VUID(models.Model):
     file = models.FileField(upload_to=vuid_location)
     upload_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
 
+    def __unicode__(self):
+        return '{0}: {1}'.format(self.filename, self.project.name)
+
 
 class Language(models.Model):
     """Represents an available language in one project"""
@@ -342,8 +351,15 @@ class Language(models.Model):
     def voiceslot_defective(self):
         return VoiceSlot.objects.filter(language=self, status=VoiceSlot.FAIL).count()
 
+    def __unicode__(self):
+        return '{0}: {1}'.format(self.name, self.project.name)
+
+
 class UpdateStatus(models.Model):
     project = models.ForeignKey('projects.Project')
     last_run = models.DateTimeField(auto_now=True)
     running = models.BooleanField(default=False)
     query_id = models.TextField(default='')
+
+    def __unicode__(self):
+        return '{0}: {1}'.format(self.project.name, self.running)

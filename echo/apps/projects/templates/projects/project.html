@@ -262,6 +262,9 @@
                         <div class="col-md-6 col-sm-12"><label>Enter Jira key<input class="form-control" name="jira-key-direct-input"></label></div>
                         <div class="col-md-6 col-sm-12"><label>Or, select from this list<select id="jira-key-select" class="form-control" name="jira-key-select"></select></label></div>
                     </div>
+                    <div class="row">
+                        <div id="errMessage" class="col-md-6 col-sm-12"></div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -275,7 +278,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-                    <h4 class="modal-title">Select Jira version</h4>
+                    <h4 class="modal-title">Select Jira version - {{ project.jira_key }}</h4>
                 </div>
                 <div class="modal-body">
                     <div class="row">
@@ -355,7 +358,7 @@
         function sync_jira_tickets(event) {
             var project_id = $('#jira-form input[name="jira-key"]').val()
             if (project_id){
-                var version = $('#jira-form input[name="jira-version"').val()
+                var version = $('#jira-form input[name="jira-version"]').val()
                 if (version) {
                     $.ajax("{% url 'jira:sync_tickets' %}", {
                         type: "POST",
@@ -409,26 +412,48 @@
 
         }
 
-        function setJiraProject() {
+        function setJiraKey(jira_key) {
             $.ajax("{% url 'jira:set_key' %}", {
                 type: "POST",
                 data: {
-                    jira_key: $("#jira-key-select").val(),
+                    jira_key: jira_key,
                     project_id: {{project.id}}
                 },
                 success: function(data) {
-                    $('#jira-form input[name="jira-key"]').val($("#jira-key-select").val());
-                    bootstrapAlert('Jira project key set to ' + $("#jira-key-select").val());
+                    $('#jira-form input[name="jira-key"]').val(jira_key);
+                    bootstrapAlert('Jira project key set to ' + jira_key);
                     sync_jira_tickets();
                 }
             });
-            $("#jira-project-modal").modal('hide');
 
+            $("#jira-project-modal").modal('hide');
+        }
+
+        function setJiraProject() {
+
+            var jira_key = $('#jira-project-modal input[name="jira-key-direct-input"]').val().toUpperCase();
+            if (jira_key == '') {
+                jira_key = $("#jira-key-select").val();
+                setJiraKey(jira_key);
+            } else {
+                var jira_key_list = [];
+                $.getJSON("{% url 'jira:project_list' %}").done(function(data){
+                    for (var i = 0; i < data.length; i++) {
+                        jira_key_list.push(data[i].key);
+                    }
+                    if (jira_key_list.indexOf(jira_key) >= 0) {
+                        setJiraKey(jira_key);
+                    } else {
+                        $('#errMessage').html('Incorrect Jira Key');
+                        return false;
+                    }
+                });
+            }
         }
 
         function setJiraVersion() {
             $('#jira-form input[name="jira-version"]').val($("#jira-version-select").val())
-            bootstrapAlert("Set version to " + $('#jira-form input[name="jira-version"').val(), 'success');
+            bootstrapAlert("Set version to " + $('#jira-form input[name="jira-version"]').val(), 'success');
             $("#jira-version-modal").modal('hide');
             sync_jira_tickets()
         }

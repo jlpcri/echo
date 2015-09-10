@@ -25,6 +25,11 @@
                             {% endif %}
                         </a>
                         <ul class="dropdown-menu navbar-dropdown-menu">
+                            {% if user.is_superuser %}
+                                <li>
+                                    <a href="{% url 'admin:index' %}" target="_blank"><i class="fa fa-cogs"></i>&nbsp;Django Admin</a>
+                                </li>
+                            {% endif %}
                             <li><a href="{% url 'core:signout' %}"><i class="fa fa-sign-out fa-fw"></i>&nbsp;Sign Out</a></li>
                         </ul>
                     </li>
