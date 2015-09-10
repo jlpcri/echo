@@ -278,7 +278,8 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-                    <h4 class="modal-title">Select Jira version - {{ project.jira_key }}</h4>
+{#                    <h4 class="modal-title">Select Jira version - {{ project.jira_key }}</h4>#}
+                    <h4 class="modal-title" id="jira-version-title"></h4>
                 </div>
                 <div class="modal-body">
                     <div class="row">
@@ -379,6 +380,7 @@
                             alert("Failed to get list of Jira versions");
                         },
                         success: function(data) {
+                            $("#jira-version-title").html('Select Jira version - ' + project_id);
                             $("#jira-version-modal").modal('show');
                             var options = [];
                             var version_count = data.length;
