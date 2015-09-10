@@ -373,7 +373,7 @@ def queue(request, pid):
             messages.danger(request, 'No files are pending test.')
             return redirect('projects:project', pid=pid)
         lang = get_object_or_404(Language, project=p, name=request.GET.get('language', '__malformed').lower())
-        slots_out = request.user.voiceslot_set
+        slots_out = request.user.voiceslot_set.all()
         # TODO check this block
         if slots_out.count() > 0:
             slot = slots_out.first()
