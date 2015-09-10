@@ -387,7 +387,7 @@ def queue(request, pid):
                 return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, slot_file, finish_listen, fail_select))
             else:
                 for slot in slots_out:
-                    slot.check_in()
+                    slot.check_in(request.user)
         slot = lang.voiceslot_set.filter(status=VoiceSlot.READY, checked_out=False).first()
         # check if all voice slots have been tested
         if not slot:
