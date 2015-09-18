@@ -20,7 +20,7 @@
         <hr>
         <div class="row">
             <div class="col-xs-12">
-                <table class="table table-striped table-hover">
+                <table border="1" bordercolor="blue" id="language_table" class="table table-striped table-hover tablesorter ">
                     <thead>
                     <tr>
                         <th class="col-xs-3">Name</th>
@@ -83,7 +83,45 @@
 
 {% endblock %}
 {% block endscript %}
+
+    <style>
+
+        table.tablesorter thead tr th.headerSortUp:after,
+        table.tablesorter thead tr th.headerSortDown:after,
+        table.tablesorter thead tr th.header:after {
+            font-family: FontAwesome;
+        }
+
+        table.tablesorter thead tr th.header:after {
+            content: "\f0dc";
+            color: black;  /* #ddd; */
+            font-size: 0.8em;
+            padding-top: 0.12em;
+            position: relative;
+            left: 2px;
+            border: 8px solid transparent;
+        }
+
+        table.tablesorter thead tr th.headerSortUp:after {
+            content: "\f0de";
+        }
+
+        table.tablesorter thead tr th.headerSortDown:after {
+            content: "\f0dd";
+        }
+
+    </style>
+
     <script type="text/javascript">
         {% include 'projects/projects.js' %}
+    </script>
+
+    <script type="text/javascript">
+        {% include 'projects/jquery.tablesorter.min.js' %}
+        (function($) {
+            $(document).ready(function () {
+                $("#language_table").tablesorter();
+            });
+        })(jQuery);
     </script>
 {% endblock %}
