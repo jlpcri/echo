@@ -12,6 +12,8 @@ if __name__ == "__main__":
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "echo.settings.qa_lab")
     elif socket.gethostname() == "sliu-OptiPlex-GX520":
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "echo.settings.sliu_dev")
+    elif socket.gethostname() == "bw_ubuntu_west":
+        os.environ.setdefault("DJANGO_SETTINGS_MODULE", "echo.settings.wew_dev")
     else:
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "echo.settings.base")
 
