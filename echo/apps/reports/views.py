@@ -53,7 +53,7 @@ def missing(request, pid):
         # Missing
         missing = []
         project = get_object_or_404(Project, pk=pid)
-        missing_slots = project.voiceslots_missing()
+        missing_slots = project.voiceslots_missing().order_by('path', 'name')
         for item in missing_slots:
             temp = {
                 'filepath': item.filepath,
