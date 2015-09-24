@@ -73,21 +73,21 @@
     </script>
 {% endblock %}
 {% block content %}
-    <div class="container" style="border: 1px solid black;">
-        <div class="row" style="border: 1px solid black;">
+    <div class="container">
+        <div class="row">
             <div class="col-xs-12" style="overflow:hidden;">
             <!-- Start header row -->
                 <h3 style="text-align:left; display:inline-block">{{ project.name }} - Verify File Deployment</h3>
 
                 <!-- <div><input type="button" value="Back/Previous Page" class="btn btn-primary" style="float:right;" onclick="javascript:history.go(-1);"></div> -->
-                <div style="font-size:1.25em; color:#2FA4E7; float:right; margin-top:2px;"><i class="fa fa-arrow-left"></i><a href="javascript:history.go(-1)">  Back/Previous Page</a></div>
+                <div style="font-size:1.25em; color:#2FA4E7; float:right; margin-top:2px; margin-right:10px;"><i class="fa fa-arrow-left"></i><a href="javascript:history.go(-1)">  Back to Project Dashboard</a></div>
 
-                <!-- <div style="clear:both;"></div> #2FA4E7 -->
+                <!-- <div style="clear:both;"></div> -->
             </div>
         </div>
         <hr>
-        <div class="row" style="border: 1px solid black;">
-            <div class="col-xs-4" style="border: 1px solid black;">
+        <div class="row">
+            <div class="col-xs-4">
                 <!-- Start left column -->
                 <label class="control-label" for="preprod-info">Preprod Information</label>
                 <ul id="preprod-info" class="list-group">
@@ -103,17 +103,17 @@
                 </ul>
                 <input type="button" data-toggle="modal" data-target="#preprod-modal" value="Update Preprod Information" class="btn btn-primary">
                 <p/>
-                <div style="border:1px solid black;">
+                <div>
                     <p/>
                     <!-- <input type="button" value="Back/Previous Page" class="btn btn-primary" onclick="javascript:history.go(-1);"> -->
                     <!-- <a href="javascript:history.go(-1)">Back/Previous Page</a> -->
                     <p><a class="btn btn-primary" href="javascript:history.go(-1)"><i class="fa fa-arrow-left"></i> Back/Previous</a></p>
                     <p><a class="btn btn-primary" href="javascript:history.go(-1)"> Back/Previous</a></p>
-                    <p><i class="fa fa-arrow-left"></i><a href="javascript:history.go(-1)"> Back/Previous Page</a></p>
+                    <p><i class="fa fa-arrow-left" style="color:#2FA4E7;"></i><a href="javascript:history.go(-1)"> Back/Previous Page</a></p>
                     <p/>
                 </div>
                 <hr>
-                <div class="panel panel-default" style="border: 1px solid black;">
+                <div class="panel panel-default">
                     <div class="panel-heading">
                         <h3 class="panel-title">File Status Legend</h3>
                     </div>
