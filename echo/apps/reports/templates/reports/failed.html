@@ -35,12 +35,12 @@
             </div>
             <div class="row">
                 <div class="col-xs-12">
-                    <table class="table">
+                    <table id="failed_table" class="table tablesorter">
                         <thead>
                         <tr>
-                            <td class="col-md-4"><strong>Voice Slot</strong></td>
-                            <td class="col-md-2"><strong>Test Time</strong></td>
-                            <td class="col-md-3"><strong>Failure Cause</strong></td>
+                            <th class="col-md-4"><strong>Voice Slot</strong></th>
+                            <th class="col-md-2"><strong>Test Time</strong></th>
+                            <th class="col-md-3"><strong>Failure Cause</strong></th>
                         </tr>
                         </thead>
                         <tbody>
@@ -66,7 +66,42 @@
     </div>
 {% endblock %}
 {% block endscript %}
+
+    <style>
+
+        table.tablesorter thead tr th.headerSortUp:after,
+        table.tablesorter thead tr th.headerSortDown:after,
+        table.tablesorter thead tr th.header:after {
+            font-family: FontAwesome;
+        }
+
+        table.tablesorter thead tr th.header:after {
+            content: "\f0dc";
+            color: #555;
+            font-size: 0.8em;
+            padding-top: 0.12em;
+            position: relative;
+            left: 2px;
+            border: 8px solid transparent;
+        }
+
+        table.tablesorter thead tr th.headerSortUp:after {
+            content: "\f0dd";
+        }
+
+        table.tablesorter thead tr th.headerSortDown:after {
+            content: "\f0de";
+        }
+
+    </style>
+
     <script type="text/javascript" src="{% static 'echo/core/core.js' %}"></script>
     <script type="text/javascript">
+        {% include 'reports/jquery.tablesorter.min.js' %}
+        (function($) {
+            $(document).ready(function () {
+                $("#failed_table").tablesorter();
+            });
+        })(jQuery);
     </script>
 {% endblock %}

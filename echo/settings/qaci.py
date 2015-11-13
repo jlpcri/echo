@@ -1,5 +1,7 @@
 from base import *
 
+DEBUG = False
+
 STATIC_URL = '/static/'
 STATIC_ROOT = '/opt/static_web/'
 STATICFILES_DIRS = []

@@ -1,10 +1,6 @@
 from base import *
 
-DEBUG = False
-
-STATIC_URL = '/static/'
-STATIC_ROOT = '/opt/static/'
-STATICFILES_DIRS = []
+STATIC_URL = 'http://apps.qaci01.wic.west.com/static/'
 
 DATABASES = {
     'default': {
@@ -17,4 +13,4 @@ DATABASES = {
     }
 }
 
-PRIVATE_KEY = '/home/wicqacip/.ssh/id_rsa'
+PRIVATE_KEY = '/home/wew/.ssh/id_rsa'

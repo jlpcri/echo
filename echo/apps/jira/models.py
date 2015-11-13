@@ -27,21 +27,23 @@ class Ticket(models.Model):
         server.create_issue(fields=new_issue)
         return
 
-# >>> j = jira.JIRA({'server': 'http://jira.west.com'}, basic_auth=('phemeuser', 'onetwothree'))
-# >>> j.current_user()
-# 'phemeuser'
-# >>> p = j.project('TP')
-# >>> p
-# <JIRA Project: key=u'TP', name=u'TestProject', id=u'13921'>
-# >>> p.versions
-# [<JIRA Version: name=u'1.0', id=u'18382'>, <JIRA Version: name=u'1.1', id=u'18383'>, <JIRA Version: name=u'1.2', id=u'18394'>, <JIRA Version: name=u'1.3', id=u'18850'>, <JIRA Version: name=u'1.4', id=u'18851'>]
-# >>> new_issue = {
-#          'project': 'TP',
-#          'summary': 'Automatically generated issue',
-#          'description': 'Description goes here',
-#          'issuetype': {'name': 'Bug'},
-#          'versions': [{'name': '1.2'}, ],
-#          'components': [{'name': 'Application/Code'}, ]
-#      }
-# >>> server.create_issue(fields=new_issue)
-# <JIRA Issue: key=u'TP-85', id=u'210971'>
+    def close(self):
+        """Close an existing ticket"""
+        server = open_jira_connection()
+        issue = server.issue(self.issue)
+        if issue.fields.status['name'] in ('Open', 'Reopened'):
+            server.transition_issue(issue, '2')  # 2 means 'Close Issue.' Why? Anyone's guess.
+
+        return
+
+    def reopen(self):
+        """Reopen an existing ticket"""
+        server = open_jira_connection()
+        issue = server.issue(self.issue)
+        if issue.fields.status['name'] == 'Closed':
+            server.transition_issue(issue, '3')
+
+        return
+
+    def __unicode__(self):
+        return self.voiceslot.language.project.jira_key
