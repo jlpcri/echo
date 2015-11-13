@@ -388,7 +388,7 @@ def queue(request, pid):
             else:
                 for slot in slots_out:
                     slot.check_in(request.user)
-        slot = lang.voiceslot_set.filter(status=VoiceSlot.READY, checked_out=False).first()
+        slot = lang.voiceslot_set.filter(status=VoiceSlot.READY, checked_out=False).order_by('?').first()
         # check if all voice slots have been tested
         if not slot:
             messages.warning(request, 'No new voice slots available to be tested')
