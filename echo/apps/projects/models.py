@@ -318,7 +318,7 @@ class VoiceSlot(models.Model):
             local_path = os.path.join(settings.MEDIA_ROOT, filename)
             conn.get(remote_path, local_path)
             filepath = settings.MEDIA_URL + filename
-            last_modified = int(conn.execute('stat -c %Y {0}'.format(remote_path))[0])
+            last_modified = int(conn.execute('stat -c %Y {0}'.format(remote_path.replace('(', r'\(').replace(')', r'\)')))[0])
         return filepath
 
 
