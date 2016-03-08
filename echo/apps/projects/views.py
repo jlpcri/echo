@@ -376,7 +376,7 @@ def queue(request, pid):
         slots_out = request.user.voiceslot_set.all()
         # TODO check this block
         if slots_out.count() > 0:
-            slot = slots_out.first()
+            slot = slots_out.order_by('?').first()
             if slot.language.pk == lang.pk:
                 try:
                     slot_file = slot.download()
@@ -388,7 +388,7 @@ def queue(request, pid):
             else:
                 for slot in slots_out:
                     slot.check_in(request.user)
-        slot = lang.voiceslot_set.filter(status=VoiceSlot.READY, checked_out=False).first()
+        slot = lang.voiceslot_set.filter(status=VoiceSlot.READY, checked_out=False).order_by('?').first()
         # check if all voice slots have been tested
         if not slot:
             messages.warning(request, 'No new voice slots available to be tested')
@@ -451,13 +451,13 @@ def queue(request, pid):
 
             slot_filter = lang.voiceslot_set.filter(status=VoiceSlot.READY, checked_out=False)
             if slot_filter.count() > 0:
-                slot = slot_filter.first()
+                slot = slot_filter.order_by('?').first()
             else:
                 ten_minutes_ago = datetime.now() - timedelta(minutes=10)
                 slot_filter = lang.voiceslot_set.filter(status=VoiceSlot.READY, checked_out=True,
                                                         checked_out_time__lte = ten_minutes_ago)
                 if slot_filter.count() > 0:
-                    slot = slot_filter.first()
+                    slot = slot_filter.order_by('?').first()
                 else:
                     messages.success(request, "All slots in this language are tested or recently checked out for testing.")
                     return redirect("projects:project", pid=pid)
