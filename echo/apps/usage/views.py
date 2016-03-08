@@ -144,3 +144,50 @@ def users(request):
         if sort in sort_types:
             return render(request, "usage/users.html", contexts.users_context(start, end, sort))
     return HttpResponseNotFound()
+
+
+def pheme_tests(request):
+    if request.method == 'GET':
+        data = []
+        data_projects = []
+        all_auto_total = all_manual_total = 0
+
+        try:
+            end = datetime.fromtimestamp(float(request.GET.get('end')), tz=pytz.timezone('America/Chicago'))
+        except (TypeError, ValueError):
+            end = datetime.now(tz=pytz.UTC)
+
+        try:
+            start = datetime.fromtimestamp(float(request.GET.get('start')), tz=pytz.timezone('America/Chicago'))
+        except (TypeError, ValueError):
+            start = end - timedelta(days=6)
+
+        project_list = Project.objects.all()
+        actions = Action.objects.filter(time__gt=start, time__lt=end)
+        for p in project_list:
+            manual_pass = actions.filter(scope__project=p, type=Action.TESTER_PASS_SLOT).count()
+            manual_fail = actions.filter(scope__project=p, type=Action.TESTER_FAIL_SLOT).count()
+            manual_total = manual_pass + manual_fail
+
+            auto_pass = actions.filter(scope__project=p, type=Action.AUTO_PASS_SLOT).count()
+            auto_fail = actions.filter(scope__project=p, type=Action.AUTO_FAIL_SLOT).count()
+            auto_total = auto_pass + auto_fail
+
+            all_manual_total += manual_total
+            all_auto_total += auto_total
+
+            # data_projects.append({
+            #     'project': p.name,
+            #     'manual_total': manual_total,
+            #     'auto_total': auto_total
+            # })
+
+        data.append({
+            'start': str(start),
+            'end': str(end),
+            'manual_total': all_manual_total,
+            'auto_total': all_auto_total
+        })
+        # data.append(data_projects)
+
+        return HttpResponse(json.dumps(data), content_type='application/json')
