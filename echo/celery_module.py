@@ -14,6 +14,8 @@ elif socket.gethostname() == "linux6436":
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "echo.settings.qa_lab")
 elif socket.gethostname() == "sliu-OptiPlex-GX520":
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "echo.settings.sliu_dev")
+elif socket.gethostname() == "seenaomi-HP-Compaq-6005-Pro-SFF-PC":
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "echo.settings.see_dev")    
 else:
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "echo.settings.base")
 
