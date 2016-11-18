@@ -473,14 +473,12 @@ def queue(request, pid):
             return HttpResponseNotFound()
 
 @login_required
-def submitslot(request, pid, vsid):
+def submitslot(request, vsid):
     if request.method == 'POST':
         if "submit_test" in request.POST:
             slot = get_object_or_404(VoiceSlot, pk=vsid)
             p = slot.language.project
-            project = Project.objects.get(pk=pid)
             slot_status = request.POST.get('slot_status', False)
-            updateslot_status = UpdateStatus.objects.get_or_create(project=project)[0]
 
             finish_listen_post = request.POST.get('finish_listen', 'notyet')
             already_listen_post = request.GET.get('listened', 'notyet')
@@ -495,13 +493,8 @@ def submitslot(request, pid, vsid):
             if slot_status == 'pass':
                 slot.status = VoiceSlot.PASS
                 slot.check_in(request.user)
-                query_item = update_file_statuses.delay(project_id=pid, user_id=request.user.pk)
-                updateslot_status.query_id = query_item
-                updateslot_status.running = True
-                updateslot_status.save()
                 slot.save()
                 Action.log(request.user, Action.TESTER_PASS_SLOT, '{0} passed by manual testing'.format(slot.name), slot)
-                #return HttpResponse(json.dumps({'success': True}), content_type="application/json")
 
                 # do updates to files here and get count for p pass
                 count = p.voiceslots_match(slot, request)
@@ -568,7 +561,7 @@ def testslot(request, pid, vsid):
             return render(request, "projects/testslot.html", contexts.context_testslot(request.user_agent.browser, p, slot, filepath, finish_listen, fail_select))
         messages.danger(request, "No server associated with project")
         return redirect("projects:project", pid)
-    return submitslot(request, pid, vsid)
+    return submitslot(request, vsid)
 
 
 @login_required
