@@ -380,6 +380,28 @@
                 msg += '</div>';
                 $('#wrapper').prepend(msg);
             }
+
+            event = $.event.fix(event);
+            event.preventDefault();
+            $("#update-active-link").addClass("hidden");
+            $("#update-disabled-link").removeClass("hidden");
+            $.ajax("{% url 'projects:initiate_status_update' project.pk %}",
+                    {
+                        type: "POST",
+                        error: function() {
+                            alert("An unexpected error occurred. Status update failed!");
+                            $("#update-disabled-link").addClass("hidden");
+                            $("#update-active-link").removeClass("hidden");
+                        },
+                        success: function(data) {
+                            var json_data = $.parseJSON(data);
+                            if (json_data.success == false)
+                            {
+                                bootstrapAlert("Another file status check is already running.", 'info');
+                            }
+                        }
+                    }
+            );
         });
 
         {% if project.slots_total > 0 %}
