@@ -1,6 +1,9 @@
 from base import *
 
-STATIC_URL = 'http://apps.qaci01.wic.west.com/static/'
+#STATIC_URL = 'http://linux6436.wic.west.com/static/'
+#STATIC_ROOT = ''
+STATICFILES_DIRS = ('/home/seenaomi/opt/static/',)
+
 
 PRIVATE_KEY = '/home/seenaomi/.ssh/id_rsa'
 
