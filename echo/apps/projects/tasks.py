@@ -28,6 +28,50 @@ def update_file_statuses(project_id, user_id):
             result = sftp.execute('find {0}/ -name "*.wav"'.format(project.root_path) +
                                   ' -exec md5sum {} \; -exec stat -c"%Y" {} \;')
 
+        # FileStatus = namedtuple('FileStatus', 'md5 path modified')
+        file_statuses = []
+        slots = project.voiceslots()
+        # Find and mark missing voiceslots
+        vuid_set = set(slots.values_list('name', flat=True))
+        found_set = set([fs.path.split('/')[-1][:-4] for fs in file_statuses])
+        missing_set = vuid_set - found_set
+        missing_slots = slots.filter(name__in=list(missing_set))
+        missing_slots.update(status=VoiceSlot.MISSING)
+
+        # Hack for files found in the wrong language. No es bueno
+        stragglers = slots.filter(status=VoiceSlot.NEW)
+        stragglers.update(status=VoiceSlot.MISSING)
+        for slot in stragglers:
+            Action.log(user, Action.AUTO_MISSING_SLOT, "Slot not found in update", slot)  # Missing period to distinguish
+
+        for slot in missing_slots:
+            Action.log(user, Action.AUTO_MISSING_SLOT, "Slot not found in update.", slot)
+        status.running = False
+        status.save()
+    except Exception as e:
+        logger = get_task_logger(__name__)
+        logger.error("Celery task failed")
+        logger.error(e)
+        logger.error("Project id: {0}".format(project_id))
+        sleep(3)
+        try:
+            project = Project.objects.get(pk=int(project_id))
+            logger.error("Waiting would have fixed this.")
+        except Exception as e:
+            logger.error("Waiting didn't fix it")
+
+
+def update_checksum(project_id, user_id):
+    try:
+        sleep(1.25)
+        project = Project.objects.get(pk=int(project_id))
+        user = User.objects.get(pk=int(user_id))
+        # Connect to Bravo server and get filenames and md5sums
+        with pysftp.Connection(project.bravo_server.address, username=project.bravo_server.account,
+                               private_key=settings.PRIVATE_KEY) as sftp:
+            result = sftp.execute('find {0}/ -name "*.wav"'.format(project.root_path) +
+                                  ' -exec md5sum {} \; -exec stat -c"%Y" {} \;')
+
         FileStatus = namedtuple('FileStatus', 'md5 path modified')
         file_statuses = []
         try:
@@ -63,23 +107,6 @@ def update_file_statuses(project_id, user_id):
                                 Action.log(user, Action.AUTO_NEW_SLOT, "Slot changed and needs retesting", slot)
                                 break
 
-        # Find and mark missing voiceslots
-        vuid_set = set(slots.values_list('name', flat=True))
-        found_set = set([fs.path.split('/')[-1][:-4] for fs in file_statuses])
-        missing_set = vuid_set - found_set
-        missing_slots = slots.filter(name__in=list(missing_set))
-        missing_slots.update(status=VoiceSlot.MISSING)
-
-        # Hack for files found in the wrong language. No es bueno
-        stragglers = slots.filter(status=VoiceSlot.NEW)
-        stragglers.update(status=VoiceSlot.MISSING)
-        for slot in stragglers:
-            Action.log(user, Action.AUTO_MISSING_SLOT, "Slot not found in update", slot)  # Missing period to distinguish
-
-        for slot in missing_slots:
-            Action.log(user, Action.AUTO_MISSING_SLOT, "Slot not found in update.", slot)
-        status.running = False
-        status.save()
     except Exception as e:
         logger = get_task_logger(__name__)
         logger.error("Celery task failed")
@@ -91,5 +118,3 @@ def update_file_statuses(project_id, user_id):
             logger.error("Waiting would have fixed this.")
         except Exception as e:
             logger.error("Waiting didn't fix it")
-
-
