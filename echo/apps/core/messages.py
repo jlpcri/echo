@@ -35,6 +35,7 @@ def warning(request, message):
 
 
 def danger(request, message):
+    # type: (object, object) -> object
     messages.add_message(request, DANGER, message)
 
 

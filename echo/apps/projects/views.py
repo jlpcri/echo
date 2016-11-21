@@ -12,6 +12,7 @@ from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.http import HttpResponse, HttpResponseNotFound, HttpResponseRedirect, Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.conf import settings
+from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 
 from echo.apps.activity.models import Action
@@ -493,6 +494,31 @@ def submitslot(request, vsid):
             if slot_status == 'pass':
                 slot.status = VoiceSlot.PASS
                 slot.check_in(request.user)
+                if p.bravo_server:
+                    try:
+                        with pysftp.Connection(p.bravo_server.address, username=p.bravo_server.account,
+                                               private_key=settings.PRIVATE_KEY) as sftp:
+                            result = helpers.fetch_slots_from_server(p, sftp, request.user)
+                            if result['valid']:
+                                messages.success(request, result["message"])
+                                Action.log(request.user, Action.UPDATE_FILE_STATUSES, 'File status update ran', p)
+
+                            else:
+                                messages.danger(request, result['message'])
+                        return redirect("projects:project", pid=p.pk)
+                    except pysftp.ConnectionException:
+                        messages.danger(request, "Connection error to server \"{0}\"".format(p.bravo_server.name))
+                        return redirect("projects:project", pid=p.pk)
+                    except pysftp.CredentialException:
+                        messages.danger(request, "Credentials error to server \"{0}\"".format(p.bravo_server.name))
+                        return redirect("projects:project", pid=p.pk)
+                    except pysftp.AuthenticationException:
+                        messages.danger(request, "Authentication error to server \"{0}\"".format(p.bravo_server.name))
+                        return redirect("projects:project", pid=p.pk)
+                    except pysftp.SSHException:
+                        messages.danger(request, "SSH error to server \"{0}\"".format(p.bravo_server.name))
+                        return redirect("projects:project", pid=p.pk)
+                messages.danger(request, "No server associated with project")
                 slot.save()
                 Action.log(request.user, Action.TESTER_PASS_SLOT, '{0} passed by manual testing'.format(slot.name), slot)
 
