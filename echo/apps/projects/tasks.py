@@ -63,6 +63,7 @@ def update_file_statuses(project_id, user_id):
                                 Action.log(user, Action.AUTO_NEW_SLOT, "Slot changed and needs retesting", slot)
                                 break
 
+
         # Find and mark missing voiceslots
         vuid_set = set(slots.values_list('name', flat=True))
         found_set = set([fs.path.split('/')[-1][:-4] for fs in file_statuses])
@@ -93,7 +94,8 @@ def update_file_statuses(project_id, user_id):
             logger.error("Waiting didn't fix it")
 
 
-def update_checksum(project_id, user_id):
+
+def update_checksum_onsave(project_id, user_id):
     try:
         sleep(1.25)
         project = Project.objects.get(pk=int(project_id))

@@ -20,7 +20,7 @@ from echo.apps.settings.models import Server, UserSettings
 from echo.apps.projects.forms import ProjectForm, ServerForm, UploadForm, ProjectRootPathForm
 from echo.apps.projects.models import Language, Project, VoiceSlot, VUID, UpdateStatus
 from echo.apps.projects import contexts, helpers
-from echo.apps.projects.tasks import update_file_statuses
+from echo.apps.projects.tasks import update_file_statuses, update_checksum_onsave
 
 
 @login_required
@@ -495,6 +495,7 @@ def submitslot(request, vsid):
                 slot.check_in(request.user)
                 slot.save()
                 Action.log(request.user, Action.TESTER_PASS_SLOT, '{0} passed by manual testing'.format(slot.name), slot)
+                Action.log(request.user, Action.UPDATE_CHECKSUM_ONSAVE, 'Updated checksum', slot)
 
                 # do updates to files here and get count for p pass
                 count = p.voiceslots_match(slot, request)
