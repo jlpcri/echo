@@ -20,7 +20,8 @@ from echo.apps.settings.models import Server, UserSettings
 from echo.apps.projects.forms import ProjectForm, ServerForm, UploadForm, ProjectRootPathForm
 from echo.apps.projects.models import Language, Project, VoiceSlot, VUID, UpdateStatus
 from echo.apps.projects import contexts, helpers
-from echo.apps.projects.tasks import update_file_statuses, update_checksum_onsave
+from celery import chain
+from echo.apps.projects.tasks import update_file_statuses, update_checksum
 
 
 @login_required
@@ -494,8 +495,7 @@ def submitslot(request, vsid):
                 slot.status = VoiceSlot.PASS
                 slot.check_in(request.user)
                 slot.save()
-                Action.log(request.user, Action.TESTER_PASS_SLOT, '{0} passed by manual testing'.format(slot.name), slot)
-                Action.log(request.user, Action.UPDATE_CHECKSUM_ONSAVE, 'Updated checksum', slot)
+                Action.log(request.user, Action.TESTER_PASS_SLOT, '{} passed by manual testing'.format(slot.name), slot)
 
                 # do updates to files here and get count for p pass
                 count = p.voiceslots_match(slot, request)
@@ -657,6 +657,27 @@ def archive_project(request, pid):
 @login_required
 @csrf_exempt
 def initiate_status_update(request, pid):
+    """
+    Kicks off the request from "Update File Statuses"
+    """
+    if not request.method == "POST":
+        raise Http404
+    project = Project.objects.get(pk=pid)
+    status = UpdateStatus.objects.get_or_create(project=project)[0]
+    if status.running:
+            return HttpResponse(json.dumps({'success': False, 'message': 'Task already running'}),
+                                content_type="application/json")
+    query_item = chain(update_checksum.s(project_id=pid, user_id=request.user.pk)| update_file_statuses.s(project_id=pid, user_id=request.user.pk))
+    status.query_id = query_item
+    status.running = True
+    status.save()
+    Action.log(request.user, Action.UPDATE_FILE_STATUSES, 'Updated file statuses', Project.objects.get(pk=pid))
+
+    return HttpResponse(json.dumps({'success': True}), content_type="application/json")
+
+@login_required
+@csrf_exempt
+def initiate_checksum_update(request, pid):
     """
     Kicks off the request from "Update File Statuses"
     """

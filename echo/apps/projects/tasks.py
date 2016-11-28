@@ -1,6 +1,7 @@
 from collections import namedtuple
 from datetime import datetime
 from time import sleep
+from django.utils import timezone
 
 import pysftp
 import pytz
@@ -12,6 +13,55 @@ from django.contrib.auth.models import User
 from echo import celery_app
 from echo.apps.projects.models import Project, UpdateStatus, VoiceSlot
 from echo.apps.activity.models import Action
+
+
+@celery_app.task
+def update_checksum(project_id, user_id):
+    try:
+        sleep(1.25)
+        project = Project.objects.get(pk=int(project_id))
+        user = User.objects.get(pk=int(user_id))
+
+        # Connect to Bravo server and get filenames and md5sums
+        with pysftp.Connection(project.bravo_server.address, username=project.bravo_server.account,
+                               private_key=settings.PRIVATE_KEY) as sftp:
+            result = sftp.execute('find {0}/ -name "*.wav"'.format(project.root_path) +
+                                  ' -exec md5sum {} \; -exec stat -c"%Y" {} \;')
+        FileStatus = namedtuple('FileStatus', 'md5 path modified')
+        file_statuses = []
+        try:
+            for i in range(0, len(result), 2):
+                md5 = result[i].split()[0]
+                filename = ' '.join(result[i].split()[1:])
+                mtime = i[1].strip()
+                file_statuses.append(FileStatus(md5, filename, mtime))
+        except IndexError:
+            print "Update IndexError Result:"
+            print repr(result)
+
+        # Find and update matching voiceslots
+        slots = project.voiceslots()
+        for fs in file_statuses:
+            if slots.filter(name=fs.path.split('/')[-1][:-4]).exists():
+                slot_candidates = slots.filter(name=fs.path.split('/')[-1][:-4])
+                for slot in slot_candidates:
+                    if slot.status in (VoiceSlot.PASS, VoiceSlot.FAIL):
+                                slot.bravo_checksum = fs.md5
+                                slot.bravo_time = timezone.make_aware(datetime.fromtimestamp(fs.mtime),
+                                                                      timezone.get_current_timezone())
+                                slot.save()
+                                break
+    except Exception as e:
+        logger = get_task_logger(__name__)
+        logger.error("Celery task failed")
+        logger.error(e)
+        logger.error("Project id: {0}".format(project_id))
+        sleep(3)
+        try:
+            project = Project.objects.get(pk=int(project_id))
+            logger.error("Waiting would have fixed this.")
+        except Exception as e:
+            logger.error("Waiting didn't fix it")
 
 
 @celery_app.task
@@ -93,54 +143,3 @@ def update_file_statuses(project_id, user_id):
         except Exception as e:
             logger.error("Waiting didn't fix it")
 
-
-
-def update_checksum_onsave(project_id, user_id):
-    try:
-        sleep(1.25)
-        project = Project.objects.get(pk=int(project_id))
-        user = User.objects.get(pk=int(user_id))
-        # Connect to Bravo server and get filenames and md5sums
-        with pysftp.Connection(project.bravo_server.address, username=project.bravo_server.account,
-                               private_key=settings.PRIVATE_KEY) as sftp:
-            result = sftp.execute('find {0}/ -name "*.wav"'.format(project.root_path) +
-                                  ' -exec md5sum {} \; -exec stat -c"%Y" {} \;')
-
-        FileStatus = namedtuple('FileStatus', 'md5 path modified')
-        file_statuses = []
-        try:
-            for i in range(0, len(result), 2):
-                md5 = result[i].split()[0]
-                filename = ' '.join(result[i].split()[1:])
-                modified = result[i+1].strip()
-                file_statuses.append(FileStatus(md5, filename, modified))
-        except IndexError:
-            print "Update IndexError Result:"
-            print repr(result)
-
-        # Find and update matching voiceslots
-        slots = project.voiceslots()
-        for fs in file_statuses:
-            if slots.filter(name=fs.path.split('/')[-1][:-4]).exists():
-                slot_candidates = slots.filter(name=fs.path.split('/')[-1][:-4])
-                for slot in slot_candidates:
-                    if slot.status in (VoiceSlot.PASS, VoiceSlot.FAIL):
-                            if fs.md5 != slot.bravo_checksum:
-                                slot.bravo_checksum = fs.md5
-                                slot.bravo_time = datetime.fromtimestamp(float(fs.modified)).replace(tzinfo=pytz.utc)
-                                slot.status = VoiceSlot.READY
-                                slot.save()
-                                Action.log(user, Action.AUTO_NEW_SLOT, "Slot changed and needs retesting", slot)
-                                break
-
-    except Exception as e:
-        logger = get_task_logger(__name__)
-        logger.error("Celery task failed")
-        logger.error(e)
-        logger.error("Project id: {0}".format(project_id))
-        sleep(3)
-        try:
-            project = Project.objects.get(pk=int(project_id))
-            logger.error("Waiting would have fixed this.")
-        except Exception as e:
-            logger.error("Waiting didn't fix it")
