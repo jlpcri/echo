@@ -45,7 +45,7 @@ def commonprefix(paths, sep='/'):
 def fetch_slots_from_server(project, sftp, user):
     """Contains logic to update file statuses"""
     # get shared path of all distinct paths from voiceslot models in project
-    #path = commonprefix(project.voiceslots().values_list('path', flat=True).distinct())
+    # path = commonprefix(project.voiceslots().values_list('path', flat=True).distinct())
     path = project.root_path
     try:
         result = sftp.execute('find {0}/ -name "*.wav"'.format(path) + ' -exec md5sum {} \; -exec stat -c"%Y" {} \;')

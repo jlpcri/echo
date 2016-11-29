@@ -20,8 +20,7 @@ from echo.apps.settings.models import Server, UserSettings
 from echo.apps.projects.forms import ProjectForm, ServerForm, UploadForm, ProjectRootPathForm
 from echo.apps.projects.models import Language, Project, VoiceSlot, VUID, UpdateStatus
 from echo.apps.projects import contexts, helpers
-from celery import chain
-from echo.apps.projects.tasks import update_file_statuses, update_checksum
+from echo.apps.projects.tasks import update_file_statuses
 
 
 @login_required
@@ -487,7 +486,7 @@ def submitslot(request, vsid):
 
             if not slot_status and (finish_listen_post == 'heard' or already_listen_post == 'heard') and fail_select != 'selected':
                 messages.danger(request, "Please enter a pass or fail")
-                #return redirect("projects:testslot", pid=p.pk, vsid=vsid)
+                # return redirect("projects:testslot", pid=p.pk, vsid=vsid)
                 response = redirect("projects:testslot", pid=p.pk, vsid=vsid)
                 response['Location'] += '?listened=heard'
                 return response
@@ -657,27 +656,6 @@ def archive_project(request, pid):
 @login_required
 @csrf_exempt
 def initiate_status_update(request, pid):
-    """
-    Kicks off the request from "Update File Statuses"
-    """
-    if not request.method == "POST":
-        raise Http404
-    project = Project.objects.get(pk=pid)
-    status = UpdateStatus.objects.get_or_create(project=project)[0]
-    if status.running:
-            return HttpResponse(json.dumps({'success': False, 'message': 'Task already running'}),
-                                content_type="application/json")
-    query_item = chain(update_checksum.s(project_id=pid, user_id=request.user.pk)| update_file_statuses.s(project_id=pid, user_id=request.user.pk))
-    status.query_id = query_item
-    status.running = True
-    status.save()
-    Action.log(request.user, Action.UPDATE_FILE_STATUSES, 'Updated file statuses', Project.objects.get(pk=pid))
-
-    return HttpResponse(json.dumps({'success': True}), content_type="application/json")
-
-@login_required
-@csrf_exempt
-def initiate_checksum_update(request, pid):
     """
     Kicks off the request from "Update File Statuses"
     """
