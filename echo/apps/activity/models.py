@@ -51,7 +51,7 @@ class Action(models.Model):
     UN_ARCHIVE_PROJECT = 17
     PROJECT_CERTIFIED = 18
     PROJECT_RECALLED = 19  # Project status from Testing to Initial
-    UPDATE_CHECKSUM_ONSAVE = 20
+    UPDATE_CHECKSUM = 20
     TYPE_CHOICES = (
         (TESTER_PASS_SLOT, 'Tester passed slot'),
         (TESTER_FAIL_SLOT, 'Tester failed slot'),
@@ -72,7 +72,7 @@ class Action(models.Model):
         (UN_ARCHIVE_PROJECT, 'Un archive project'),
         (PROJECT_CERTIFIED, 'Project certified'),
         (PROJECT_RECALLED, 'Project recalled'),
-        (UPDATE_CHECKSUM_ONSAVE, 'Ran checksum update')
+        (UPDATE_CHECKSUM, 'Ran checksum update')
     )
 
     actor = models.ForeignKey(User)
@@ -93,7 +93,7 @@ class Action(models.Model):
                       cls.AUTO_FAIL_SLOT,
                       cls.AUTO_MISSING_SLOT,
                       cls.AUTO_NEW_SLOT,
-                      cls.UPDATE_CHECKSUM_ONSAVE)
+                      cls.UPDATE_CHECKSUM)
         LANGUAGE_TYPES = (cls.REPORT_GENERATION, )
         PROJECT_TYPES = (cls.UPLOAD_VUID, cls.UPDATE_FILE_STATUSES, cls.CREATE_PROJECT, cls.REPORT_GENERATION,
                          cls.ELPIS_RUN, cls.UPDATE_ROOT_PATH, cls.UPDATE_BRAVO_SERVER, cls.TESTER_JOIN_PROJECT,

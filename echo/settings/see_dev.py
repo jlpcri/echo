@@ -17,3 +17,7 @@ DATABASES = {
         'PORT': '5432'
     }
 }
+
+# Celery configs
+
+# worker_max_memory_per_child = 12000  # 12MB

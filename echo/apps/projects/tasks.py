@@ -1,7 +1,6 @@
 from collections import namedtuple
 from datetime import datetime
 from time import sleep
-from django.utils import timezone
 
 import pysftp
 import pytz
@@ -55,16 +54,6 @@ def update_file_statuses(project_id, user_id):
                             slot.save()
                             Action.log(user, Action.AUTO_NEW_SLOT, "Slot ready for testing", slot)
                             break
-
-                        elif slot.status in (VoiceSlot.PASS, VoiceSlot.FAIL):
-                            if fs.md5 != slot.bravo_checksum:
-                                slot.bravo_checksum = fs.md5
-                                slot.bravo_time = datetime.fromtimestamp(float(fs.modified)).replace(tzinfo=pytz.utc)
-                                slot.status = VoiceSlot.READY
-                                slot.save()
-                                Action.log(user, Action.AUTO_NEW_SLOT, "Slot changed and needs retesting", slot)
-                                break     
-
 
         # Find and mark missing voiceslots
         vuid_set = set(slots.values_list('name', flat=True))

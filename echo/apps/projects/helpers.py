@@ -42,6 +42,37 @@ def commonprefix(paths, sep='/'):
     return sep.join(x[0] for x in takewhile(allnamesequal, bydirectorylevels))
 
 @transaction.atomic
+def update_checksum(project, user):
+    project = Project.objects.get(pk=int(project))
+    # user = User.objects.get(pk=int(user))
+    try:
+        with pysftp.Connection(project.bravo_server.address, username=project.bravo_server.account,
+                               private_key=settings.PRIVATE_KEY) as sftp:
+            result = sftp.execute('find {0}/ -name "*.wav"'.format(project.root_path) +
+                                  ' -exec md5sum {} \; -exec stat -c"%Y" {} \;')
+    except IOError:
+        # something in the execute didn't stir the kool-aid
+        return {"valid": False, "message": "Error running command on server"}
+
+    l = izip(*([iter(result)]*2))
+    map = {}
+    for i in l:
+        msum, pathname = i[0].strip().split('  ')
+        mtime = i[1].strip()
+        map[pathname] = FileStatus(pathname, msum, mtime)
+
+    slots = project.voiceslots()
+    for slot in slots:
+        fs = map.get(slot.filepath())
+        if slot.status in (VoiceSlot.PASS, VoiceSlot.FAIL):
+            slot.bravo_checksum = fs.msum
+            slot.bravo_time = timezone.make_aware(datetime.fromtimestamp(fs.mtime),
+                                                    timezone.get_current_timezone())
+            slot.save()
+            Action.log(user, Action.UPDATE_CHECKSUM, 'Checksum has been updated', slot)
+
+
+@transaction.atomic
 def fetch_slots_from_server(project, sftp, user):
     """Contains logic to update file statuses"""
     # get shared path of all distinct paths from voiceslot models in project
