@@ -493,8 +493,8 @@ def submitslot(request, vsid):
             if slot_status == 'pass':
                 slot.status = VoiceSlot.PASS
                 slot.check_in(request.user)
-                checksum = helpers.update_checksum(project=p.pk, user=request.user)
-                slot.bravo_checksum = checksum
+                # check_sum = helpers.update_checksum(project=p.pk, user=request.user)
+                slot.bravo_checksum = helpers.update_checksum(project=p.pk, user=request.user)
                 slot.save()
                 Action.log(request.user, Action.TESTER_PASS_SLOT, '{0} passed by manual testing'.format(slot.name), slot)
 

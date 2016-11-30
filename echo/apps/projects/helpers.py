@@ -1,3 +1,4 @@
+from collections import namedtuple
 from datetime import datetime
 from itertools import izip, takewhile
 from django.conf import settings
@@ -6,6 +7,9 @@ from openpyxl import load_workbook
 
 from django.db import transaction
 import pysftp
+import pytz
+
+from django.contrib.auth.models import User
 
 from echo.apps.projects.models import Language, Project, VoiceSlot, VUID, UpdateStatus
 from echo.apps.activity.models import Action
@@ -54,22 +58,32 @@ def update_checksum(project, user):
         # something in the execute didn't stir the kool-aid
         return {"valid": False, "message": "Error running command on server"}
 
-    l = izip(*([iter(result)]*2))
-    map = {}
-    for i in l:
-        msum, pathname = i[0].strip().split('  ')
-        mtime = i[1].strip()
-        map[pathname] = FileStatus(pathname, msum, mtime)
+    FileStatus = namedtuple('FileStatus', 'md5 path modified')
+    file_statuses = []
+    try:
+        for i in range(0, len(result), 2):
+            md5 = result[i].split()[0]
+            filename = ' '.join(result[i].split()[1:])
+            modified = result[i + 1].strip()
+            file_statuses.append(FileStatus(md5, filename, modified))
+    except IndexError:
+        print "Update IndexError Result:"
+        print repr(result)
 
     slots = project.voiceslots()
-    for slot in slots:
-        fs = map.get(slot.filepath())
-        if slot.status in (VoiceSlot.PASS, VoiceSlot.FAIL):
-            slot.bravo_checksum = fs.msum
-            slot.bravo_time = timezone.make_aware(datetime.fromtimestamp(fs.mtime),
-                                                    timezone.get_current_timezone())
-            slot.save()
-            Action.log(user, Action.UPDATE_CHECKSUM, 'Checksum has been updated', slot)
+
+    for fs in file_statuses:
+        if slots.filter(name=fs.path.split('/')[-1][:-4]).exists():
+            slot_candidates = slots.filter(name=fs.path.split('/')[-1][:-4])
+            for slot in slot_candidates:
+                if fs.path == slot.filepath():
+                    if slot.status in (VoiceSlot.PASS, VoiceSlot.FAIL):
+                        #if fs.md5 != slot.bravo_checksum:
+                            Action.log(user, Action.UPDATE_CHECKSUM, slot.bravo_checksum, slot)
+                            slot.bravo_checksum = fs.md5
+                            slot.bravo_time = datetime.utcfromtimestamp(float(fs.modified)).replace(tzinfo=pytz.utc)
+                            slot.save()
+                            Action.log(user, Action.UPDATE_CHECKSUM, fs.md5, slot)
 
 
 @transaction.atomic
