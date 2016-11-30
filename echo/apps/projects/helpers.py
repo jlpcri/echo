@@ -43,6 +43,7 @@ def commonprefix(paths, sep='/'):
     bydirectorylevels = zip(*[p.split(sep) for p in paths])
     return sep.join(x[0] for x in takewhile(allnamesequal, bydirectorylevels))
 
+
 @transaction.atomic
 def update_checksum(pid, vsid, user):
     p = Project.objects.get(pk=pid)
@@ -67,7 +68,6 @@ def update_checksum(pid, vsid, user):
 
     fs = map.get(slot.filepath())
     if slot.status in (VoiceSlot.PASS, VoiceSlot.FAIL):
-        #if fs.md5 != slot.bravo_checksum:
         slot.bravo_checksum = fs.msum
         slot.bravo_time = timezone.make_aware(datetime.fromtimestamp(fs.mtime), timezone.get_current_timezone())
         slot.save()
