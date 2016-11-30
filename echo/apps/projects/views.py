@@ -493,9 +493,8 @@ def submitslot(request, vsid):
             if slot_status == 'pass':
                 slot.status = VoiceSlot.PASS
                 slot.check_in(request.user)
-                # check_sum = helpers.update_checksum(project=p.pk, user=request.user)
-                slot.bravo_checksum = helpers.update_checksum(project=p.pk, user=request.user)
                 slot.save()
+                helpers.update_checksum(pid=p.pk, vsid=vsid, user=request.user)
                 Action.log(request.user, Action.TESTER_PASS_SLOT, '{0} passed by manual testing'.format(slot.name), slot)
 
                 # do updates to files here and get count for p pass
@@ -509,6 +508,7 @@ def submitslot(request, vsid):
                 slot.status = VoiceSlot.FAIL
                 slot.check_in(request.user)
                 slot.save()
+                helpers.update_checksum(pid=p.pk, vsid=vsid, user=request.user)
                 Action.log(request.user, Action.TESTER_FAIL_SLOT, request.POST['notes'], slot)
 
                 # do updates to files here and get count for p failure

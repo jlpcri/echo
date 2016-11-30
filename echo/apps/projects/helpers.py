@@ -9,8 +9,6 @@ from django.db import transaction
 import pysftp
 import pytz
 
-from django.contrib.auth.models import User
-
 from echo.apps.projects.models import Language, Project, VoiceSlot, VUID, UpdateStatus
 from echo.apps.activity.models import Action
 from echo.apps.projects.tasks import update_file_statuses
@@ -46,44 +44,33 @@ def commonprefix(paths, sep='/'):
     return sep.join(x[0] for x in takewhile(allnamesequal, bydirectorylevels))
 
 @transaction.atomic
-def update_checksum(project, user):
-    project = Project.objects.get(pk=int(project))
-    # user = User.objects.get(pk=int(user))
-    try:
-        with pysftp.Connection(project.bravo_server.address, username=project.bravo_server.account,
-                               private_key=settings.PRIVATE_KEY) as sftp:
-            result = sftp.execute('find {0}/ -name "*.wav"'.format(project.root_path) +
-                                  ' -exec md5sum {} \; -exec stat -c"%Y" {} \;')
-    except IOError:
-        # something in the execute didn't stir the kool-aid
-        return {"valid": False, "message": "Error running command on server"}
+def update_checksum(pid, vsid, user):
+    p = Project.objects.get(pk=pid)
+    slot = VoiceSlot.objects.get(pk=vsid)
+    if p.bravo_server:
+        try:
+            with pysftp.Connection(p.bravo_server.address, username=p.bravo_server.account,
+                                   private_key=settings.PRIVATE_KEY) as sftp:
+                result = sftp.execute('find {0}/ -name "*.wav"'.format(p.root_path) +
+                                      ' -exec md5sum {} \; -exec stat -c"%Y" {} \;')
+        except IOError:
+            # something in the execute didn't stir the kool-aid
+            return {"valid": False, "message": "Error running command on server"}
 
-    FileStatus = namedtuple('FileStatus', 'md5 path modified')
-    file_statuses = []
-    try:
-        for i in range(0, len(result), 2):
-            md5 = result[i].split()[0]
-            filename = ' '.join(result[i].split()[1:])
-            modified = result[i + 1].strip()
-            file_statuses.append(FileStatus(md5, filename, modified))
-    except IndexError:
-        print "Update IndexError Result:"
-        print repr(result)
+    l = izip(*([iter(result)] * 2))
+    map = {}
 
-    slots = project.voiceslots()
+    for i in l:
+        msum, pathname = i[0].strip().split('  ')
+        mtime = i[1].strip()
+        map[pathname] = FileStatus(pathname, msum, mtime)
 
-    for fs in file_statuses:
-        if slots.filter(name=fs.path.split('/')[-1][:-4]).exists():
-            slot_candidates = slots.filter(name=fs.path.split('/')[-1][:-4])
-            for slot in slot_candidates:
-                if fs.path == slot.filepath():
-                    if slot.status in (VoiceSlot.PASS, VoiceSlot.FAIL):
-                        #if fs.md5 != slot.bravo_checksum:
-                            Action.log(user, Action.UPDATE_CHECKSUM, slot.bravo_checksum, slot)
-                            slot.bravo_checksum = fs.md5
-                            slot.bravo_time = datetime.utcfromtimestamp(float(fs.modified)).replace(tzinfo=pytz.utc)
-                            slot.save()
-                            Action.log(user, Action.UPDATE_CHECKSUM, fs.md5, slot)
+    fs = map.get(slot.filepath())
+    if slot.status in (VoiceSlot.PASS, VoiceSlot.FAIL):
+        #if fs.md5 != slot.bravo_checksum:
+        slot.bravo_checksum = fs.msum
+        slot.bravo_time = timezone.make_aware(datetime.fromtimestamp(fs.mtime), timezone.get_current_timezone())
+        slot.save()
 
 
 @transaction.atomic
