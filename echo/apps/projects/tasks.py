@@ -47,7 +47,6 @@ def update_file_statuses(project_id, user_id):
                 slot_candidates = slots.filter(name=fs.path.split('/')[-1][:-4])
                 for slot in slot_candidates:
                     if fs.path == slot.filepath():
-                        Action.log(user, Action.UPDATE_CHECKSUM, fs.md5, slot)
                         if slot.status in (VoiceSlot.NEW, VoiceSlot.MISSING, VoiceSlot.READY):
                             slot.bravo_checksum = fs.md5
                             slot.bravo_time = datetime.utcfromtimestamp(float(fs.modified)).replace(tzinfo=pytz.utc)
