@@ -1,3 +1,4 @@
+from collections import namedtuple
 from datetime import datetime
 from itertools import izip, takewhile
 from django.conf import settings
@@ -6,6 +7,7 @@ from openpyxl import load_workbook
 
 from django.db import transaction
 import pysftp
+import pytz
 
 from echo.apps.projects.models import Language, Project, VoiceSlot, VUID, UpdateStatus
 from echo.apps.activity.models import Action
@@ -41,11 +43,41 @@ def commonprefix(paths, sep='/'):
     bydirectorylevels = zip(*[p.split(sep) for p in paths])
     return sep.join(x[0] for x in takewhile(allnamesequal, bydirectorylevels))
 
+
+@transaction.atomic
+def update_checksum(pid, vsid, user):
+    p = Project.objects.get(pk=pid)
+    slot = VoiceSlot.objects.get(pk=vsid)
+    if p.bravo_server:
+        try:
+            with pysftp.Connection(p.bravo_server.address, username=p.bravo_server.account,
+                                   private_key=settings.PRIVATE_KEY) as sftp:
+                result = sftp.execute('find {0}/ -name "*.wav"'.format(p.root_path) +
+                                      ' -exec md5sum {} \; -exec stat -c"%Y" {} \;')
+        except IOError:
+            # something in the execute didn't stir the kool-aid
+            return {"valid": False, "message": "Error running command on server"}
+
+    l = izip(*([iter(result)] * 2))
+    map = {}
+
+    for i in l:
+        msum, pathname = i[0].strip().split('  ')
+        mtime = i[1].strip()
+        map[pathname] = FileStatus(pathname, msum, mtime)
+
+    fs = map.get(slot.filepath())
+    if slot.status in (VoiceSlot.PASS, VoiceSlot.FAIL):
+        slot.bravo_checksum = fs.msum
+        slot.bravo_time = timezone.make_aware(datetime.fromtimestamp(fs.mtime), timezone.get_current_timezone())
+        slot.save()
+
+
 @transaction.atomic
 def fetch_slots_from_server(project, sftp, user):
     """Contains logic to update file statuses"""
     # get shared path of all distinct paths from voiceslot models in project
-    #path = commonprefix(project.voiceslots().values_list('path', flat=True).distinct())
+    # path = commonprefix(project.voiceslots().values_list('path', flat=True).distinct())
     path = project.root_path
     try:
         result = sftp.execute('find {0}/ -name "*.wav"'.format(path) + ' -exec md5sum {} \; -exec stat -c"%Y" {} \;')

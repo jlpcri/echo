@@ -486,7 +486,7 @@ def submitslot(request, vsid):
 
             if not slot_status and (finish_listen_post == 'heard' or already_listen_post == 'heard') and fail_select != 'selected':
                 messages.danger(request, "Please enter a pass or fail")
-                #return redirect("projects:testslot", pid=p.pk, vsid=vsid)
+                # return redirect("projects:testslot", pid=p.pk, vsid=vsid)
                 response = redirect("projects:testslot", pid=p.pk, vsid=vsid)
                 response['Location'] += '?listened=heard'
                 return response
@@ -494,6 +494,7 @@ def submitslot(request, vsid):
                 slot.status = VoiceSlot.PASS
                 slot.check_in(request.user)
                 slot.save()
+                helpers.update_checksum(pid=p.pk, vsid=vsid, user=request.user)
                 Action.log(request.user, Action.TESTER_PASS_SLOT, '{0} passed by manual testing'.format(slot.name), slot)
 
                 # do updates to files here and get count for p pass
@@ -507,6 +508,7 @@ def submitslot(request, vsid):
                 slot.status = VoiceSlot.FAIL
                 slot.check_in(request.user)
                 slot.save()
+                helpers.update_checksum(pid=p.pk, vsid=vsid, user=request.user)
                 Action.log(request.user, Action.TESTER_FAIL_SLOT, request.POST['notes'], slot)
 
                 # do updates to files here and get count for p failure

@@ -92,4 +92,3 @@ def update_file_statuses(project_id, user_id):
         except Exception as e:
             logger.error("Waiting didn't fix it")
 
-
