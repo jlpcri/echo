@@ -155,27 +155,20 @@
                     <h3 style="word-break: break-all;">{{ slot.name }}</h3>
                 </div>
                 <div class="col-xs-4">
-                    {% if browser != "ie9" %}
-                        <div class="player">
-                            <div class="timer">
-                                <div class="ring fill"></div>
-                                <button type="button" class="btn btn-default hole" id="button_play"
-                                            onclick="buttonPlayPauseHandler('{{ file }}');"><i
-                                            class="fa fa-play fa-2x"></i></button>
-                                <input id="finish_listen" name="finish_listen" type="hidden" value="notyet" />
-                            </div>
+                    <div class="player">
+                        <div class="timer">
+                            <div class="ring fill"></div>
+                            <button type="button" class="btn btn-default hole" id="button_play"
+                                        onclick="buttonPlayPauseHandler('{{ file }}');"><i
+                                        class="fa fa-play fa-2x"></i></button>
                         </div>
-                        <br>
-                    {% else %}
-                        <!--[if gte IE 10]> -->
-                        <audio controls src="{{ file }}" type="audio/wav">
-                            IE support pending. Please use Firefox or Chrome.
+                        <audio id="player" preload="auto">
+                            <source src="{{ file }}" type="audio/wav">
+                            Your browser does not support wav files.
                         </audio>
-                        <![endif]-->
-                        <!--[if IE]>
-                        <embed src="{{ file }}"
-                        <!-- <![endif]-->
-                    {% endif %}
+                    </div>
+                    <br>
+                   
                 </div>
                 <div id="passfail" class="col-xs-2">
                     <div class="form-group pull-right" style="width: 100%;">
@@ -229,27 +222,14 @@
                 </div>
             </div>
         </form>
-        {% if browser != "ie9" %}
-        <object classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000"
-                id="player"
-                name="audio1"
-                align="middle">
-            <param name="quality" value="high"/>
-            <embed src="{% static 'common/flash-wav-player/wavplayer.swf' %}?gui=none"
-                   bgcolor="#ffffff"
-                   width="0"
-                   height="0"
-                   name="player"
-                   quality="high"
-                   allowScriptAccess="always"
-                   type="application/x-shockwave-flash"
-                   pluginspage="http://www.macromedia.com/go/getflashplayer"></embed>
-        </object>
-        {% endif %}
     </div>
 {% endblock %}
 {% block endscript %}
     <script type="text/javascript">
+
+
+    
+    
         var playerState = "STOPPED";
         var listened = false;
         var timer = undefined;
@@ -269,44 +249,46 @@
         }
 
         function stopWatch(){
-            var seconds = (timerFinish-(new Date().getTime()))/1000;
-            if(seconds <= 0){
-                drawTimer(100);
+            if(player.ended){
+                drawTimer(0);
+                $('#button_play').children().first().removeClass('fa-pause').addClass('fa-play');
+                listened = true;
                 clearInterval(timer);
             }else{
-                var percent = 100-((seconds/timerSeconds)*100);
-                    document.getElementById('finish_listen').value = 'heard';
+                var percent = player.currentTime/player.duration * 100;
                 drawTimer(percent);
             }
         }
 
         function getPlayer(pid) {
-            var obj = document.getElementById(pid);
-            if (obj.doPlay) return obj;
-            for (i = 0; i < obj.childNodes.length; i++) {
-                var child = obj.childNodes[i];
-                if (child.tagName == "EMBED") return child;
-            }
+            return document.getElementById(pid);
         }
 
         function soundLoad(secLoad, secTotal) {
             timerSeconds = secTotal;
         }
 
-        function playerController(state, position) {
-            if (state == "BUFFERING") {
-                // empty
-            } else if (state == 'STOPPED') {
-                listened = true;
+        function init() {
+            var player = getPlayer('player');
+            var rval = '';
+            if (!player || !player.buffered) {
+                setTimeout(init, 100); // Wait for load
+            } else {
                 clearInterval(timer);
                 timer = undefined;
                 $('#button_play').children().first().removeClass('fa-pause').addClass('fa-play');
-            } else if (state == "PAUSED") {
-                timerHold = timerFinish-(new Date().getTime());
-                clearInterval(timer);
-                timer = undefined;
+            }
+            alert();
+        }
+
+        init();
+
+        function buttonPlayPauseHandler(fname) {
+            var player = getPlayer('player');
+            if (!player.paused) {
+                player.pause();
                 $('#button_play').children().first().removeClass('fa-pause').addClass('fa-play');
-            } else if (state == "PLAYING") {
+            } else {
                 if (timerHold) {
                     console.log("check a");
                     timerFinish = new Date().getTime()+timerHold;
@@ -315,37 +297,21 @@
                     timerFinish = new Date().getTime()+(timerSeconds*1000);
                     timerHold = undefined;
                 }
+                timerFinish = player.duration;
                 timer = setInterval('stopWatch()',10);
                 $('#button_play').children().first().removeClass('fa-play').addClass('fa-pause');
-            }
-            playerState = state;
-        }
-
-        function init() {
-            var player = getPlayer('player');
-            if (!player || !player.attachHandler) {
-                setTimeout(init, 100); // Wait for load
-            } else {
-                player.attachHandler("PLAYER_LOAD", "soundLoad");
-                player.attachHandler("PLAYER_BUFFERING", "playerController", "BUFFERING");
-                player.attachHandler("PLAYER_PLAYING", "playerController", "PLAYING");
-                player.attachHandler("PLAYER_STOPPED", "playerController", "STOPPED");
-                player.attachHandler("PLAYER_PAUSED", "playerController", "PAUSED");
+                player.play();
             }
         }
-
-        {% if browser != "ie9" %}
-            init();
-        {% endif %}
-
-        function buttonPlayPauseHandler(fname) {
-            var player = getPlayer('player');
-            if (playerState == 'PLAYING') {
-                player.doPause();
-            } else if (playerState == 'PAUSED') {
-                player.doResume();
-            } else {
-                player.doPlay(fname);
+        function alert(){
+            if (navigator.userAgent.indexOf("Trident") != -1 ) {
+                msg = '<div class="container">';
+                msg += '<div class="alert alert-dismissable alert-danger">';
+                msg += '<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>';
+                msg += 'Internet Explorer is not supported, Please use either Firefox or Chrome';
+                msg += '</div>';
+                msg += '</div>';
+                $('#wrapper').prepend(msg);
             }
         }
 
@@ -363,12 +329,7 @@
             }
         });
 
-        if ('{{ finish_listen }}' == 'heard'){
-            listened = true;
-        }
-
         $('button[name=submit_test]').on('click', function (event) {
-
             if (listened == false ) {
                 event.preventDefault();
 
@@ -381,7 +342,7 @@
                 $('#wrapper').prepend(msg);
             }
         });
-
+        
         {% if project.slots_total > 0 %}
             {% if project.slots_passed %}
                 $('#passed_bar_' + {{ project.id }}).tooltip();

@@ -2,6 +2,8 @@ from datetime import datetime, timedelta
 import json
 import os
 import uuid
+import pyaudio
+import gzip
 
 import pysftp
 
@@ -538,8 +540,18 @@ def testslot(request, pid, vsid):
                                        private_key=settings.PRIVATE_KEY) as conn:
                     remote_path = slot.filepath()
                     filename = "{0}.wav".format(str(uuid.uuid4()))
+                    filenamezip = filename + ".gz"
                     local_path = os.path.join(settings.MEDIA_ROOT, filename)
-                    conn.get(remote_path, local_path)
+                    local_path_zip = os.path.join(settings.MEDIA_ROOT, filenamezip)
+                    if conn.exists(remote_path):
+                        conn.get(remote_path, local_path)
+                    else:
+                        conn.get(remote_path + ".gz", local_path_zip)
+                        with gzip.open(local_path_zip, 'rb') as in_file:
+                            out_file = open(local_path, 'wb')
+                            s = in_file.read()
+                        with open(local_path, 'w') as f:
+                            f.write(s)
                     filepath = settings.MEDIA_URL + filename
                     slot.check_out(request.user)
             except IOError as e:
