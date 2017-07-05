@@ -272,17 +272,21 @@ class VoiceSlot(models.Model):
     VOICESLOT_STATUS_CHOICES = ((NEW, 'New'), (READY, 'Ready'), (PASS, 'Pass'),
                                 (FAIL, 'Fail'), (MISSING, 'Missing'))
     vuid = models.ForeignKey('VUID', null=True, on_delete=models.SET_NULL)
+    vuid_previous = models.ForeignKey('VUID', null=True, on_delete=models.SET_NULL, related_name='+', db_column='vuid_id')
+    vuid_initial = models.ForeignKey('VUID', null=True, on_delete=models.SET_NULL, related_name='+', db_column='vuid_id')
     language = models.ForeignKey('Language')
     name = models.TextField()
     path = models.TextField()
     user = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
     status = models.TextField(choices=VOICESLOT_STATUS_CHOICES, default=NEW)
     verbiage = models.TextField(blank=True, null=True)
+    verbiage_previous = models.TextField(blank=True, null=True, default="")
     checked_out = models.BooleanField(default=False)
     checked_out_time = models.DateTimeField(blank=True, null=True)
     bravo_checksum = models.TextField(blank=True, null=True, default="")
     bravo_time = models.DateTimeField(blank=True, null=True)
     vuid_time = models.DateField(blank=True, null=True)
+    vuid_time_previous = models.DateField(blank=True, null=True)
     check_in_time = models.DateTimeField(blank=True, null=True)
 
     def __unicode__(self):
