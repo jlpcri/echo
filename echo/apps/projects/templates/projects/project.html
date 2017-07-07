@@ -198,6 +198,7 @@
                                     <th class="col-xs-5">Filename</th>
                                     <th class="col-xs-5">Upload Date</th>
                                     <th class="col-xs-2">Upload By</th>
+                                    <th class="col-xs-2"></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -206,6 +207,14 @@
                                         <td><a href="{% url "projects:vuid" project.pk vuid.pk %}">{{ vuid.filename }}</a></td>
                                         <td>{{ vuid.upload_date }}</td>
                                         <td>{{ vuid.upload_by.username }}</td>
+                                        {# if user not in CS, PM, Superuser cannot delete slots #}
+                                        {% if user.usersettings.creative_services or user.usersettings.project_manager or user.is_superuser %}
+                                        <td> <button type="button" name="rollback_vuid" onclick="rollbackVuidConfirm('{{ vuid.pk }}', '{{ vuid.filename }}')"
+                                                class="btn btn-danger btn-xs">
+                                            <i class="fa fa-trash-o fa-fw"></i>
+                                        </button> </td>
+                                        {% endif %}
+                                        <input type="hidden" name="vuidid" value="{{ vuid.pk }}">
                                     </tr>
                                 {% endfor %}
                             </tbody>
@@ -294,6 +303,7 @@
         </div>
     </div>
     {% include 'projects/modal_suspend_testing.html' %}
+    {% include 'projects/modal_rollback_vuid.html' %}
 {% endblock %}
 {% block endscript %}
     <script type="text/javascript">
@@ -559,4 +569,9 @@
         });
 
     </script>
+    
+    <script type="text/javascript">
+        {% include 'projects/projects.js' %}
+    </script>
+    
 {% endblock %}
