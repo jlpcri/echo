@@ -249,38 +249,6 @@ def project(request, pid):
             return render(request, "projects/project.html", contexts.context_project(p, upload_form=form,
                                                                                      server_form=ServerForm(initial={
                                                                                          'server': p.current_server_pk()})))
-        # remove file and rollback changes
-        
-        elif "rollback_vuid" in request.POST:
-            p = get_object_or_404(Project, pk=pid)
-            vsid = request.POST.get('vuidid', "")
-            messages.danger(request, 'Attempting to rollback.')
-            if "delete_slot" in request.POST:
-                if vsid:
-                    slot = get_object_or_404(VoiceSlot, pk=vsid)
-                    slot.delete()
-                    return render(request, "projects/language.html", contexts.context_language(request.user, p, language_type=lang))
-                messages.danger(request, "Unable to find voice slot")
-                return redirect("projects:voiceslots", pik=pid)
-            #####
-            if form.is_valid():
-                # if user not member in CS, PM, Superuser cannot upload
-                if not (request.user.usersettings.creative_services or request.user.usersettings.project_manager or request.user.is_superuser):
-                    messages.danger(request, 'You have no authority to rollback.')
-                elif 'file' in request.FILES and request.FILES['file'].name.endswith('.xlsx'):
-                    result = helpers.rollback_vuid(form.cleaned_data['file'], request.user, p)
-                    if result['valid']:
-                        messages.success(request, result["message"])
-                    else:
-                        messages.danger(request, result['message'])
-                elif 'file' in request.FILES:
-                    messages.danger(request, "Invalid file type, unable to upload (must be .xlsx)")
-                return redirect("projects:project", pid=pid)
-            messages.danger(request, "Unable to upload file")
-            return render(request, "projects/project.html", contexts.context_project(p, upload_form=form,
-                                                                                     server_form=ServerForm(initial={
-                                                                                         'server': p.current_server_pk()})))
-        
         elif "update_root_path" in request.POST:
             form = ProjectRootPathForm(request.POST)
             p = get_object_or_404(Project, pk=pid)
@@ -755,8 +723,9 @@ def rollback_vuid(request, vuid_id):
         if request.user.usersettings.creative_services or request.user.usersettings.project_manager or request.user.is_superuser:
             try:
                 vuid = get_object_or_404(VUID, pk=vuid_id)
-                #vuid.delete()
-                messages.success(request, 'VUID \"{0}\" has been rolled back and removed.'.format(vuid.filename))
+                result = helpers.rollback_vuid(vuid, vuid_id, vuid.project)
+                vuid.delete()
+                messages.success(request, 'VUID \"{0}\" has been rolled back and removed.'.format(result))
                 return HttpResponse(json.dumps({
                     'success': True
                 }))

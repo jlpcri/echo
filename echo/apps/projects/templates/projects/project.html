@@ -168,7 +168,7 @@
                 {% endif %}
             </div>
             <div class="col-xs-8">
-                <form name="submit_to_server" action="{% url 'projects:project' project.pk %}" method="post" enctype="multipart/form-data">
+                <form name="submit_to_server" action="{% url 'projects:project' project.pk %}" method="POST" enctype="multipart/form-data">
                     {% csrf_token %}
                     {% if user.is_superuser or user.usersettings.creative_services or user.usersettings.project_manager %}
                     <div class="form-group">
@@ -209,10 +209,12 @@
                                         <td>{{ vuid.upload_by.username }}</td>
                                         {# if user not in CS, PM, Superuser cannot delete slots #}
                                         {% if user.usersettings.creative_services or user.usersettings.project_manager or user.is_superuser %}
-                                        <td> <button type="button" name="rollback_vuid" onclick="rollbackVuidConfirm('{{ vuid.pk }}', '{{ vuid.filename }}')"
-                                                class="btn btn-danger btn-xs">
-                                            <i class="fa fa-trash-o fa-fw"></i>
-                                        </button> </td>
+                                            {% if vuid.pk == vuids|length and project.rollback_flag == True %}
+                                            <td> <button type="button" name="rollback_vuid" onclick="rollbackVuidConfirm('{{ vuid.pk }}', '{{ vuid.filename }}')"
+                                                    class="btn btn-danger btn-xs">
+                                                <i class="fa fa-trash-o fa-fw"></i>
+                                            </button> </td>
+                                            {% endif %}
                                         {% endif %}
                                         <input type="hidden" name="vuidid" value="{{ vuid.pk }}">
                                     </tr>

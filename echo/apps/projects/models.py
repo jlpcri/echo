@@ -33,6 +33,7 @@ class Project(models.Model):
     preprod_server = models.ForeignKey('settings.PreprodServer', blank=True, null=True, on_delete=models.SET_NULL)
     preprod_path = models.TextField(blank=True, null=True)
     status = models.TextField(choices=PROJECT_STATUS_CHOICES, default=INITIAL)
+    rollback_flag = models.BooleanField(default=False)
     jira_key = models.CharField(max_length=12, blank=True)
 
     def __unicode__(self):
@@ -272,8 +273,8 @@ class VoiceSlot(models.Model):
     VOICESLOT_STATUS_CHOICES = ((NEW, 'New'), (READY, 'Ready'), (PASS, 'Pass'),
                                 (FAIL, 'Fail'), (MISSING, 'Missing'))
     vuid = models.ForeignKey('VUID', null=True, on_delete=models.SET_NULL)
-    vuid_previous = models.ForeignKey('VUID', null=True, on_delete=models.SET_NULL, related_name='+', db_column='vuid_id')
-    vuid_initial = models.ForeignKey('VUID', null=True, on_delete=models.SET_NULL, related_name='+', db_column='vuid_id')
+    vuid_initial = models.IntegerField(null=True, blank=True)
+    vuid_previous = models.IntegerField(null=True, blank=True)
     language = models.ForeignKey('Language')
     name = models.TextField()
     path = models.TextField()

@@ -205,14 +205,14 @@ def parse_vuid(vuid):
             if vuid_time > vs.vuid_time:
                 vs.vuid_time_previous = vs.vuid_time
                 vs.verbiage_previous = vs.verbiage
-                vs.vuid_previous = vs.vuid
+                vs.vuid_previous = vs.vuid.pk
                 vs.vuid_time = vuid_time.date()
                 vs.verbiage = verbiage
                 vs.vuid = vuid
             elif vuid_time == vs.vuid_time:
                 if vs.verbiage != verbiage:
                     vs.verbiage_previous = vs.verbiage
-                    vs.vuid_previous = vs.vuid
+                    vs.vuid_previous = vs.vuid.pk
                     vs.verbiage = verbiage
                     vs.vuid = vuid
             slots.append(vs)
@@ -220,7 +220,7 @@ def parse_vuid(vuid):
         except VoiceSlot.DoesNotExist:
             #if the slot doesn't exist previously, add it. 
             vs = VoiceSlot(name=name, path=path, verbiage=verbiage, language=language, vuid_time=vuid_time, vuid=vuid,
-                           vuid_initial=vuid)
+                           vuid_initial=vuid.pk)
             slots.append(vs)
             vs.save()
         except VoiceSlot.MultipleObjectsReturned:
@@ -255,6 +255,8 @@ def upload_vuid(uploaded_file, user, project):
         vuid.delete()
         return result
     Action.log(user, Action.UPLOAD_VUID, 'Prompt list {0} uploaded'.format(uploaded_file.name), project)
+    project.rollback_flag = True
+    project.save()
 
     if project.status == Project.TESTING:
         # set project status to "Initial"
@@ -269,7 +271,7 @@ def upload_vuid(uploaded_file, user, project):
     status.save()
     return {"valid": True, "message": "File uploaded and parsed successfully"}
 
-def rollback_vuid(vuid):
+def rollback_vuid(vuid, vuid_id, project):
     #rollback using the most recent vuid that was loaded. 
     #works same as parse_vuid, except it handles the database logic in reverse. 
     wb = load_workbook(vuid.file.path)
@@ -315,27 +317,34 @@ def rollback_vuid(vuid):
             return {"valid": False, "message": "Parser error, multiple languages returned"}
 
         name = unicode(w[prompt_name_i].value).strip()
-        verbiage = unicode(w[prompt_text_i].value).strip()
-        vuid_time = w[date_changed_i].value.date() if w[date_changed_i].value is datetime else None
 
         try:
             vs = VoiceSlot.objects.get(name=name, path=path, language=language)
+            project.rollback_flag = False
+            project.save()
+            
             # if there is no previous and the vuid matches, it was a new slot... 
-            if vs.vuid == vuid and not vs.vuid_previous:
+            
+            if str(vs.vuid.pk) == str(vuid_id) and vs.vuid_previous is None:
+            #if True:
                 vs.delete()
             # if the voice slot was changed with the vuid we are rolling back, and there is a previous version
-            if vs.vuid == vuid and vs.vuid_previous:
+            elif str(vs.vuid.pk) == str(vuid_id) and vs.vuid_previous:
+                vuid_obj = VUID.objects.get(pk=vs.vuid_previous)
                 vs.vuid_time = vs.vuid_time_previous
                 vs.verbiage = vs.verbiage_previous
-                vs.vuid = vs.vuid_previous
+                vs.vuid = vuid_obj
                 # null out the previous values since we won't allow a second rollback
-                vs.vuid_time_previous = null
-                vs.verbiage_previous = null
-                vs.vuid_previous = null
+                vs.vuid_time_previous = None
+                vs.verbiage_previous = None 
+                vs.vuid_previous = None
+                vs.save()
+            else:
+                vs.verbiage = ', vuid.pk(' + str(vs.vuid.pk) + ')(' + vuid_id + '), vs.vuid_prev-(' + str(vs.vuid_previous) + ')'
                 vs.save()
         except VoiceSlot.DoesNotExist:
             # we are rolling back, if it does not exist, there is an issue
-            return {"valid": False, "message": "Parser error, tried to delete a slot that doesn't exist"}
+            continue
         except VoiceSlot.MultipleObjectsReturned:
             return {"valid": False, "message": "Parser error, multiple voice slots returned"}
     return {"valid": True, "message": "Parsed file successfully"}
