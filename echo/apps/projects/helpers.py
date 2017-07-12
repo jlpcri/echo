@@ -339,9 +339,6 @@ def rollback_vuid(vuid, vuid_id, project):
                 vs.verbiage_previous = None 
                 vs.vuid_previous = None
                 vs.save()
-            else:
-                vs.verbiage = ', vuid.pk(' + str(vs.vuid.pk) + ')(' + vuid_id + '), vs.vuid_prev-(' + str(vs.vuid_previous) + ')'
-                vs.save()
         except VoiceSlot.DoesNotExist:
             # we are rolling back, if it does not exist, there is an issue
             continue
