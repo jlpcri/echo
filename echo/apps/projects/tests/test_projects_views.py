@@ -4,7 +4,7 @@ from django.test import Client, TestCase
 from django.core.urlresolvers import reverse, resolve
 from django.contrib.auth.models import User
 
-from echo.apps.projects.models import Project
+from echo.apps.projects.models import Project, VUID, Language, VoiceSlot
 from echo.apps.projects.views import certify, projects
 from echo.apps.settings.models import UserSettings
 
@@ -197,6 +197,26 @@ class ProjectsViewsTest(TestCase):
             username=self.user_account_superuser['username'],
             password=self.user_account_superuser['password']
         )
+        self.vuid = VUID.objects.create(filename='hi.xlsx',
+                                        project=self.project,
+                                        upload_by=self.user)
+        self.language = Language.objects.create(name='Pig Latin',
+                                                project=self.project)
+        self.voiceslot = VoiceSlot.objects.create(name='greeting',
+                                                  path='/voice/audio/testproject',
+                                                  language=self.language,
+                                                  vuid=self.vuid)
+        self.voiceslot_missing = VoiceSlot.objects.create(name='missing',
+                                                          path='/voice/audio/testproject',
+                                                          language=self.language,
+                                                          vuid=self.vuid,
+                                                          status=VoiceSlot.MISSING)
+        self.voiceslot_fail = VoiceSlot.objects.create(name='fail',
+                                                       path='/voice/audio/testproject',
+                                                       language=self.language,
+                                                       vuid=self.vuid,
+                                                       status=VoiceSlot.FAIL)
+        self.description = 'Action Description notes'
 
     def test_projects_url_resolve_to_view(self):
         found = resolve(self.url_projects)
@@ -222,3 +242,6 @@ class ProjectsViewsTest(TestCase):
         self.assertContains(response, project2.name)
 
 
+    def test_projects_rollback_no_availalbe(self):
+        response = self.client.get(self.url_projects, follow=True)
+        self.assertContains(response, 'delete')
