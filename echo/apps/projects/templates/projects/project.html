@@ -214,9 +214,9 @@
                                                     class="btn btn-danger btn-xs">
                                                 <i class="fa fa-trash-o fa-fw"></i>
                                             </button> </td>
+                                            <input type="hidden" name="vuidid" id='vuidid' value="{{ vuid.pk }}">
                                             {% endif %}
                                         {% endif %}
-                                        <input type="hidden" name="vuidid" value="{{ vuid.pk }}">
                                     </tr>
                                 {% endfor %}
                             </tbody>

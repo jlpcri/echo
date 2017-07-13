@@ -3,6 +3,8 @@ syntax: glob
 
 *.pyc
 *.sqlite3
+*.xl*
 .project
 .pydevproject
 .settings/org.eclipse.core.resources.prefs
+.idea

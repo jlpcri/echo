@@ -196,6 +196,7 @@ def project(request, pid):
         return render(request, "projects/project.html",
                       contexts.context_project(p, server_form=ServerForm(initial={'server': p.current_server_pk()})))
     elif request.method == 'POST':
+        messages.danger(request, '1')
         if "update_server" in request.POST:
             form = ServerForm(request.POST)
             p = get_object_or_404(Project, pk=pid)
@@ -230,9 +231,11 @@ def project(request, pid):
             messages.danger(request, "Unable to update server")
             return render(request, "projects/project.html", contexts.context_project(p, server_form=form))
         elif "upload_file" in request.POST:
+            messages.danger(request, '2')
             form = UploadForm(request.POST, request.FILES)
             p = get_object_or_404(Project, pk=pid)
             if form.is_valid():
+                messages.danger(request, '3')
                 # if user not member in CS, PM, Superuser cannot upload
                 if not (request.user.usersettings.creative_services or request.user.usersettings.project_manager or request.user.is_superuser):
                     messages.danger(request, 'You have no authority to upload.')
@@ -250,6 +253,7 @@ def project(request, pid):
                                                                                      server_form=ServerForm(initial={
                                                                                          'server': p.current_server_pk()})))
         elif "update_root_path" in request.POST:
+            messages.danger(request, '4')
             form = ProjectRootPathForm(request.POST)
             p = get_object_or_404(Project, pk=pid)
             if form.is_valid():
@@ -275,6 +279,8 @@ def project(request, pid):
                            p)
                 messages.success(request, 'Updated Bravo Server Path Successfully')
                 return redirect('projects:project', pid=pid)
+        messages.danger(request, '5')
+        messages.danger(request, 'valid? ' + str(UploadForm(request.POST, request.FILES)))
         return redirect("projects:project", pid=pid)
     return HttpResponseNotFound()
 

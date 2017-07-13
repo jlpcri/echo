@@ -38,11 +38,8 @@
     <script type="text/javascript">
         $('#Delete_Button').click(function () {
 
-            this.innerHTML = '<i class="fa fa-spinner fa-fw fa-spin"></i>';
-            this.attr('disabled', 'disabled');//.disabled = true;
-            $('#Cancel_Button').attr('disabled', 'disabled');//.disabled = true;
-            //$('#throbber').show();
-            //$('#create_project').attr('disabled', 'disabled');
+            this.innerHTML = '<i class="fa fa-spinner fa-fw fa-spin" />';
+            $('#Cancel_Button').attr('disabled', 'disabled');
         })
     </script>
 {% endblock %}
