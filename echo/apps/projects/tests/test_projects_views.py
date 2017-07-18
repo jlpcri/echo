@@ -305,9 +305,12 @@ class ProjectsViewsFileTest(TestCase):
 
     def test_projects_rollback(self):
         project = Project.objects.create(name=self.pj1['name'], root_path=self.pj1['root_path'])
-        response = self.client.post(reverse('projects:rollback', kwargs={'vuid_id': '2'}),
+        response = self.client.post(reverse('projects:project', kwargs={'pid': project.pk}),
                                     {'file': open(self.wb2.filename, 'r'),
                                      'upload_file': self.wb2.filename}, follow=True)
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'hi.xlsx')
-        self.assertContains(response, 'vuidid')
+        response = self.client.post(reverse('projects:rollback_vuid', kwargs={'vuid_id': '1'}), follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertNotEqual(response, 'hi.xlsx')
+        self.assertNotEqual(response, 'vuidid')
