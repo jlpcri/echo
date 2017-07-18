@@ -2,6 +2,8 @@ from datetime import datetime, timedelta
 import json
 import os
 import uuid
+import pyaudio
+import gzip
 
 import pysftp
 
@@ -194,6 +196,7 @@ def project(request, pid):
         return render(request, "projects/project.html",
                       contexts.context_project(p, server_form=ServerForm(initial={'server': p.current_server_pk()})))
     elif request.method == 'POST':
+        messages.danger(request, '1')
         if "update_server" in request.POST:
             form = ServerForm(request.POST)
             p = get_object_or_404(Project, pk=pid)
@@ -228,9 +231,11 @@ def project(request, pid):
             messages.danger(request, "Unable to update server")
             return render(request, "projects/project.html", contexts.context_project(p, server_form=form))
         elif "upload_file" in request.POST:
+            messages.danger(request, '2')
             form = UploadForm(request.POST, request.FILES)
             p = get_object_or_404(Project, pk=pid)
             if form.is_valid():
+                messages.danger(request, '3')
                 # if user not member in CS, PM, Superuser cannot upload
                 if not (request.user.usersettings.creative_services or request.user.usersettings.project_manager or request.user.is_superuser):
                     messages.danger(request, 'You have no authority to upload.')
@@ -248,6 +253,7 @@ def project(request, pid):
                                                                                      server_form=ServerForm(initial={
                                                                                          'server': p.current_server_pk()})))
         elif "update_root_path" in request.POST:
+            messages.danger(request, '4')
             form = ProjectRootPathForm(request.POST)
             p = get_object_or_404(Project, pk=pid)
             if form.is_valid():
@@ -273,6 +279,8 @@ def project(request, pid):
                            p)
                 messages.success(request, 'Updated Bravo Server Path Successfully')
                 return redirect('projects:project', pid=pid)
+        messages.danger(request, '5')
+        messages.danger(request, 'valid? ' + str(UploadForm(request.POST, request.FILES)))
         return redirect("projects:project", pid=pid)
     return HttpResponseNotFound()
 
@@ -538,8 +546,18 @@ def testslot(request, pid, vsid):
                                        private_key=settings.PRIVATE_KEY) as conn:
                     remote_path = slot.filepath()
                     filename = "{0}.wav".format(str(uuid.uuid4()))
+                    filenamezip = filename + ".gz"
                     local_path = os.path.join(settings.MEDIA_ROOT, filename)
-                    conn.get(remote_path, local_path)
+                    local_path_zip = os.path.join(settings.MEDIA_ROOT, filenamezip)
+                    if conn.exists(remote_path):
+                        conn.get(remote_path, local_path)
+                    else:
+                        conn.get(remote_path + ".gz", local_path_zip)
+                        with gzip.open(local_path_zip, 'rb') as in_file:
+                            out_file = open(local_path, 'wb')
+                            s = in_file.read()
+                        with open(local_path, 'w') as f:
+                            f.write(s)
                     filepath = settings.MEDIA_URL + filename
                     slot.check_out(request.user)
             except IOError as e:
@@ -688,6 +706,32 @@ def delete_slot(request, slot_id):
                 slot = get_object_or_404(VoiceSlot, pk=slot_id)
                 slot.delete()
                 messages.success(request, 'Voice Slot \"{0}\" has been deleted.'.format(slot.name))
+                return HttpResponse(json.dumps({
+                    'success': True
+                }))
+            except Exception as e:
+                return HttpResponse(json.dumps({
+                    'success': False,
+                    'error': e.message
+                }))
+        else:
+            return HttpResponse(json.dumps({
+                'success': False,
+                'error': 'You have no authority to perform this operation.'
+            }))
+
+@login_required
+@csrf_exempt
+def rollback_vuid(request, vuid_id):
+    if request.method == 'GET':
+        raise Http404
+    if request.method == 'POST':
+        if request.user.usersettings.creative_services or request.user.usersettings.project_manager or request.user.is_superuser:
+            try:
+                vuid = get_object_or_404(VUID, pk=vuid_id)
+                result = helpers.rollback_vuid(vuid, vuid_id, vuid.project)
+                vuid.delete()
+                messages.success(request, 'VUID \"{0}\" has been rolled back and removed.'.format(result))
                 return HttpResponse(json.dumps({
                     'success': True
                 }))

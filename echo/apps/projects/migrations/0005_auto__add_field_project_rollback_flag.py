@@ -8,18 +8,15 @@ from django.db import models
 class Migration(SchemaMigration):
 
     def forwards(self, orm):
-        # Adding model 'Ticket'
-        db.create_table(u'jira_ticket', (
-            (u'id', self.gf('django.db.models.fields.AutoField')(primary_key=True)),
-            ('voiceslot', self.gf('django.db.models.fields.related.ForeignKey')(to=orm['projects.VoiceSlot'])),
-            ('issue', self.gf('django.db.models.fields.TextField')()),
-        ))
-        db.send_create_signal(u'jira', ['Ticket'])
+        # Adding field 'Project.rollback_flag'
+        db.add_column(u'projects_project', 'rollback_flag',
+                      self.gf('django.db.models.fields.BooleanField')(default=False),
+                      keep_default=False)
 
 
     def backwards(self, orm):
-        # Deleting model 'Ticket'
-        db.delete_table(u'jira_ticket')
+        # Deleting field 'Project.rollback_flag'
+        db.delete_column(u'projects_project', 'rollback_flag')
 
 
     models = {
@@ -59,12 +56,6 @@ class Migration(SchemaMigration):
             'model': ('django.db.models.fields.CharField', [], {'max_length': '100'}),
             'name': ('django.db.models.fields.CharField', [], {'max_length': '100'})
         },
-        u'jira.ticket': {
-            'Meta': {'object_name': 'Ticket'},
-            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
-            'issue': ('django.db.models.fields.TextField', [], {}),
-            'voiceslot': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['projects.VoiceSlot']"})
-        },
         u'projects.language': {
             'Meta': {'object_name': 'Language'},
             u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
@@ -80,10 +71,19 @@ class Migration(SchemaMigration):
             'name': ('django.db.models.fields.TextField', [], {'unique': 'True'}),
             'preprod_path': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'preprod_server': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['settings.PreprodServer']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
+            'rollback_flag': ('django.db.models.fields.BooleanField', [], {'default': 'False'}),
             'root_path': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
             'status': ('django.db.models.fields.TextField', [], {'default': "'Initial'"}),
             'tests_run': ('django.db.models.fields.IntegerField', [], {'default': '0'}),
             'users': ('django.db.models.fields.related.ManyToManyField', [], {'to': u"orm['auth.User']", 'symmetrical': 'False', 'blank': 'True'})
+        },
+        u'projects.updatestatus': {
+            'Meta': {'object_name': 'UpdateStatus'},
+            u'id': ('django.db.models.fields.AutoField', [], {'primary_key': 'True'}),
+            'last_run': ('django.db.models.fields.DateTimeField', [], {'auto_now': 'True', 'blank': 'True'}),
+            'project': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['projects.Project']"}),
+            'query_id': ('django.db.models.fields.TextField', [], {'default': "''"}),
+            'running': ('django.db.models.fields.BooleanField', [], {'default': 'False'})
         },
         u'projects.voiceslot': {
             'Meta': {'object_name': 'VoiceSlot'},
@@ -99,8 +99,12 @@ class Migration(SchemaMigration):
             'status': ('django.db.models.fields.TextField', [], {'default': "'New'"}),
             'user': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['auth.User']", 'null': 'True', 'on_delete': 'models.SET_NULL', 'blank': 'True'}),
             'verbiage': ('django.db.models.fields.TextField', [], {'null': 'True', 'blank': 'True'}),
+            'verbiage_previous': ('django.db.models.fields.TextField', [], {'default': "''", 'null': 'True', 'blank': 'True'}),
             'vuid': ('django.db.models.fields.related.ForeignKey', [], {'to': u"orm['projects.VUID']", 'null': 'True', 'on_delete': 'models.SET_NULL'}),
-            'vuid_time': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'})
+            'vuid_initial': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
+            'vuid_previous': ('django.db.models.fields.IntegerField', [], {'null': 'True', 'blank': 'True'}),
+            'vuid_time': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'}),
+            'vuid_time_previous': ('django.db.models.fields.DateField', [], {'null': 'True', 'blank': 'True'})
         },
         u'projects.vuid': {
             'Meta': {'object_name': 'VUID'},
@@ -129,4 +133,4 @@ class Migration(SchemaMigration):
         }
     }
 
-    complete_apps = ['jira']
+    complete_apps = ['projects']

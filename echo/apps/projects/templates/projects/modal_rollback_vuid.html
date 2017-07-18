@@ -1,0 +1,45 @@
+<!--Rollback Vuid modal -->
+<div id="modal_rollback_vuid" class="modal fade">
+    <div class="modal-dialog">
+        <form method="post" action="" id="modal_rollback_vuid_form">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">Rollback Vuid Confirmation</h4>
+                </div>
+                <div class="modal-body">
+
+                    <div class="col-lg-12">
+                        <div class="form-group">
+                            <label for="modal_edit_client_input_name">
+                                VUID Name
+                            </label>
+                            <p id="vuid_script_name"></p>
+                            <input type="hidden" id="vuid_script_id" value="">
+
+                        </div>
+                    </div>
+
+                    <div class="col-lg-12">
+                        <p id="modal_rollback_vuid_error" style="color: red"></p>
+                    </div>
+                    {% csrf_token %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" id="Cancel_Button" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="Delete_Button">Delete</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% block endscript %}
+    <script type="text/javascript">
+        $('#Delete_Button').click(function () {
+
+            this.innerHTML = '<i class="fa fa-spinner fa-fw fa-spin" />';
+            $('#Cancel_Button').attr('disabled', 'disabled');
+        })
+    </script>
+{% endblock %}

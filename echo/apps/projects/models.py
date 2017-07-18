@@ -33,6 +33,7 @@ class Project(models.Model):
     preprod_server = models.ForeignKey('settings.PreprodServer', blank=True, null=True, on_delete=models.SET_NULL)
     preprod_path = models.TextField(blank=True, null=True)
     status = models.TextField(choices=PROJECT_STATUS_CHOICES, default=INITIAL)
+    rollback_flag = models.BooleanField(default=False)
     jira_key = models.CharField(max_length=12, blank=True)
 
     def __unicode__(self):
@@ -272,17 +273,21 @@ class VoiceSlot(models.Model):
     VOICESLOT_STATUS_CHOICES = ((NEW, 'New'), (READY, 'Ready'), (PASS, 'Pass'),
                                 (FAIL, 'Fail'), (MISSING, 'Missing'))
     vuid = models.ForeignKey('VUID', null=True, on_delete=models.SET_NULL)
+    vuid_initial = models.IntegerField(null=True, blank=True)
+    vuid_previous = models.IntegerField(null=True, blank=True)
     language = models.ForeignKey('Language')
     name = models.TextField()
     path = models.TextField()
     user = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL)
     status = models.TextField(choices=VOICESLOT_STATUS_CHOICES, default=NEW)
     verbiage = models.TextField(blank=True, null=True)
+    verbiage_previous = models.TextField(blank=True, null=True, default="")
     checked_out = models.BooleanField(default=False)
     checked_out_time = models.DateTimeField(blank=True, null=True)
     bravo_checksum = models.TextField(blank=True, null=True, default="")
     bravo_time = models.DateTimeField(blank=True, null=True)
     vuid_time = models.DateField(blank=True, null=True)
+    vuid_time_previous = models.DateField(blank=True, null=True)
     check_in_time = models.DateTimeField(blank=True, null=True)
 
     def __unicode__(self):

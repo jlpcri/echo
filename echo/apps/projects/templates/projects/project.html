@@ -168,7 +168,7 @@
                 {% endif %}
             </div>
             <div class="col-xs-8">
-                <form name="submit_to_server" action="{% url 'projects:project' project.pk %}" method="post" enctype="multipart/form-data">
+                <form name="submit_to_server" action="{% url 'projects:project' project.pk %}" method="POST" enctype="multipart/form-data">
                     {% csrf_token %}
                     {% if user.is_superuser or user.usersettings.creative_services or user.usersettings.project_manager %}
                     <div class="form-group">
@@ -198,6 +198,7 @@
                                     <th class="col-xs-5">Filename</th>
                                     <th class="col-xs-5">Upload Date</th>
                                     <th class="col-xs-2">Upload By</th>
+                                    <th class="col-xs-2"></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -206,6 +207,16 @@
                                         <td><a href="{% url "projects:vuid" project.pk vuid.pk %}">{{ vuid.filename }}</a></td>
                                         <td>{{ vuid.upload_date }}</td>
                                         <td>{{ vuid.upload_by.username }}</td>
+                                        {# if user not in CS, PM, Superuser cannot delete slots #}
+                                        {% if user.usersettings.creative_services or user.usersettings.project_manager or user.is_superuser %}
+                                            {% if vuid.pk == vuids|length and project.rollback_flag == True %}
+                                            <td> <button type="button" name="rollback_vuid" onclick="rollbackVuidConfirm('{{ vuid.pk }}', '{{ vuid.filename }}')"
+                                                    class="btn btn-danger btn-xs">
+                                                <i class="fa fa-trash-o fa-fw"></i>
+                                            </button> </td>
+                                            <input type="hidden" name="vuidid" id='vuidid' value="{{ vuid.pk }}">
+                                            {% endif %}
+                                        {% endif %}
                                     </tr>
                                 {% endfor %}
                             </tbody>
@@ -294,6 +305,7 @@
         </div>
     </div>
     {% include 'projects/modal_suspend_testing.html' %}
+    {% include 'projects/modal_rollback_vuid.html' %}
 {% endblock %}
 {% block endscript %}
     <script type="text/javascript">
@@ -559,4 +571,9 @@
         });
 
     </script>
+    
+    <script type="text/javascript">
+        {% include 'projects/projects.js' %}
+    </script>
+    
 {% endblock %}
